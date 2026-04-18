@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Question = {
   left: number;
@@ -8,6 +8,7 @@ type Question = {
 };
 
 const BASE_QUESTION_COUNT = 10;
+const BEST_TIME_STORAGE_KEY = "keisando:stage1:best-time-ms";
 
 const shuffle = <T,>(items: T[]): T[] => {
   const next = [...items];
@@ -56,6 +57,34 @@ const createQuestion = (usedExpressions: Set<string>): Question => {
   };
 };
 
+const formatElapsedTime = (elapsedMs: number): string => {
+  const centiseconds = Math.floor(elapsedMs / 10) % 100;
+  const seconds = Math.floor(elapsedMs / 1000) % 60;
+  const minutes = Math.floor(elapsedMs / 60000);
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
+};
+
+const loadBestTime = (): number | null => {
+  try {
+    const raw = localStorage.getItem(BEST_TIME_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const saveBestTime = (elapsedMs: number) => {
+  try {
+    localStorage.setItem(BEST_TIME_STORAGE_KEY, String(elapsedMs));
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
+
 function App() {
   const usedExpressionsRef = useRef(new Set<string>());
   const [question, setQuestion] = useState<Question>(() =>
@@ -64,33 +93,68 @@ function App() {
   const [answeredCount, setAnsweredCount] = useState(0);
   const [requiredCount, setRequiredCount] = useState(BASE_QUESTION_COUNT);
   const [lastResult, setLastResult] = useState<"correct" | "wrong" | null>(null);
+  const [stageStartMs, setStageStartMs] = useState(() => Date.now());
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const [clearElapsedMs, setClearElapsedMs] = useState<number | null>(null);
+  const [bestTimeMs, setBestTimeMs] = useState<number | null>(() => loadBestTime());
   const isCleared = answeredCount >= requiredCount;
 
   const remainingCount = useMemo(
     () => Math.max(requiredCount - answeredCount, 0),
     [answeredCount, requiredCount],
   );
+  const elapsedMs = clearElapsedMs ?? Math.max(nowMs - stageStartMs, 0);
+
+  useEffect(() => {
+    if (isCleared) return;
+
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 100);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isCleared]);
 
   const handleAnswer = (selected: number) => {
     if (isCleared) return;
 
     const isCorrect = selected === question.answer;
-    setLastResult(isCorrect ? "correct" : "wrong");
-    setAnsweredCount((prev) => prev + 1);
+    const nextAnsweredCount = answeredCount + 1;
+    const nextRequiredCount = requiredCount + (isCorrect ? 0 : 1);
+    const nextIsCleared = nextAnsweredCount >= nextRequiredCount;
 
-    if (!isCorrect) {
-      setRequiredCount((prev) => prev + 1);
+    setLastResult(isCorrect ? "correct" : "wrong");
+    setAnsweredCount(nextAnsweredCount);
+    setRequiredCount(nextRequiredCount);
+
+    if (nextIsCleared) {
+      const finishedAtMs = Date.now();
+      const elapsedAtClear = Math.max(finishedAtMs - stageStartMs, 0);
+      setNowMs(finishedAtMs);
+      setClearElapsedMs(elapsedAtClear);
+
+      if (bestTimeMs === null || elapsedAtClear < bestTimeMs) {
+        setBestTimeMs(elapsedAtClear);
+        saveBestTime(elapsedAtClear);
+      }
+      return;
     }
 
     setQuestion(createQuestion(usedExpressionsRef.current));
   };
 
   const resetStage = () => {
+    const startMs = Date.now();
     usedExpressionsRef.current = new Set<string>();
     setQuestion(createQuestion(usedExpressionsRef.current));
     setAnsweredCount(0);
     setRequiredCount(BASE_QUESTION_COUNT);
     setLastResult(null);
+    setStageStartMs(startMs);
+    setNowMs(startMs);
+    setClearElapsedMs(null);
   };
 
   return (
@@ -102,6 +166,12 @@ function App() {
           <p>Answered: {answeredCount}</p>
           <p>Total: {requiredCount}</p>
           <p>Remaining: {remainingCount}</p>
+        </div>
+        <div className="timer-row">
+          <p className="timer-pill">Time: {formatElapsedTime(elapsedMs)}</p>
+          <p className="timer-pill">
+            Best: {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
+          </p>
         </div>
 
         {!isCleared ? (
@@ -154,6 +224,9 @@ function App() {
         ) : (
           <div className="clear-box">
             <p className="clear-title">Stage Clear!</p>
+            <p className="clear-time">
+              Clear time: {formatElapsedTime(elapsedMs)}
+            </p>
             <p className="clear-time">
               Final questions: {requiredCount} (base {BASE_QUESTION_COUNT})
             </p>

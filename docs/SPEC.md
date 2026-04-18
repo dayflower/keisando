@@ -3,6 +3,11 @@
 ## 1. Goal
 Build a browser-based arithmetic practice game for children who struggle with calculation.
 
+Primary gameplay mode for Phase 1 is **Time Attack**:
+- Clear each stage as fast as possible.
+- Mistakes apply a time-related penalty indirectly by increasing total questions.
+- Rankings are based on clear time records.
+
 Core constraints:
 - Works in modern browsers.
 - Usable on tablets (tap-first) and desktop (click + keyboard).
@@ -40,11 +45,16 @@ Reasoning:
   - Correct: move to next question.
   - Incorrect: add one extra question to the stage total.
 - Stage clears when required question count is completed.
+- Elapsed time is measured from stage start to clear and used as the main result metric.
 
 ### Stage Rules
 - Stage-specific arithmetic types (addition/subtraction first).
 - Questions are generated randomly per run.
 - Avoid duplicates within a stage as much as possible.
+- Time Attack semantics for Phase 1:
+  - No fixed countdown timer.
+  - Faster clear time is better.
+  - Wrong answers increase effective completion time by increasing the number of questions to clear.
 
 ### Users
 - No password/authentication.
