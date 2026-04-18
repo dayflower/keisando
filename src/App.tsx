@@ -8,6 +8,8 @@ type Question = {
 };
 
 const BASE_QUESTION_COUNT = 10;
+const ROUND_COUNTDOWN_SECONDS = 3;
+const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
 const BEST_TIME_STORAGE_KEY = "keisando:stage1:best-time-ms";
 
 const shuffle = <T,>(items: T[]): T[] => {
@@ -94,6 +96,10 @@ function App() {
   const [requiredCount, setRequiredCount] = useState(BASE_QUESTION_COUNT);
   const [lastResult, setLastResult] = useState<"correct" | "wrong" | null>(null);
   const [stageStartMs, setStageStartMs] = useState(() => Date.now());
+  const [countdownEndMs, setCountdownEndMs] = useState(
+    () => Date.now() + ROUND_COUNTDOWN_MS,
+  );
+  const [isRoundActive, setIsRoundActive] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [clearElapsedMs, setClearElapsedMs] = useState<number | null>(null);
   const [bestTimeMs, setBestTimeMs] = useState<number | null>(() => loadBestTime());
@@ -103,7 +109,12 @@ function App() {
     () => Math.max(requiredCount - answeredCount, 0),
     [answeredCount, requiredCount],
   );
-  const elapsedMs = clearElapsedMs ?? Math.max(nowMs - stageStartMs, 0);
+  const elapsedMs =
+    clearElapsedMs ?? (isRoundActive ? Math.max(nowMs - stageStartMs, 0) : 0);
+  const countdownSeconds = Math.max(
+    Math.ceil((countdownEndMs - nowMs) / 1000),
+    0,
+  );
 
   useEffect(() => {
     if (isCleared) return;
@@ -117,8 +128,18 @@ function App() {
     };
   }, [isCleared]);
 
+  useEffect(() => {
+    if (isCleared || isRoundActive || nowMs < countdownEndMs) {
+      return;
+    }
+
+    setIsRoundActive(true);
+    setStageStartMs(nowMs);
+    setNowMs(nowMs);
+  }, [countdownEndMs, isCleared, isRoundActive, nowMs]);
+
   const handleAnswer = (selected: number) => {
-    if (isCleared) return;
+    if (isCleared || !isRoundActive) return;
 
     const isCorrect = selected === question.answer;
     const nextAnsweredCount = answeredCount + 1;
@@ -146,14 +167,16 @@ function App() {
   };
 
   const resetStage = () => {
-    const startMs = Date.now();
+    const resetAtMs = Date.now();
     usedExpressionsRef.current = new Set<string>();
     setQuestion(createQuestion(usedExpressionsRef.current));
     setAnsweredCount(0);
     setRequiredCount(BASE_QUESTION_COUNT);
     setLastResult(null);
-    setStageStartMs(startMs);
-    setNowMs(startMs);
+    setStageStartMs(resetAtMs);
+    setCountdownEndMs(resetAtMs + ROUND_COUNTDOWN_MS);
+    setIsRoundActive(false);
+    setNowMs(resetAtMs);
     setClearElapsedMs(null);
   };
 
@@ -175,52 +198,59 @@ function App() {
         </div>
 
         {!isCleared ? (
-          <>
-            <p className="expression">
-              {question.left} + {question.right} = ?
-            </p>
+          isRoundActive ? (
+            <>
+              <p className="expression">
+                {question.left} + {question.right} = ?
+              </p>
 
-            <div className="diamond-grid" role="group" aria-label="Answer choices">
-              <button
-                className="choice choice-top"
-                type="button"
-                onClick={() => handleAnswer(question.options[0])}
+              <div className="diamond-grid" role="group" aria-label="Answer choices">
+                <button
+                  className="choice choice-top"
+                  type="button"
+                  onClick={() => handleAnswer(question.options[0])}
+                >
+                  {question.options[0]}
+                </button>
+                <button
+                  className="choice choice-left"
+                  type="button"
+                  onClick={() => handleAnswer(question.options[1])}
+                >
+                  {question.options[1]}
+                </button>
+                <button
+                  className="choice choice-right"
+                  type="button"
+                  onClick={() => handleAnswer(question.options[2])}
+                >
+                  {question.options[2]}
+                </button>
+                <button
+                  className="choice choice-bottom"
+                  type="button"
+                  onClick={() => handleAnswer(question.options[3])}
+                >
+                  {question.options[3]}
+                </button>
+              </div>
+
+              <p
+                className={`result-text ${
+                  lastResult === "correct" ? "result-correct" : "result-wrong"
+                }`}
               >
-                {question.options[0]}
-              </button>
-              <button
-                className="choice choice-left"
-                type="button"
-                onClick={() => handleAnswer(question.options[1])}
-              >
-                {question.options[1]}
-              </button>
-              <button
-                className="choice choice-right"
-                type="button"
-                onClick={() => handleAnswer(question.options[2])}
-              >
-                {question.options[2]}
-              </button>
-              <button
-                className="choice choice-bottom"
-                type="button"
-                onClick={() => handleAnswer(question.options[3])}
-              >
-                {question.options[3]}
-              </button>
+                {lastResult === "correct" && "Correct!"}
+                {lastResult === "wrong" && "Wrong! +1 question"}
+                {lastResult === null && "Choose the correct answer."}
+              </p>
+            </>
+          ) : (
+            <div className="countdown-box" role="status" aria-live="polite">
+              <p className="countdown-label">Round starts in</p>
+              <p className="countdown-number">{countdownSeconds}</p>
             </div>
-
-            <p
-              className={`result-text ${
-                lastResult === "correct" ? "result-correct" : "result-wrong"
-              }`}
-            >
-              {lastResult === "correct" && "Correct!"}
-              {lastResult === "wrong" && "Wrong! +1 question"}
-              {lastResult === null && "Choose the correct answer."}
-            </p>
-          </>
+          )
         ) : (
           <div className="clear-box">
             <p className="clear-title">Stage Clear!</p>
