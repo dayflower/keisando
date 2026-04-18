@@ -115,6 +115,7 @@ function App() {
     Math.ceil((countdownEndMs - nowMs) / 1000),
     0,
   );
+  const countdownDisplay = Math.max(countdownSeconds, 1);
 
   useEffect(() => {
     if (isCleared) return;
@@ -248,7 +249,9 @@ function App() {
           ) : (
             <div className="countdown-box" role="status" aria-live="polite">
               <p className="countdown-label">Round starts in</p>
-              <p className="countdown-number">{countdownSeconds}</p>
+              <p key={countdownDisplay} className="countdown-number">
+                {countdownDisplay}
+              </p>
             </div>
           )
         ) : (
