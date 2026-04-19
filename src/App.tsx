@@ -1,16 +1,97 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+type StageExpression = {
+  left: number;
+  right: number;
+  operator: "+" | "-";
+  answer: number;
+};
+
+type StageDefinition = {
+  id: string;
+  name: string;
+  tag: string;
+  description: string;
+  baseQuestionCount: number;
+  answerMin: number;
+  answerMax: number;
+  createExpression: () => StageExpression;
+};
+
 type Question = {
   left: number;
   right: number;
+  operator: "+" | "-";
   answer: number;
   options: number[];
 };
 
-const BASE_QUESTION_COUNT = 10;
 const ROUND_COUNTDOWN_SECONDS = 3;
 const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
-const BEST_TIME_STORAGE_KEY = "keisando:stage1:best-time-ms";
+
+const STAGES: StageDefinition[] = [
+  {
+    id: "stage1",
+    name: "Stage 1",
+    tag: "Addition",
+    description: "Single-digit addition (0-9 + 0-9)",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 18,
+    createExpression: () => {
+      const left = Math.floor(Math.random() * 10);
+      const right = Math.floor(Math.random() * 10);
+      return {
+        left,
+        right,
+        operator: "+",
+        answer: left + right,
+      };
+    },
+  },
+  {
+    id: "stage2",
+    name: "Stage 2",
+    tag: "Subtraction",
+    description: "Single-digit subtraction (0-9 - 0-9)",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 9,
+    createExpression: () => {
+      const left = Math.floor(Math.random() * 10);
+      const right = Math.floor(Math.random() * (left + 1));
+      return {
+        left,
+        right,
+        operator: "-",
+        answer: left - right,
+      };
+    },
+  },
+  {
+    id: "stage3",
+    name: "Stage 3",
+    tag: "Subtraction+",
+    description: "1-2 digits minus 1 digit (result 0-9)",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 9,
+    createExpression: () => {
+      const answer = Math.floor(Math.random() * 10);
+      const right = Math.floor(Math.random() * 9) + 1;
+      const left = answer + right;
+      return {
+        left,
+        right,
+        operator: "-",
+        answer,
+      };
+    },
+  },
+];
+
+const getBestTimeStorageKey = (stageId: string): string =>
+  `keisando:${stageId}:best-time-ms`;
 
 const shuffle = <T,>(items: T[]): T[] => {
   const next = [...items];
@@ -21,41 +102,53 @@ const shuffle = <T,>(items: T[]): T[] => {
   return next;
 };
 
-const createOptions = (answer: number): number[] => {
+const createOptions = (
+  answer: number,
+  answerMin: number,
+  answerMax: number,
+): number[] => {
   const candidates = new Set<number>([answer]);
-  while (candidates.size < 4) {
-    const offset = Math.floor(Math.random() * 7) - 3;
-    const value = Math.max(0, Math.min(18, answer + offset));
+  let guard = 0;
+
+  while (candidates.size < 4 && guard < 200) {
+    const offset = Math.floor(Math.random() * 9) - 4;
+    const value = Math.max(answerMin, Math.min(answerMax, answer + offset));
+    if (value !== answer) {
+      candidates.add(value);
+    }
+    guard += 1;
+  }
+
+  for (let value = answerMin; candidates.size < 4 && value <= answerMax; value += 1) {
     if (value !== answer) {
       candidates.add(value);
     }
   }
+
   return shuffle([...candidates]);
 };
 
-const createQuestion = (usedExpressions: Set<string>): Question => {
-  const maxUnique = 10 * 10;
+const createQuestion = (
+  stage: StageDefinition,
+  usedExpressions: Set<string>,
+): Question => {
+  const maxUnique = 200;
   if (usedExpressions.size >= maxUnique) {
     usedExpressions.clear();
   }
 
-  let left = 0;
-  let right = 0;
-  let expression = "";
+  let expression: StageExpression;
+  let key: string;
   do {
-    left = Math.floor(Math.random() * 10);
-    right = Math.floor(Math.random() * 10);
-    expression = `${left}+${right}`;
-  } while (usedExpressions.has(expression));
+    expression = stage.createExpression();
+    key = `${expression.left}${expression.operator}${expression.right}`;
+  } while (usedExpressions.has(key));
 
-  usedExpressions.add(expression);
-  const answer = left + right;
+  usedExpressions.add(key);
 
   return {
-    left,
-    right,
-    answer,
-    options: createOptions(answer),
+    ...expression,
+    options: createOptions(expression.answer, stage.answerMin, stage.answerMax),
   };
 };
 
@@ -67,9 +160,9 @@ const formatElapsedTime = (elapsedMs: number): string => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
 };
 
-const loadBestTime = (): number | null => {
+const loadBestTime = (stageId: string): number | null => {
   try {
-    const raw = localStorage.getItem(BEST_TIME_STORAGE_KEY);
+    const raw = localStorage.getItem(getBestTimeStorageKey(stageId));
     if (!raw) return null;
     const parsed = Number(raw);
     if (!Number.isFinite(parsed) || parsed <= 0) return null;
@@ -79,9 +172,9 @@ const loadBestTime = (): number | null => {
   }
 };
 
-const saveBestTime = (elapsedMs: number) => {
+const saveBestTime = (stageId: string, elapsedMs: number) => {
   try {
-    localStorage.setItem(BEST_TIME_STORAGE_KEY, String(elapsedMs));
+    localStorage.setItem(getBestTimeStorageKey(stageId), String(elapsedMs));
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
   }
@@ -89,11 +182,10 @@ const saveBestTime = (elapsedMs: number) => {
 
 function App() {
   const usedExpressionsRef = useRef(new Set<string>());
-  const [question, setQuestion] = useState<Question>(() =>
-    createQuestion(usedExpressionsRef.current),
-  );
+  const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(null);
+  const [question, setQuestion] = useState<Question | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
-  const [requiredCount, setRequiredCount] = useState(BASE_QUESTION_COUNT);
+  const [requiredCount, setRequiredCount] = useState(0);
   const [lastResult, setLastResult] = useState<"correct" | "wrong" | null>(null);
   const [stageStartMs, setStageStartMs] = useState(() => Date.now());
   const [countdownEndMs, setCountdownEndMs] = useState(
@@ -102,8 +194,10 @@ function App() {
   const [isRoundActive, setIsRoundActive] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [clearElapsedMs, setClearElapsedMs] = useState<number | null>(null);
-  const [bestTimeMs, setBestTimeMs] = useState<number | null>(() => loadBestTime());
-  const isCleared = answeredCount >= requiredCount;
+  const [bestTimeMs, setBestTimeMs] = useState<number | null>(null);
+
+  const isPlaying = selectedStage !== null && question !== null;
+  const isCleared = isPlaying && answeredCount >= requiredCount;
 
   const remainingCount = useMemo(
     () => Math.max(requiredCount - answeredCount, 0),
@@ -118,7 +212,7 @@ function App() {
   const countdownDisplay = Math.max(countdownSeconds, 1);
 
   useEffect(() => {
-    if (isCleared) return;
+    if (!isPlaying || isCleared) return;
 
     const intervalId = window.setInterval(() => {
       setNowMs(Date.now());
@@ -127,20 +221,36 @@ function App() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isCleared]);
+  }, [isCleared, isPlaying]);
 
   useEffect(() => {
-    if (isCleared || isRoundActive || nowMs < countdownEndMs) {
+    if (!isPlaying || isCleared || isRoundActive || nowMs < countdownEndMs) {
       return;
     }
 
     setIsRoundActive(true);
     setStageStartMs(nowMs);
     setNowMs(nowMs);
-  }, [countdownEndMs, isCleared, isRoundActive, nowMs]);
+  }, [countdownEndMs, isCleared, isPlaying, isRoundActive, nowMs]);
+
+  const startStage = (stage: StageDefinition) => {
+    const startAtMs = Date.now();
+    usedExpressionsRef.current = new Set<string>();
+    setSelectedStage(stage);
+    setQuestion(createQuestion(stage, usedExpressionsRef.current));
+    setAnsweredCount(0);
+    setRequiredCount(stage.baseQuestionCount);
+    setLastResult(null);
+    setStageStartMs(startAtMs);
+    setCountdownEndMs(startAtMs + ROUND_COUNTDOWN_MS);
+    setIsRoundActive(false);
+    setNowMs(startAtMs);
+    setClearElapsedMs(null);
+    setBestTimeMs(loadBestTime(stage.id));
+  };
 
   const handleAnswer = (selected: number) => {
-    if (isCleared || !isRoundActive) return;
+    if (!selectedStage || !question || !isRoundActive || isCleared) return;
 
     const isCorrect = selected === question.answer;
     const nextAnsweredCount = answeredCount + 1;
@@ -159,20 +269,22 @@ function App() {
 
       if (bestTimeMs === null || elapsedAtClear < bestTimeMs) {
         setBestTimeMs(elapsedAtClear);
-        saveBestTime(elapsedAtClear);
+        saveBestTime(selectedStage.id, elapsedAtClear);
       }
       return;
     }
 
-    setQuestion(createQuestion(usedExpressionsRef.current));
+    setQuestion(createQuestion(selectedStage, usedExpressionsRef.current));
   };
 
   const resetStage = () => {
+    if (!selectedStage) return;
     const resetAtMs = Date.now();
+
     usedExpressionsRef.current = new Set<string>();
-    setQuestion(createQuestion(usedExpressionsRef.current));
+    setQuestion(createQuestion(selectedStage, usedExpressionsRef.current));
     setAnsweredCount(0);
-    setRequiredCount(BASE_QUESTION_COUNT);
+    setRequiredCount(selectedStage.baseQuestionCount);
     setLastResult(null);
     setStageStartMs(resetAtMs);
     setCountdownEndMs(resetAtMs + ROUND_COUNTDOWN_MS);
@@ -181,10 +293,66 @@ function App() {
     setClearElapsedMs(null);
   };
 
+  const backToStageSelect = () => {
+    setSelectedStage(null);
+    setQuestion(null);
+    setAnsweredCount(0);
+    setRequiredCount(0);
+    setLastResult(null);
+    setIsRoundActive(false);
+    setClearElapsedMs(null);
+  };
+
+  if (!isPlaying || !selectedStage || !question) {
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <p className="stage-tag">Select Stage</p>
+          <h1 className="title">Keisando</h1>
+          <p className="stage-select-description">
+            Choose a stage to start Time Attack.
+          </p>
+
+          <div className="stage-list" role="list" aria-label="Stage list">
+            {STAGES.map((stage) => {
+              const stageBestTimeMs = loadBestTime(stage.id);
+
+              return (
+                <button
+                  className="stage-item"
+                  key={stage.id}
+                  type="button"
+                  onClick={() => startStage(stage)}
+                >
+                  <span className="stage-item-header">
+                    <strong>{stage.name}</strong>
+                    <span className="stage-item-tag">{stage.tag}</span>
+                  </span>
+                  <span className="stage-item-description">{stage.description}</span>
+                  <span className="stage-item-record">
+                    Best: {stageBestTimeMs ? formatElapsedTime(stageBestTimeMs) : "--:--.--"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="app">
       <section className="stage-card">
-        <p className="stage-tag">Stage 1 / Addition</p>
+        <div className="stage-head-row">
+          <p className="stage-tag">
+            {selectedStage.name} / {selectedStage.tag}
+          </p>
+          <button className="back-button" type="button" onClick={backToStageSelect}>
+            Stage Select
+          </button>
+        </div>
+
         <h1 className="title">Keisando</h1>
         <div className="progress-row">
           <p>Answered: {answeredCount}</p>
@@ -203,7 +371,7 @@ function App() {
             isRoundActive ? (
               <>
                 <p className="expression">
-                  {question.left} + {question.right} = ?
+                  {question.left} {question.operator} {question.right} = ?
                 </p>
 
                 <div className="diamond-grid" role="group" aria-label="Answer choices">
@@ -258,11 +426,9 @@ function App() {
           ) : (
             <div className="clear-box">
               <p className="clear-title">Stage Clear!</p>
+              <p className="clear-time">Clear time: {formatElapsedTime(elapsedMs)}</p>
               <p className="clear-time">
-                Clear time: {formatElapsedTime(elapsedMs)}
-              </p>
-              <p className="clear-time">
-                Final questions: {requiredCount} (base {BASE_QUESTION_COUNT})
+                Final questions: {requiredCount} (base {selectedStage.baseQuestionCount})
               </p>
             </div>
           )}

@@ -64,6 +64,78 @@ body {
   line-height: 1;
 }
 
+.stage-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.stage-select-description {
+  margin: 0 0 1rem;
+  color: #365177;
+  font-weight: 600;
+}
+
+.stage-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.stage-item {
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(140deg, #fff2d7, #ffe0b0);
+  box-shadow: inset 0 0 0 2px #ffd08d;
+  text-align: left;
+  padding: 0.9rem;
+  color: #3d2500;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease;
+}
+
+.stage-item:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 2px #ffbe68,
+    0 8px 14px rgb(214 120 13 / 18%);
+  filter: brightness(1.03);
+}
+
+.stage-item:active {
+  transform: translateY(0);
+}
+
+.stage-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.stage-item-tag {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8f4f00;
+}
+
+.stage-item-description {
+  display: block;
+  margin-top: 0.3rem;
+  color: #70460f;
+  font-weight: 600;
+}
+
+.stage-item-record {
+  display: block;
+  margin-top: 0.45rem;
+  font-weight: 800;
+  color: #173a6f;
+}
+
 .progress-row {
   display: flex;
   gap: 0.7rem;
@@ -187,7 +259,9 @@ body {
 }
 
 .choice:focus-visible,
-.restart-button:focus-visible {
+.restart-button:focus-visible,
+.back-button:focus-visible,
+.stage-item:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
 }
@@ -255,6 +329,17 @@ body {
   background: #1e4f93;
   color: #fff;
   font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.back-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.42rem 0.8rem;
+  background: #f3e6cf;
+  color: #3d2500;
+  font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
 }
