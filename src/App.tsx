@@ -198,73 +198,75 @@ function App() {
           </p>
         </div>
 
-        {!isCleared ? (
-          isRoundActive ? (
-            <>
-              <p className="expression">
-                {question.left} + {question.right} = ?
-              </p>
+        <div className="round-content" aria-live="polite">
+          {!isCleared ? (
+            isRoundActive ? (
+              <>
+                <p className="expression">
+                  {question.left} + {question.right} = ?
+                </p>
 
-              <div className="diamond-grid" role="group" aria-label="Answer choices">
-                <button
-                  className="choice choice-top"
-                  type="button"
-                  onClick={() => handleAnswer(question.options[0])}
+                <div className="diamond-grid" role="group" aria-label="Answer choices">
+                  <button
+                    className="choice choice-top"
+                    type="button"
+                    onClick={() => handleAnswer(question.options[0])}
+                  >
+                    {question.options[0]}
+                  </button>
+                  <button
+                    className="choice choice-left"
+                    type="button"
+                    onClick={() => handleAnswer(question.options[1])}
+                  >
+                    {question.options[1]}
+                  </button>
+                  <button
+                    className="choice choice-right"
+                    type="button"
+                    onClick={() => handleAnswer(question.options[2])}
+                  >
+                    {question.options[2]}
+                  </button>
+                  <button
+                    className="choice choice-bottom"
+                    type="button"
+                    onClick={() => handleAnswer(question.options[3])}
+                  >
+                    {question.options[3]}
+                  </button>
+                </div>
+
+                <p
+                  className={`result-text ${
+                    lastResult === "correct" ? "result-correct" : "result-wrong"
+                  }`}
                 >
-                  {question.options[0]}
-                </button>
-                <button
-                  className="choice choice-left"
-                  type="button"
-                  onClick={() => handleAnswer(question.options[1])}
-                >
-                  {question.options[1]}
-                </button>
-                <button
-                  className="choice choice-right"
-                  type="button"
-                  onClick={() => handleAnswer(question.options[2])}
-                >
-                  {question.options[2]}
-                </button>
-                <button
-                  className="choice choice-bottom"
-                  type="button"
-                  onClick={() => handleAnswer(question.options[3])}
-                >
-                  {question.options[3]}
-                </button>
+                  {lastResult === "correct" && "Correct!"}
+                  {lastResult === "wrong" && "Wrong! +1 question"}
+                  {lastResult === null && "Choose the correct answer."}
+                </p>
+              </>
+            ) : (
+              <div className="countdown-box" role="status">
+                <p className="countdown-label">Round starts in</p>
+                <p key={countdownDisplay} className="countdown-number">
+                  {countdownDisplay}
+                </p>
               </div>
-
-              <p
-                className={`result-text ${
-                  lastResult === "correct" ? "result-correct" : "result-wrong"
-                }`}
-              >
-                {lastResult === "correct" && "Correct!"}
-                {lastResult === "wrong" && "Wrong! +1 question"}
-                {lastResult === null && "Choose the correct answer."}
-              </p>
-            </>
+            )
           ) : (
-            <div className="countdown-box" role="status" aria-live="polite">
-              <p className="countdown-label">Round starts in</p>
-              <p key={countdownDisplay} className="countdown-number">
-                {countdownDisplay}
+            <div className="clear-box">
+              <p className="clear-title">Stage Clear!</p>
+              <p className="clear-time">
+                Clear time: {formatElapsedTime(elapsedMs)}
+              </p>
+              <p className="clear-time">
+                Final questions: {requiredCount} (base {BASE_QUESTION_COUNT})
               </p>
             </div>
-          )
-        ) : (
-          <div className="clear-box">
-            <p className="clear-title">Stage Clear!</p>
-            <p className="clear-time">
-              Clear time: {formatElapsedTime(elapsedMs)}
-            </p>
-            <p className="clear-time">
-              Final questions: {requiredCount} (base {BASE_QUESTION_COUNT})
-            </p>
-          </div>
-        )}
+          )}
+        </div>
 
         <button className="restart-button" type="button" onClick={resetStage}>
           Restart Stage
