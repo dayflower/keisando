@@ -1,4 +1,4 @@
-import { CircleUserRound } from "lucide-react";
+import { CircleUserRound, History } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type StageExpression = {
@@ -43,18 +43,58 @@ type StageRunRecord = {
   recordedAt: number;
 };
 
+type PlayHistoryRecord = {
+  id: string;
+  playerId: string;
+  playedAt: number;
+  stageId: string;
+  result: "clear" | "fail";
+  score: number;
+  durationMs: number;
+  mistakeCount: number;
+  appVersion: string;
+};
+
+type PlayerLifetimeSummary = {
+  playerId: string;
+  totalPlays: number;
+  totalClears: number;
+  totalScore: number;
+  bestScore: number | null;
+  lastPlayedAt: number | null;
+};
+
+type StageLifetimeSummary = {
+  playerId: string;
+  stageId: string;
+  attempts: number;
+  clears: number;
+  totalScore: number;
+  bestScore: number | null;
+  bestDurationMs: number | null;
+};
+
 type RankingTab = "global" | "player";
 
-type Screen = "stageSelect" | "playerSelect" | "playing" | "ranking";
+type Screen =
+  | "stageSelect"
+  | "playerSelect"
+  | "playing"
+  | "ranking"
+  | "historyList"
+  | "historyDetail";
 
 const ROUND_COUNTDOWN_SECONDS = 3;
 const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
 const PLAYER_NAME_MIN_LENGTH = 1;
 const PLAYER_NAME_MAX_LENGTH = 20;
-const PLAYERS_STORAGE_KEY = "keisando:players";
-const ACTIVE_PLAYER_ID_STORAGE_KEY = "keisando:active-player-id";
+const USERS_STORAGE_KEY = "keisando:users";
+const CURRENT_USER_ID_STORAGE_KEY = "keisando:current-user-id";
 const RECORDS_STORAGE_KEY = "keisando:records:v1";
 const RANKING_LIMIT = 10;
+const HISTORY_RETENTION_DAYS = 10;
+const HISTORY_RETENTION_MS = HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+const APP_VERSION = "0.0.0";
 
 const STAGES: StageDefinition[] = [
   {
@@ -160,9 +200,12 @@ const isValidPlayerName = (name: string): boolean =>
   name.length >= PLAYER_NAME_MIN_LENGTH &&
   name.length <= PLAYER_NAME_MAX_LENGTH;
 
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
 const loadPlayers = (): Player[] => {
   try {
-    const raw = localStorage.getItem(PLAYERS_STORAGE_KEY);
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
     if (!raw) return [];
 
     const parsed = JSON.parse(raw);
@@ -176,8 +219,7 @@ const loadPlayers = (): Player[] => {
           typeof player.id === "string" &&
           typeof player.name === "string" &&
           isValidPlayerName(normalizePlayerName(player.name)) &&
-          typeof player.createdAt === "number" &&
-          Number.isFinite(player.createdAt)
+          isFiniteNumber(player.createdAt)
         );
       })
       .map((player) => ({
@@ -192,7 +234,7 @@ const loadPlayers = (): Player[] => {
 
 const savePlayers = (players: Player[]) => {
   try {
-    localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(players));
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(players));
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
   }
@@ -200,7 +242,7 @@ const savePlayers = (players: Player[]) => {
 
 const loadActivePlayerId = (): string | null => {
   try {
-    const raw = localStorage.getItem(ACTIVE_PLAYER_ID_STORAGE_KEY);
+    const raw = localStorage.getItem(CURRENT_USER_ID_STORAGE_KEY);
     if (!raw) return null;
     return raw;
   } catch {
@@ -211,11 +253,11 @@ const loadActivePlayerId = (): string | null => {
 const saveActivePlayerId = (activePlayerId: string | null) => {
   try {
     if (activePlayerId === null) {
-      localStorage.removeItem(ACTIVE_PLAYER_ID_STORAGE_KEY);
+      localStorage.removeItem(CURRENT_USER_ID_STORAGE_KEY);
       return;
     }
 
-    localStorage.setItem(ACTIVE_PLAYER_ID_STORAGE_KEY, activePlayerId);
+    localStorage.setItem(CURRENT_USER_ID_STORAGE_KEY, activePlayerId);
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
   }
@@ -237,17 +279,13 @@ const loadRecords = (): StageRunRecord[] => {
         typeof record.id === "string" &&
         typeof record.stageId === "string" &&
         typeof record.playerId === "string" &&
-        typeof record.elapsedMs === "number" &&
-        Number.isFinite(record.elapsedMs) &&
+        isFiniteNumber(record.elapsedMs) &&
         record.elapsedMs > 0 &&
-        typeof record.requiredCount === "number" &&
-        Number.isFinite(record.requiredCount) &&
+        isFiniteNumber(record.requiredCount) &&
         record.requiredCount > 0 &&
-        typeof record.wrongCount === "number" &&
-        Number.isFinite(record.wrongCount) &&
+        isFiniteNumber(record.wrongCount) &&
         record.wrongCount >= 0 &&
-        typeof record.recordedAt === "number" &&
-        Number.isFinite(record.recordedAt)
+        isFiniteNumber(record.recordedAt)
       );
     });
   } catch {
@@ -261,6 +299,240 @@ const saveRecords = (records: StageRunRecord[]) => {
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
   }
+};
+
+const getHistoryStorageKey = (playerId: string): string =>
+  `keisando:user:${playerId}:history`;
+
+const getLifetimeSummaryStorageKey = (playerId: string): string =>
+  `keisando:user:${playerId}:lifetime-summary`;
+
+const getStageSummaryStorageKey = (playerId: string): string =>
+  `keisando:user:${playerId}:stage-lifetime-summary`;
+
+const createDefaultLifetimeSummary = (
+  playerId: string,
+): PlayerLifetimeSummary => ({
+  playerId,
+  totalPlays: 0,
+  totalClears: 0,
+  totalScore: 0,
+  bestScore: null,
+  lastPlayedAt: null,
+});
+
+const loadPlayerHistory = (playerId: string): PlayHistoryRecord[] => {
+  try {
+    const raw = localStorage.getItem(getHistoryStorageKey(playerId));
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter((candidate): candidate is PlayHistoryRecord => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const record = candidate as Partial<PlayHistoryRecord>;
+      return (
+        typeof record.id === "string" &&
+        typeof record.playerId === "string" &&
+        record.playerId === playerId &&
+        isFiniteNumber(record.playedAt) &&
+        typeof record.stageId === "string" &&
+        (record.result === "clear" || record.result === "fail") &&
+        isFiniteNumber(record.score) &&
+        isFiniteNumber(record.durationMs) &&
+        record.durationMs >= 0 &&
+        isFiniteNumber(record.mistakeCount) &&
+        record.mistakeCount >= 0 &&
+        typeof record.appVersion === "string"
+      );
+    });
+  } catch {
+    return [];
+  }
+};
+
+const savePlayerHistory = (playerId: string, records: PlayHistoryRecord[]) => {
+  try {
+    localStorage.setItem(
+      getHistoryStorageKey(playerId),
+      JSON.stringify(records),
+    );
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
+
+const loadPlayerLifetimeSummary = (playerId: string): PlayerLifetimeSummary => {
+  try {
+    const raw = localStorage.getItem(getLifetimeSummaryStorageKey(playerId));
+    if (!raw) return createDefaultLifetimeSummary(playerId);
+
+    const parsed = JSON.parse(raw) as Partial<PlayerLifetimeSummary>;
+    if (!parsed || typeof parsed !== "object") {
+      return createDefaultLifetimeSummary(playerId);
+    }
+
+    if (
+      parsed.playerId !== playerId ||
+      !isFiniteNumber(parsed.totalPlays) ||
+      parsed.totalPlays < 0 ||
+      !isFiniteNumber(parsed.totalClears) ||
+      parsed.totalClears < 0 ||
+      !isFiniteNumber(parsed.totalScore) ||
+      parsed.totalScore < 0
+    ) {
+      return createDefaultLifetimeSummary(playerId);
+    }
+
+    return {
+      playerId,
+      totalPlays: parsed.totalPlays,
+      totalClears: parsed.totalClears,
+      totalScore: parsed.totalScore,
+      bestScore:
+        parsed.bestScore === null || isFiniteNumber(parsed.bestScore)
+          ? (parsed.bestScore ?? null)
+          : null,
+      lastPlayedAt:
+        parsed.lastPlayedAt === null || isFiniteNumber(parsed.lastPlayedAt)
+          ? (parsed.lastPlayedAt ?? null)
+          : null,
+    };
+  } catch {
+    return createDefaultLifetimeSummary(playerId);
+  }
+};
+
+const savePlayerLifetimeSummary = (
+  playerId: string,
+  summary: PlayerLifetimeSummary,
+) => {
+  try {
+    localStorage.setItem(
+      getLifetimeSummaryStorageKey(playerId),
+      JSON.stringify(summary),
+    );
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
+
+const loadPlayerStageLifetimeSummary = (
+  playerId: string,
+): StageLifetimeSummary[] => {
+  try {
+    const raw = localStorage.getItem(getStageSummaryStorageKey(playerId));
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter((candidate): candidate is StageLifetimeSummary => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const summary = candidate as Partial<StageLifetimeSummary>;
+      return (
+        summary.playerId === playerId &&
+        typeof summary.stageId === "string" &&
+        isFiniteNumber(summary.attempts) &&
+        summary.attempts >= 0 &&
+        isFiniteNumber(summary.clears) &&
+        summary.clears >= 0 &&
+        isFiniteNumber(summary.totalScore) &&
+        summary.totalScore >= 0 &&
+        (summary.bestScore === null || isFiniteNumber(summary.bestScore)) &&
+        (summary.bestDurationMs === null ||
+          isFiniteNumber(summary.bestDurationMs))
+      );
+    });
+  } catch {
+    return [];
+  }
+};
+
+const savePlayerStageLifetimeSummary = (
+  playerId: string,
+  summaries: StageLifetimeSummary[],
+) => {
+  try {
+    localStorage.setItem(
+      getStageSummaryStorageKey(playerId),
+      JSON.stringify(summaries),
+    );
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
+
+const pruneHistoryRecords = (
+  records: PlayHistoryRecord[],
+  nowMs: number,
+): PlayHistoryRecord[] => {
+  const cutoff = nowMs - HISTORY_RETENTION_MS + 1;
+  return records.filter((record) => record.playedAt >= cutoff);
+};
+
+const calculateScore = (durationMs: number, wrongCount: number): number => {
+  const denominator = Math.max(durationMs + wrongCount * 1000, 1);
+  return Math.round(1_000_000 / denominator);
+};
+
+const updateLifetimeSummary = (
+  current: PlayerLifetimeSummary,
+  score: number,
+  playedAt: number,
+): PlayerLifetimeSummary => ({
+  ...current,
+  totalPlays: current.totalPlays + 1,
+  totalClears: current.totalClears + 1,
+  totalScore: current.totalScore + score,
+  bestScore:
+    current.bestScore === null ? score : Math.max(current.bestScore, score),
+  lastPlayedAt: playedAt,
+});
+
+const updateStageLifetimeSummaries = (
+  current: StageLifetimeSummary[],
+  playerId: string,
+  stageId: string,
+  score: number,
+  durationMs: number,
+): StageLifetimeSummary[] => {
+  const targetIndex = current.findIndex((item) => item.stageId === stageId);
+  if (targetIndex === -1) {
+    return [
+      ...current,
+      {
+        playerId,
+        stageId,
+        attempts: 1,
+        clears: 1,
+        totalScore: score,
+        bestScore: score,
+        bestDurationMs: durationMs,
+      },
+    ];
+  }
+
+  const target = current[targetIndex];
+  const updated: StageLifetimeSummary = {
+    ...target,
+    attempts: target.attempts + 1,
+    clears: target.clears + 1,
+    totalScore: target.totalScore + score,
+    bestScore:
+      target.bestScore === null ? score : Math.max(target.bestScore, score),
+    bestDurationMs:
+      target.bestDurationMs === null
+        ? durationMs
+        : Math.min(target.bestDurationMs, durationMs),
+  };
+
+  return [
+    ...current.slice(0, targetIndex),
+    updated,
+    ...current.slice(targetIndex + 1),
+  ];
 };
 
 const sortByRanking = (a: StageRunRecord, b: StageRunRecord): number => {
@@ -362,6 +634,16 @@ const formatElapsedTime = (elapsedMs: number): string => {
 const formatRecordedAt = (recordedAt: number): string =>
   RECORD_DATE_FORMATTER.format(recordedAt);
 
+const formatRate = (numerator: number, denominator: number): string => {
+  if (denominator <= 0) return "0.0%";
+  return `${((numerator / denominator) * 100).toFixed(1)}%`;
+};
+
+const formatAverageScore = (totalScore: number, count: number): string => {
+  if (count <= 0) return "0";
+  return String(Math.round(totalScore / count));
+};
+
 function App() {
   const usedExpressionsRef = useRef(new Set<string>());
   const [screen, setScreen] = useState<Screen>("stageSelect");
@@ -371,6 +653,11 @@ function App() {
     loadActivePlayerId(),
   );
   const [records, setRecords] = useState<StageRunRecord[]>(() => loadRecords());
+
+  const [selectedHistoryPlayerId, setSelectedHistoryPlayerId] = useState<
+    string | null
+  >(null);
+  const [historyFilter, setHistoryFilter] = useState("");
 
   const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(
     null,
@@ -400,6 +687,27 @@ function App() {
     () => players.find((player) => player.id === activePlayerId) ?? null,
     [activePlayerId, players],
   );
+
+  const historyPlayer = useMemo(
+    () =>
+      players.find((player) => player.id === selectedHistoryPlayerId) ??
+      activePlayer ??
+      null,
+    [activePlayer, players, selectedHistoryPlayerId],
+  );
+
+  const historyPlayerId = historyPlayer?.id ?? null;
+  const historyRecords = historyPlayerId
+    ? loadPlayerHistory(historyPlayerId).sort((a, b) => b.playedAt - a.playedAt)
+    : [];
+  const historySummary = historyPlayerId
+    ? loadPlayerLifetimeSummary(historyPlayerId)
+    : null;
+  const stageSummaries = historyPlayerId
+    ? loadPlayerStageLifetimeSummary(historyPlayerId).sort((a, b) =>
+        a.stageId.localeCompare(b.stageId),
+      )
+    : [];
 
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === playingPlayerId) ?? null,
@@ -433,6 +741,22 @@ function App() {
     );
   }, [rankingStageId, activePlayerId, records]);
 
+  const normalizedHistoryFilter =
+    normalizePlayerName(historyFilter).toLowerCase();
+  const filteredHistoryPlayers = [...players]
+    .sort((a, b) => {
+      const summaryA = loadPlayerLifetimeSummary(a.id);
+      const summaryB = loadPlayerLifetimeSummary(b.id);
+      const aPlayed = summaryA.lastPlayedAt ?? 0;
+      const bPlayed = summaryB.lastPlayedAt ?? 0;
+      if (aPlayed !== bPlayed) return bPlayed - aPlayed;
+      return a.name.localeCompare(b.name);
+    })
+    .filter((player) => {
+      if (!normalizedHistoryFilter) return true;
+      return player.name.toLowerCase().includes(normalizedHistoryFilter);
+    });
+
   const isPlaying =
     screen === "playing" && selectedStage !== null && question !== null;
   const isCleared = isPlaying && answeredCount >= requiredCount;
@@ -459,6 +783,9 @@ function App() {
       if (activePlayerId !== null) {
         setActivePlayerId(null);
       }
+      if (selectedHistoryPlayerId !== null) {
+        setSelectedHistoryPlayerId(null);
+      }
       return;
     }
 
@@ -468,7 +795,14 @@ function App() {
     ) {
       setActivePlayerId(players[0].id);
     }
-  }, [activePlayerId, players]);
+
+    if (
+      selectedHistoryPlayerId !== null &&
+      !players.some((player) => player.id === selectedHistoryPlayerId)
+    ) {
+      setSelectedHistoryPlayerId(players[0].id);
+    }
+  }, [activePlayerId, players, selectedHistoryPlayerId]);
 
   useEffect(() => {
     savePlayers(players);
@@ -531,6 +865,16 @@ function App() {
     setScreen("ranking");
   };
 
+  const openHistoryList = () => {
+    setHistoryFilter("");
+    setScreen("historyList");
+  };
+
+  const openHistoryDetail = (playerId: string) => {
+    setSelectedHistoryPlayerId(playerId);
+    setScreen("historyDetail");
+  };
+
   const handleAnswer = (selected: number) => {
     if (
       !selectedStage ||
@@ -558,6 +902,7 @@ function App() {
         nextRequiredCount - selectedStage.baseQuestionCount,
         0,
       );
+      const score = calculateScore(elapsedAtClear, wrongCount);
       const clearRecord: StageRunRecord = {
         id: createRecordId(),
         stageId: selectedStage.id,
@@ -567,6 +912,43 @@ function App() {
         wrongCount,
         recordedAt: finishedAtMs,
       };
+      const historyRecord: PlayHistoryRecord = {
+        id: createRecordId(),
+        playerId: playingPlayerId,
+        playedAt: finishedAtMs,
+        stageId: selectedStage.id,
+        result: "clear",
+        score,
+        durationMs: elapsedAtClear,
+        mistakeCount: wrongCount,
+        appVersion: APP_VERSION,
+      };
+
+      const playerHistory = loadPlayerHistory(playingPlayerId);
+      const nextHistory = pruneHistoryRecords(
+        [...playerHistory, historyRecord],
+        finishedAtMs,
+      ).sort((a, b) => b.playedAt - a.playedAt);
+      savePlayerHistory(playingPlayerId, nextHistory);
+
+      const currentLifetime = loadPlayerLifetimeSummary(playingPlayerId);
+      const nextLifetime = updateLifetimeSummary(
+        currentLifetime,
+        score,
+        finishedAtMs,
+      );
+      savePlayerLifetimeSummary(playingPlayerId, nextLifetime);
+
+      const currentStageSummaries =
+        loadPlayerStageLifetimeSummary(playingPlayerId);
+      const nextStageSummaries = updateStageLifetimeSummaries(
+        currentStageSummaries,
+        playingPlayerId,
+        selectedStage.id,
+        score,
+        elapsedAtClear,
+      );
+      savePlayerStageLifetimeSummary(playingPlayerId, nextStageSummaries);
 
       setNowMs(finishedAtMs);
       setClearElapsedMs(elapsedAtClear);
@@ -617,6 +999,7 @@ function App() {
 
   const handleSelectPlayer = (playerId: string) => {
     setActivePlayerId(playerId);
+    setSelectedHistoryPlayerId(playerId);
     setScreen("stageSelect");
   };
 
@@ -641,6 +1024,11 @@ function App() {
     const nextPlayer = createPlayer(normalizedName);
     setPlayers((prev) => [...prev, nextPlayer]);
     setActivePlayerId(nextPlayer.id);
+    setSelectedHistoryPlayerId(nextPlayer.id);
+    savePlayerLifetimeSummary(
+      nextPlayer.id,
+      createDefaultLifetimeSummary(nextPlayer.id),
+    );
     setRegisterError(null);
     setNewPlayerName("");
     setScreen("stageSelect");
@@ -652,15 +1040,25 @@ function App() {
         <section className="stage-card">
           <div className="stage-head-row">
             <p className="stage-tag">Select Stage</p>
-            <button
-              className="player-trigger"
-              type="button"
-              onClick={openPlayerSelect}
-              aria-label="Open player selection"
-            >
-              <CircleUserRound size={18} aria-hidden="true" />
-              <span>{activePlayer?.name ?? "No Player"}</span>
-            </button>
+            <div className="stage-head-actions">
+              <button
+                className="history-icon-button"
+                type="button"
+                onClick={openHistoryList}
+                aria-label="Open player history"
+              >
+                <History size={16} aria-hidden="true" />
+              </button>
+              <button
+                className="player-trigger"
+                type="button"
+                onClick={openPlayerSelect}
+                aria-label="Open player selection"
+              >
+                <CircleUserRound size={18} aria-hidden="true" />
+                <span>{activePlayer?.name ?? "No Player"}</span>
+              </button>
+            </div>
           </div>
           <h1 className="title">Keisando</h1>
           <p className="stage-select-description">
@@ -726,6 +1124,233 @@ function App() {
                 </article>
               );
             })}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === "historyList") {
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <div className="stage-head-row">
+            <p className="stage-tag">Player History</p>
+            <button
+              className="close-button"
+              type="button"
+              onClick={backToStageSelect}
+              aria-label="Back to stage select"
+            >
+              ×
+            </button>
+          </div>
+          <h1 className="title">Keisando</h1>
+          <p className="stage-select-description">
+            Lifetime summary list, sorted by last played.
+          </p>
+
+          <input
+            className="history-filter-input"
+            type="text"
+            value={historyFilter}
+            placeholder="Filter players by name"
+            onChange={(event) => setHistoryFilter(event.target.value)}
+          />
+
+          <div className="ranking-table-wrap">
+            {filteredHistoryPlayers.length === 0 ? (
+              <p className="stage-select-hint">No players found.</p>
+            ) : (
+              <table className="ranking-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Total plays</th>
+                    <th scope="col">Clear rate</th>
+                    <th scope="col">Avg score</th>
+                    <th scope="col">Last played</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredHistoryPlayers.map((player) => {
+                    const summary = loadPlayerLifetimeSummary(player.id);
+                    return (
+                      <tr key={player.id} className="history-row">
+                        <td>
+                          <button
+                            className="history-row-button"
+                            type="button"
+                            onClick={() => openHistoryDetail(player.id)}
+                          >
+                            {player.name}
+                          </button>
+                        </td>
+                        <td>{summary.totalPlays}</td>
+                        <td>
+                          {formatRate(summary.totalClears, summary.totalPlays)}
+                        </td>
+                        <td>
+                          {formatAverageScore(
+                            summary.totalScore,
+                            summary.totalPlays,
+                          )}
+                        </td>
+                        <td>
+                          {summary.lastPlayedAt
+                            ? formatRecordedAt(summary.lastPlayedAt)
+                            : "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === "historyDetail") {
+    if (!historyPlayer || !historySummary) {
+      return null;
+    }
+
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <div className="stage-head-row">
+            <p className="stage-tag">Player Detail</p>
+            <button
+              className="close-button"
+              type="button"
+              onClick={() => setScreen("historyList")}
+              aria-label="Back to player history list"
+            >
+              ×
+            </button>
+          </div>
+          <h1 className="title">{historyPlayer.name}</h1>
+
+          <div className="history-section">
+            <h2 className="history-section-title">Header</h2>
+            <p className="history-item">
+              Created at: {formatRecordedAt(historyPlayer.createdAt)}
+            </p>
+            <p className="history-item">
+              Last played at:{" "}
+              {historySummary.lastPlayedAt
+                ? formatRecordedAt(historySummary.lastPlayedAt)
+                : "-"}
+            </p>
+          </div>
+
+          <div className="history-section">
+            <h2 className="history-section-title">Lifetime Summary</h2>
+            <p className="history-item">
+              Total plays: {historySummary.totalPlays}
+            </p>
+            <p className="history-item">
+              Total clears: {historySummary.totalClears}
+            </p>
+            <p className="history-item">
+              Lifetime clear rate:{" "}
+              {formatRate(
+                historySummary.totalClears,
+                historySummary.totalPlays,
+              )}
+            </p>
+            <p className="history-item">
+              Lifetime best score: {historySummary.bestScore ?? 0}
+            </p>
+            <p className="history-item">
+              Lifetime average score:{" "}
+              {formatAverageScore(
+                historySummary.totalScore,
+                historySummary.totalPlays,
+              )}
+            </p>
+          </div>
+
+          <div className="history-section">
+            <h2 className="history-section-title">
+              Recent History (Last 10 Days)
+            </h2>
+            <div className="history-table-wrap">
+              {historyRecords.length === 0 ? (
+                <p className="stage-select-hint">No recent records.</p>
+              ) : (
+                <table className="ranking-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Played at</th>
+                      <th scope="col">Stage</th>
+                      <th scope="col">Result</th>
+                      <th scope="col">Score</th>
+                      <th scope="col">Duration</th>
+                      <th scope="col">Mistakes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historyRecords.map((record) => (
+                      <tr key={record.id}>
+                        <td>{formatRecordedAt(record.playedAt)}</td>
+                        <td>{record.stageId}</td>
+                        <td>{record.result}</td>
+                        <td>{record.score}</td>
+                        <td>{formatElapsedTime(record.durationMs)}</td>
+                        <td>{record.mistakeCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          <div className="history-section">
+            <h2 className="history-section-title">Stage Aggregates</h2>
+            <div className="history-table-wrap">
+              {stageSummaries.length === 0 ? (
+                <p className="stage-select-hint">No stage aggregates yet.</p>
+              ) : (
+                <table className="ranking-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Stage</th>
+                      <th scope="col">Attempts</th>
+                      <th scope="col">Clears</th>
+                      <th scope="col">Best score</th>
+                      <th scope="col">Avg score</th>
+                      <th scope="col">Best clear time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stageSummaries.map((summary) => (
+                      <tr key={summary.stageId}>
+                        <td>{summary.stageId}</td>
+                        <td>{summary.attempts}</td>
+                        <td>{summary.clears}</td>
+                        <td>{summary.bestScore ?? 0}</td>
+                        <td>
+                          {formatAverageScore(
+                            summary.totalScore,
+                            summary.attempts,
+                          )}
+                        </td>
+                        <td>
+                          {summary.bestDurationMs !== null
+                            ? formatElapsedTime(summary.bestDurationMs)
+                            : "--:--.--"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </section>
       </main>
