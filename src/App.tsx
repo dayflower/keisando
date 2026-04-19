@@ -203,6 +203,10 @@ function App() {
     () => Math.max(requiredCount - answeredCount, 0),
     [answeredCount, requiredCount],
   );
+  const wrongAnswerCount = Math.max(
+    requiredCount - (selectedStage?.baseQuestionCount ?? 0),
+    0,
+  );
   const elapsedMs =
     clearElapsedMs ?? (isRoundActive ? Math.max(nowMs - stageStartMs, 0) : 0);
   const countdownSeconds = Math.max(
@@ -307,7 +311,10 @@ function App() {
     return (
       <main className="app">
         <section className="stage-card">
-          <p className="stage-tag">Select Stage</p>
+          <div className="stage-head-row">
+            <p className="stage-tag">Select Stage</p>
+            <span className="stage-head-action-placeholder" aria-hidden="true" />
+          </div>
           <h1 className="title">Keisando</h1>
           <p className="stage-select-description">
             Choose a stage to start Time Attack.
@@ -437,6 +444,7 @@ function App() {
               <p className="clear-time">
                 Final questions: {requiredCount} (base {selectedStage.baseQuestionCount})
               </p>
+              <p className="clear-time">Wrong answers: {wrongAnswerCount}</p>
             </div>
           )}
         </div>

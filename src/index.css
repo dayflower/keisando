@@ -69,6 +69,13 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 0.8rem;
+  min-height: 2rem;
+}
+
+.stage-head-action-placeholder {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
 }
 
 .stage-select-description {
