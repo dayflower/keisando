@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 type StageExpression = {
   left: number;
@@ -26,8 +26,20 @@ type Question = {
   options: number[];
 };
 
+type Player = {
+  id: string;
+  name: string;
+  createdAt: number;
+};
+
+type Screen = "stageSelect" | "playerSelect" | "playerRegister" | "playing";
+
 const ROUND_COUNTDOWN_SECONDS = 3;
 const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
+const PLAYER_NAME_MIN_LENGTH = 1;
+const PLAYER_NAME_MAX_LENGTH = 20;
+const PLAYERS_STORAGE_KEY = "keisando:players";
+const ACTIVE_PLAYER_ID_STORAGE_KEY = "keisando:active-player-id";
 
 const STAGES: StageDefinition[] = [
   {
@@ -90,8 +102,83 @@ const STAGES: StageDefinition[] = [
   },
 ];
 
-const getBestTimeStorageKey = (stageId: string): string =>
-  `keisando:${stageId}:best-time-ms`;
+const getBestTimeStorageKey = (stageId: string, playerId: string): string =>
+  `keisando:player:${playerId}:${stageId}:best-time-ms`;
+
+const normalizePlayerName = (value: string): string => value.trim();
+
+const createPlayerId = (): string => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+};
+
+const createPlayer = (name: string): Player => ({
+  id: createPlayerId(),
+  name,
+  createdAt: Date.now(),
+});
+
+const isValidPlayerName = (name: string): boolean =>
+  name.length >= PLAYER_NAME_MIN_LENGTH && name.length <= PLAYER_NAME_MAX_LENGTH;
+
+const loadPlayers = (): Player[] => {
+  try {
+    const raw = localStorage.getItem(PLAYERS_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((candidate): candidate is Player => {
+        if (!candidate || typeof candidate !== "object") return false;
+        const player = candidate as Partial<Player>;
+        return (
+          typeof player.id === "string" &&
+          typeof player.name === "string" &&
+          isValidPlayerName(normalizePlayerName(player.name)) &&
+          typeof player.createdAt === "number" &&
+          Number.isFinite(player.createdAt)
+        );
+      })
+      .map((player) => ({
+        id: player.id,
+        name: normalizePlayerName(player.name),
+        createdAt: player.createdAt,
+      }));
+  } catch {
+    return [];
+  }
+};
+
+const savePlayers = (players: Player[]) => {
+  try {
+    localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(players));
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
+
+const loadActivePlayerId = (): string | null => {
+  try {
+    const raw = localStorage.getItem(ACTIVE_PLAYER_ID_STORAGE_KEY);
+    if (!raw) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+};
+
+const saveActivePlayerId = (activePlayerId: string) => {
+  try {
+    localStorage.setItem(ACTIVE_PLAYER_ID_STORAGE_KEY, activePlayerId);
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
 
 const shuffle = <T,>(items: T[]): T[] => {
   const next = [...items];
@@ -164,9 +251,9 @@ const formatElapsedTime = (elapsedMs: number): string => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
 };
 
-const loadBestTime = (stageId: string): number | null => {
+const loadBestTime = (stageId: string, playerId: string): number | null => {
   try {
-    const raw = localStorage.getItem(getBestTimeStorageKey(stageId));
+    const raw = localStorage.getItem(getBestTimeStorageKey(stageId, playerId));
     if (!raw) return null;
     const parsed = Number(raw);
     if (!Number.isFinite(parsed) || parsed <= 0) return null;
@@ -176,9 +263,12 @@ const loadBestTime = (stageId: string): number | null => {
   }
 };
 
-const saveBestTime = (stageId: string, elapsedMs: number) => {
+const saveBestTime = (stageId: string, playerId: string, elapsedMs: number) => {
   try {
-    localStorage.setItem(getBestTimeStorageKey(stageId), String(elapsedMs));
+    localStorage.setItem(
+      getBestTimeStorageKey(stageId, playerId),
+      String(elapsedMs),
+    );
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
   }
@@ -186,10 +276,18 @@ const saveBestTime = (stageId: string, elapsedMs: number) => {
 
 function App() {
   const usedExpressionsRef = useRef(new Set<string>());
+  const [screen, setScreen] = useState<Screen>("stageSelect");
+
+  const [players, setPlayers] = useState<Player[]>(() => loadPlayers());
+  const [activePlayerId, setActivePlayerId] = useState<string | null>(() =>
+    loadActivePlayerId(),
+  );
+
   const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(
     null,
   );
   const [question, setQuestion] = useState<Question | null>(null);
+  const [playingPlayerId, setPlayingPlayerId] = useState<string | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
   const [requiredCount, setRequiredCount] = useState(0);
   const [lastResult, setLastResult] = useState<"correct" | "wrong" | null>(
@@ -204,7 +302,21 @@ function App() {
   const [clearElapsedMs, setClearElapsedMs] = useState<number | null>(null);
   const [bestTimeMs, setBestTimeMs] = useState<number | null>(null);
 
-  const isPlaying = selectedStage !== null && question !== null;
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [registerError, setRegisterError] = useState<string | null>(null);
+
+  const activePlayer = useMemo(
+    () => players.find((player) => player.id === activePlayerId) ?? null,
+    [activePlayerId, players],
+  );
+
+  const playingPlayer = useMemo(
+    () => players.find((player) => player.id === playingPlayerId) ?? activePlayer,
+    [activePlayer, players, playingPlayerId],
+  );
+
+  const isPlaying =
+    screen === "playing" && selectedStage !== null && question !== null;
   const isCleared = isPlaying && answeredCount >= requiredCount;
 
   const remainingCount = useMemo(
@@ -222,6 +334,32 @@ function App() {
     0,
   );
   const countdownDisplay = Math.max(countdownSeconds, 1);
+
+  useEffect(() => {
+    if (players.length > 0) return;
+
+    const defaultPlayer = createPlayer("Player 1");
+    setPlayers([defaultPlayer]);
+    setActivePlayerId(defaultPlayer.id);
+  }, [players]);
+
+  useEffect(() => {
+    if (players.length === 0) return;
+
+    if (!activePlayerId || !players.some((player) => player.id === activePlayerId)) {
+      setActivePlayerId(players[0].id);
+    }
+  }, [activePlayerId, players]);
+
+  useEffect(() => {
+    if (players.length === 0) return;
+    savePlayers(players);
+  }, [players]);
+
+  useEffect(() => {
+    if (!activePlayerId) return;
+    saveActivePlayerId(activePlayerId);
+  }, [activePlayerId]);
 
   useEffect(() => {
     if (!isPlaying || isCleared) return;
@@ -246,10 +384,15 @@ function App() {
   }, [countdownEndMs, isCleared, isPlaying, isRoundActive, nowMs]);
 
   const startStage = (stage: StageDefinition) => {
+    if (!activePlayer) return;
+
     const startAtMs = Date.now();
     usedExpressionsRef.current = new Set<string>();
+
+    setScreen("playing");
     setSelectedStage(stage);
     setQuestion(createQuestion(stage, usedExpressionsRef.current));
+    setPlayingPlayerId(activePlayer.id);
     setAnsweredCount(0);
     setRequiredCount(stage.baseQuestionCount);
     setLastResult(null);
@@ -258,11 +401,19 @@ function App() {
     setIsRoundActive(false);
     setNowMs(startAtMs);
     setClearElapsedMs(null);
-    setBestTimeMs(loadBestTime(stage.id));
+    setBestTimeMs(loadBestTime(stage.id, activePlayer.id));
   };
 
   const handleAnswer = (selected: number) => {
-    if (!selectedStage || !question || !isRoundActive || isCleared) return;
+    if (
+      !selectedStage ||
+      !question ||
+      !isRoundActive ||
+      isCleared ||
+      !playingPlayerId
+    ) {
+      return;
+    }
 
     const isCorrect = selected === question.answer;
     const nextAnsweredCount = answeredCount + 1;
@@ -281,7 +432,7 @@ function App() {
 
       if (bestTimeMs === null || elapsedAtClear < bestTimeMs) {
         setBestTimeMs(elapsedAtClear);
-        saveBestTime(selectedStage.id, elapsedAtClear);
+        saveBestTime(selectedStage.id, playingPlayerId, elapsedAtClear);
       }
       return;
     }
@@ -306,8 +457,10 @@ function App() {
   };
 
   const backToStageSelect = () => {
+    setScreen("stageSelect");
     setSelectedStage(null);
     setQuestion(null);
+    setPlayingPlayerId(null);
     setAnsweredCount(0);
     setRequiredCount(0);
     setLastResult(null);
@@ -315,25 +468,91 @@ function App() {
     setClearElapsedMs(null);
   };
 
-  if (!isPlaying || !selectedStage || !question) {
+  const openPlayerSelect = () => {
+    setScreen("playerSelect");
+  };
+
+  const openPlayerRegister = () => {
+    setRegisterError(null);
+    setNewPlayerName("");
+    setScreen("playerRegister");
+  };
+
+  const handleSelectPlayer = (playerId: string) => {
+    setActivePlayerId(playerId);
+    setScreen("stageSelect");
+  };
+
+  const handleRegisterPlayer = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const normalizedName = normalizePlayerName(newPlayerName);
+
+    if (!isValidPlayerName(normalizedName)) {
+      setRegisterError("Name must be 1-20 characters.");
+      return;
+    }
+
+    const isDuplicate = players.some(
+      (player) => player.name.toLowerCase() === normalizedName.toLowerCase(),
+    );
+    if (isDuplicate) {
+      setRegisterError("This player name already exists.");
+      return;
+    }
+
+    const nextPlayer = createPlayer(normalizedName);
+    setPlayers((prev) => [...prev, nextPlayer]);
+    setActivePlayerId(nextPlayer.id);
+    setRegisterError(null);
+    setNewPlayerName("");
+    setScreen("stageSelect");
+  };
+
+  if (!activePlayer) {
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <p className="stage-tag">Preparing Player</p>
+          <h1 className="title">Keisando</h1>
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === "stageSelect") {
     return (
       <main className="app">
         <section className="stage-card">
           <div className="stage-head-row">
             <p className="stage-tag">Select Stage</p>
-            <span
-              className="stage-head-action-placeholder"
-              aria-hidden="true"
-            />
+            <p className="active-player-chip">Player: {activePlayer.name}</p>
           </div>
           <h1 className="title">Keisando</h1>
           <p className="stage-select-description">
             Choose a stage to start Time Attack.
           </p>
 
+          <div className="player-actions">
+            <button
+              className="player-nav-button"
+              type="button"
+              onClick={openPlayerSelect}
+            >
+              Select Player
+            </button>
+            <button
+              className="player-nav-button player-nav-button-secondary"
+              type="button"
+              onClick={openPlayerRegister}
+            >
+              Register Player
+            </button>
+          </div>
+
           <div className="stage-list">
             {STAGES.map((stage) => {
-              const stageBestTimeMs = loadBestTime(stage.id);
+              const stageBestTimeMs = loadBestTime(stage.id, activePlayer.id);
 
               return (
                 <button
@@ -350,10 +569,7 @@ function App() {
                     {stage.description}
                   </span>
                   <span className="stage-item-record">
-                    Best:{" "}
-                    {stageBestTimeMs
-                      ? formatElapsedTime(stageBestTimeMs)
-                      : "--:--.--"}
+                    Best: {stageBestTimeMs ? formatElapsedTime(stageBestTimeMs) : "--:--.--"}
                   </span>
                 </button>
               );
@@ -364,12 +580,113 @@ function App() {
     );
   }
 
+  if (screen === "playerSelect") {
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <div className="stage-head-row">
+            <p className="stage-tag">Select Player</p>
+            <button
+              className="close-button"
+              type="button"
+              onClick={() => setScreen("stageSelect")}
+              aria-label="Back to stage select"
+            >
+              ×
+            </button>
+          </div>
+          <h1 className="title">Keisando</h1>
+          <p className="stage-select-description">Choose your active player.</p>
+
+          <div className="player-list">
+            {players.map((player) => {
+              const isCurrent = player.id === activePlayer.id;
+
+              return (
+                <button
+                  className={`player-item ${isCurrent ? "player-item-active" : ""}`}
+                  key={player.id}
+                  type="button"
+                  onClick={() => handleSelectPlayer(player.id)}
+                >
+                  <span className="player-item-name">{player.name}</span>
+                  {isCurrent && <span className="player-item-badge">Active</span>}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === "playerRegister") {
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <div className="stage-head-row">
+            <p className="stage-tag">Register Player</p>
+            <button
+              className="close-button"
+              type="button"
+              onClick={() => setScreen("stageSelect")}
+              aria-label="Back to stage select"
+            >
+              ×
+            </button>
+          </div>
+          <h1 className="title">Keisando</h1>
+          <p className="stage-select-description">Create a new local player profile.</p>
+
+          <form className="player-register-form" onSubmit={handleRegisterPlayer}>
+            <label className="player-register-label" htmlFor="player-name-input">
+              Player Name
+            </label>
+            <input
+              id="player-name-input"
+              className="player-register-input"
+              type="text"
+              value={newPlayerName}
+              maxLength={PLAYER_NAME_MAX_LENGTH}
+              onChange={(event) => {
+                setNewPlayerName(event.target.value);
+                if (registerError) {
+                  setRegisterError(null);
+                }
+              }}
+              autoFocus
+            />
+            {registerError && <p className="player-register-error">{registerError}</p>}
+
+            <div className="player-register-actions">
+              <button className="clear-close-button" type="submit">
+                Register
+              </button>
+              <button
+                className="clear-retry-button"
+                type="button"
+                onClick={() => setScreen("stageSelect")}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
+  if (!isPlaying || !selectedStage || !question) {
+    return null;
+  }
+
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
             {selectedStage.name} / {selectedStage.tag}
+            {playingPlayer && ` / ${playingPlayer.name}`}
           </p>
           {!isCleared && (
             <button
@@ -392,8 +709,7 @@ function App() {
         <div className="timer-row">
           <p className="timer-pill">Time: {formatElapsedTime(elapsedMs)}</p>
           <p className="timer-pill">
-            Best:{" "}
-            {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
+            Best: {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
           </p>
         </div>
 
@@ -457,12 +773,9 @@ function App() {
           ) : (
             <div className="clear-box">
               <p className="clear-title">Stage Clear!</p>
+              <p className="clear-time">Clear time: {formatElapsedTime(elapsedMs)}</p>
               <p className="clear-time">
-                Clear time: {formatElapsedTime(elapsedMs)}
-              </p>
-              <p className="clear-time">
-                Final questions: {requiredCount} (base{" "}
-                {selectedStage.baseQuestionCount})
+                Final questions: {requiredCount} (base {selectedStage.baseQuestionCount})
               </p>
               <p className="clear-time">Wrong answers: {wrongAnswerCount}</p>
             </div>
@@ -477,11 +790,7 @@ function App() {
             >
               Close
             </button>
-            <button
-              className="clear-retry-button"
-              type="button"
-              onClick={resetStage}
-            >
+            <button className="clear-retry-button" type="button" onClick={resetStage}>
               Retry
             </button>
           </div>

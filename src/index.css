@@ -83,6 +83,47 @@ body {
   font-weight: 600;
 }
 
+.active-player-chip {
+  margin: 0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #eff4ff;
+  color: #224982;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.player-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.player-nav-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 0.75rem;
+  background: #1e4f93;
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease;
+}
+
+.player-nav-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.player-nav-button-secondary {
+  background: #f3e6cf;
+  color: #3d2500;
+}
+
 .stage-list {
   display: grid;
   gap: 0.8rem;
@@ -268,6 +309,9 @@ body {
 .close-button:focus-visible,
 .clear-close-button:focus-visible,
 .clear-retry-button:focus-visible,
+.player-nav-button:focus-visible,
+.player-item:focus-visible,
+.player-register-input:focus-visible,
 .stage-item:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
@@ -341,6 +385,75 @@ body {
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
+}
+
+.player-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.player-item {
+  border: none;
+  border-radius: 14px;
+  padding: 0.8rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f7ecd7;
+  color: #3d2500;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.player-item-active {
+  background: #dcecff;
+  color: #153f75;
+}
+
+.player-item-name {
+  font-size: 1.05rem;
+}
+
+.player-item-badge {
+  font-size: 0.76rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #1e4f93;
+  color: #fff;
+}
+
+.player-register-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.player-register-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #3c5475;
+}
+
+.player-register-input {
+  border: 2px solid #d8e3f7;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #18345e;
+}
+
+.player-register-error {
+  margin: 0;
+  color: #a71313;
+  font-weight: 700;
+}
+
+.player-register-actions {
+  margin-top: 0.2rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.6rem;
 }
 
 .clear-actions {
