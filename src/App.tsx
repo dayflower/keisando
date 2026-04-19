@@ -1,5 +1,5 @@
 import { CircleUserRound } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type StageExpression = {
   left: number;
@@ -33,7 +33,19 @@ type Player = {
   createdAt: number;
 };
 
-type Screen = "stageSelect" | "playerSelect" | "playing";
+type StageRunRecord = {
+  id: string;
+  stageId: string;
+  playerId: string;
+  elapsedMs: number;
+  requiredCount: number;
+  wrongCount: number;
+  recordedAt: number;
+};
+
+type RankingTab = "global" | "player";
+
+type Screen = "stageSelect" | "playerSelect" | "playing" | "ranking";
 
 const ROUND_COUNTDOWN_SECONDS = 3;
 const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
@@ -41,6 +53,8 @@ const PLAYER_NAME_MIN_LENGTH = 1;
 const PLAYER_NAME_MAX_LENGTH = 20;
 const PLAYERS_STORAGE_KEY = "keisando:players";
 const ACTIVE_PLAYER_ID_STORAGE_KEY = "keisando:active-player-id";
+const RECORDS_STORAGE_KEY = "keisando:records:v1";
+const RANKING_LIMIT = 10;
 
 const STAGES: StageDefinition[] = [
   {
@@ -103,13 +117,33 @@ const STAGES: StageDefinition[] = [
   },
 ];
 
-const getBestTimeStorageKey = (stageId: string, playerId: string): string =>
-  `keisando:player:${playerId}:${stageId}:best-time-ms`;
+const RECORD_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
 
 const normalizePlayerName = (value: string): string => value.trim();
 
 const createPlayerId = (): string => {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+};
+
+const createRecordId = (): string => {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 
@@ -123,7 +157,8 @@ const createPlayer = (name: string): Player => ({
 });
 
 const isValidPlayerName = (name: string): boolean =>
-  name.length >= PLAYER_NAME_MIN_LENGTH && name.length <= PLAYER_NAME_MAX_LENGTH;
+  name.length >= PLAYER_NAME_MIN_LENGTH &&
+  name.length <= PLAYER_NAME_MAX_LENGTH;
 
 const loadPlayers = (): Player[] => {
   try {
@@ -184,6 +219,73 @@ const saveActivePlayerId = (activePlayerId: string | null) => {
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
   }
+};
+
+const loadRecords = (): StageRunRecord[] => {
+  try {
+    const raw = localStorage.getItem(RECORDS_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter((candidate): candidate is StageRunRecord => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const record = candidate as Partial<StageRunRecord>;
+
+      return (
+        typeof record.id === "string" &&
+        typeof record.stageId === "string" &&
+        typeof record.playerId === "string" &&
+        typeof record.elapsedMs === "number" &&
+        Number.isFinite(record.elapsedMs) &&
+        record.elapsedMs > 0 &&
+        typeof record.requiredCount === "number" &&
+        Number.isFinite(record.requiredCount) &&
+        record.requiredCount > 0 &&
+        typeof record.wrongCount === "number" &&
+        Number.isFinite(record.wrongCount) &&
+        record.wrongCount >= 0 &&
+        typeof record.recordedAt === "number" &&
+        Number.isFinite(record.recordedAt)
+      );
+    });
+  } catch {
+    return [];
+  }
+};
+
+const saveRecords = (records: StageRunRecord[]) => {
+  try {
+    localStorage.setItem(RECORDS_STORAGE_KEY, JSON.stringify(records));
+  } catch {
+    // Ignore storage write errors to keep gameplay uninterrupted.
+  }
+};
+
+const sortByRanking = (a: StageRunRecord, b: StageRunRecord): number => {
+  if (a.elapsedMs !== b.elapsedMs) {
+    return a.elapsedMs - b.elapsedMs;
+  }
+
+  return a.recordedAt - b.recordedAt;
+};
+
+const getTopRecords = (records: StageRunRecord[]): StageRunRecord[] =>
+  [...records].sort(sortByRanking).slice(0, RANKING_LIMIT);
+
+const getPlayerBestTime = (
+  records: StageRunRecord[],
+  stageId: string,
+  playerId: string,
+): number | null => {
+  const top = getTopRecords(
+    records.filter(
+      (record) => record.stageId === stageId && record.playerId === playerId,
+    ),
+  )[0];
+
+  return top ? top.elapsedMs : null;
 };
 
 const shuffle = <T,>(items: T[]): T[] => {
@@ -257,28 +359,8 @@ const formatElapsedTime = (elapsedMs: number): string => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
 };
 
-const loadBestTime = (stageId: string, playerId: string): number | null => {
-  try {
-    const raw = localStorage.getItem(getBestTimeStorageKey(stageId, playerId));
-    if (!raw) return null;
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed <= 0) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-const saveBestTime = (stageId: string, playerId: string, elapsedMs: number) => {
-  try {
-    localStorage.setItem(
-      getBestTimeStorageKey(stageId, playerId),
-      String(elapsedMs),
-    );
-  } catch {
-    // Ignore storage write errors to keep gameplay uninterrupted.
-  }
-};
+const formatRecordedAt = (recordedAt: number): string =>
+  RECORD_DATE_FORMATTER.format(recordedAt);
 
 function App() {
   const usedExpressionsRef = useRef(new Set<string>());
@@ -288,10 +370,13 @@ function App() {
   const [activePlayerId, setActivePlayerId] = useState<string | null>(() =>
     loadActivePlayerId(),
   );
+  const [records, setRecords] = useState<StageRunRecord[]>(() => loadRecords());
 
   const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(
     null,
   );
+  const [rankingStageId, setRankingStageId] = useState<string | null>(null);
+  const [rankingTab, setRankingTab] = useState<RankingTab>("global");
   const [question, setQuestion] = useState<Question | null>(null);
   const [playingPlayerId, setPlayingPlayerId] = useState<string | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
@@ -320,6 +405,33 @@ function App() {
     () => players.find((player) => player.id === playingPlayerId) ?? null,
     [players, playingPlayerId],
   );
+
+  const playerNameById = useMemo(() => {
+    return new Map(players.map((player) => [player.id, player.name]));
+  }, [players]);
+
+  const rankingStage = useMemo(
+    () => STAGES.find((stage) => stage.id === rankingStageId) ?? null,
+    [rankingStageId],
+  );
+
+  const rankingGlobalTop10 = useMemo(() => {
+    if (!rankingStageId) return [];
+    return getTopRecords(
+      records.filter((record) => record.stageId === rankingStageId),
+    );
+  }, [rankingStageId, records]);
+
+  const rankingPlayerTop10 = useMemo(() => {
+    if (!rankingStageId || !activePlayerId) return [];
+    return getTopRecords(
+      records.filter(
+        (record) =>
+          record.stageId === rankingStageId &&
+          record.playerId === activePlayerId,
+      ),
+    );
+  }, [rankingStageId, activePlayerId, records]);
 
   const isPlaying =
     screen === "playing" && selectedStage !== null && question !== null;
@@ -367,6 +479,10 @@ function App() {
   }, [activePlayerId]);
 
   useEffect(() => {
+    saveRecords(records);
+  }, [records]);
+
+  useEffect(() => {
     if (!isPlaying || isCleared) return;
 
     const intervalId = window.setInterval(() => {
@@ -406,7 +522,13 @@ function App() {
     setIsRoundActive(false);
     setNowMs(startAtMs);
     setClearElapsedMs(null);
-    setBestTimeMs(loadBestTime(stage.id, activePlayer.id));
+    setBestTimeMs(getPlayerBestTime(records, stage.id, activePlayer.id));
+  };
+
+  const openRankingScreen = (stageId: string) => {
+    setRankingStageId(stageId);
+    setRankingTab("global");
+    setScreen("ranking");
   };
 
   const handleAnswer = (selected: number) => {
@@ -432,13 +554,26 @@ function App() {
     if (nextIsCleared) {
       const finishedAtMs = Date.now();
       const elapsedAtClear = Math.max(finishedAtMs - stageStartMs, 0);
+      const wrongCount = Math.max(
+        nextRequiredCount - selectedStage.baseQuestionCount,
+        0,
+      );
+      const clearRecord: StageRunRecord = {
+        id: createRecordId(),
+        stageId: selectedStage.id,
+        playerId: playingPlayerId,
+        elapsedMs: elapsedAtClear,
+        requiredCount: nextRequiredCount,
+        wrongCount,
+        recordedAt: finishedAtMs,
+      };
+
       setNowMs(finishedAtMs);
       setClearElapsedMs(elapsedAtClear);
-
-      if (bestTimeMs === null || elapsedAtClear < bestTimeMs) {
-        setBestTimeMs(elapsedAtClear);
-        saveBestTime(selectedStage.id, playingPlayerId, elapsedAtClear);
-      }
+      setRecords((prev) => [...prev, clearRecord]);
+      setBestTimeMs((prev) =>
+        prev === null ? elapsedAtClear : Math.min(prev, elapsedAtClear),
+      );
       return;
     }
 
@@ -471,6 +606,7 @@ function App() {
     setLastResult(null);
     setIsRoundActive(false);
     setClearElapsedMs(null);
+    setRankingStageId(null);
   };
 
   const openPlayerSelect = () => {
@@ -531,35 +667,157 @@ function App() {
             Choose a stage to start Time Attack.
           </p>
           {!canStartStage && (
-            <p className="stage-select-hint">Select a player before starting a stage.</p>
+            <p className="stage-select-hint">
+              Select a player before starting a stage.
+            </p>
           )}
 
           <div className="stage-list">
             {STAGES.map((stage) => {
-              const stageBestTimeMs =
-                activePlayer === null ? null : loadBestTime(stage.id, activePlayer.id);
+              const stageGlobalBest = getTopRecords(
+                records.filter((record) => record.stageId === stage.id),
+              )[0];
+              const stageMyBest =
+                activePlayer === null
+                  ? null
+                  : (getTopRecords(
+                      records.filter(
+                        (record) =>
+                          record.stageId === stage.id &&
+                          record.playerId === activePlayer.id,
+                      ),
+                    )[0] ?? null);
 
               return (
-                <button
-                  className="stage-item"
-                  key={stage.id}
-                  type="button"
-                  onClick={() => startStage(stage)}
-                  disabled={!canStartStage}
-                >
-                  <span className="stage-item-header">
-                    <strong>{stage.name}</strong>
-                    <span className="stage-item-tag">{stage.tag}</span>
-                  </span>
-                  <span className="stage-item-description">
-                    {stage.description}
-                  </span>
-                  <span className="stage-item-record">
-                    Best: {stageBestTimeMs ? formatElapsedTime(stageBestTimeMs) : "--:--.--"}
-                  </span>
-                </button>
+                <article className="stage-item-shell" key={stage.id}>
+                  <button
+                    className="stage-item"
+                    type="button"
+                    onClick={() => startStage(stage)}
+                    disabled={!canStartStage}
+                  >
+                    <span className="stage-item-header">
+                      <strong>{stage.name}</strong>
+                      <span className="stage-item-tag">{stage.tag}</span>
+                    </span>
+                    <span className="stage-item-description">
+                      {stage.description}
+                    </span>
+                    <span className="stage-item-record">
+                      Global Best:{" "}
+                      {stageGlobalBest
+                        ? `${formatElapsedTime(stageGlobalBest.elapsedMs)} (${playerNameById.get(stageGlobalBest.playerId) ?? "Unknown"})`
+                        : "--:--.--"}
+                    </span>
+                    <span className="stage-item-record">
+                      My Best:{" "}
+                      {stageMyBest
+                        ? formatElapsedTime(stageMyBest.elapsedMs)
+                        : "--:--.--"}
+                    </span>
+                  </button>
+                  <button
+                    className="stage-ranking-button"
+                    type="button"
+                    onClick={() => openRankingScreen(stage.id)}
+                  >
+                    Ranking
+                  </button>
+                </article>
               );
             })}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === "ranking") {
+    if (!rankingStage) {
+      return null;
+    }
+
+    const rows =
+      rankingTab === "global" ? rankingGlobalTop10 : rankingPlayerTop10;
+
+    return (
+      <main className="app">
+        <section className="stage-card">
+          <div className="stage-head-row">
+            <p className="stage-tag">{rankingStage.name} Rankings</p>
+            <button
+              className="close-button"
+              type="button"
+              onClick={backToStageSelect}
+              aria-label="Back to stage select"
+            >
+              ×
+            </button>
+          </div>
+          <h1 className="title">Keisando</h1>
+          <p className="stage-select-description">
+            {rankingStage.tag} / {rankingStage.description}
+          </p>
+
+          <div
+            className="ranking-tabs"
+            role="tablist"
+            aria-label="Ranking views"
+          >
+            <button
+              className={`ranking-tab ${rankingTab === "global" ? "ranking-tab-active" : ""}`}
+              type="button"
+              role="tab"
+              aria-selected={rankingTab === "global"}
+              onClick={() => setRankingTab("global")}
+            >
+              Global Top10
+            </button>
+            <button
+              className={`ranking-tab ${rankingTab === "player" ? "ranking-tab-active" : ""}`}
+              type="button"
+              role="tab"
+              aria-selected={rankingTab === "player"}
+              onClick={() => setRankingTab("player")}
+              disabled={activePlayer === null}
+            >
+              My Top10
+            </button>
+          </div>
+
+          <div className="ranking-table-wrap">
+            {rankingTab === "player" && activePlayer === null ? (
+              <p className="stage-select-hint">
+                Select a player to view personal rankings.
+              </p>
+            ) : rows.length === 0 ? (
+              <p className="stage-select-hint">No records yet.</p>
+            ) : (
+              <table className="ranking-table">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Time</th>
+                    {rankingTab === "global" && <th scope="col">Player</th>}
+                    <th scope="col">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((record, index) => (
+                    <tr key={record.id}>
+                      <td>{index + 1}</td>
+                      <td>{formatElapsedTime(record.elapsedMs)}</td>
+                      {rankingTab === "global" && (
+                        <td>
+                          {playerNameById.get(record.playerId) ?? "Unknown"}
+                        </td>
+                      )}
+                      <td>{formatRecordedAt(record.recordedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
       </main>
@@ -597,17 +855,27 @@ function App() {
                     onClick={() => handleSelectPlayer(player.id)}
                   >
                     <span className="player-item-name">{player.name}</span>
-                    {isCurrent && <span className="player-item-badge">Active</span>}
+                    {isCurrent && (
+                      <span className="player-item-badge">Active</span>
+                    )}
                   </button>
                 );
               })}
             </div>
           ) : (
-            <p className="stage-select-hint">No player yet. Register one below.</p>
+            <p className="stage-select-hint">
+              No player yet. Register one below.
+            </p>
           )}
 
-          <form className="player-register-form" onSubmit={handleRegisterPlayer}>
-            <label className="player-register-label" htmlFor="player-name-input">
+          <form
+            className="player-register-form"
+            onSubmit={handleRegisterPlayer}
+          >
+            <label
+              className="player-register-label"
+              htmlFor="player-name-input"
+            >
               New Player Name
             </label>
             <input
@@ -623,7 +891,9 @@ function App() {
                 }
               }}
             />
-            {registerError && <p className="player-register-error">{registerError}</p>}
+            {registerError && (
+              <p className="player-register-error">{registerError}</p>
+            )}
             <div className="player-register-actions">
               <button className="clear-close-button" type="submit">
                 Register
@@ -668,7 +938,8 @@ function App() {
         <div className="timer-row">
           <p className="timer-pill">Time: {formatElapsedTime(elapsedMs)}</p>
           <p className="timer-pill">
-            Best: {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
+            Best:{" "}
+            {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
           </p>
         </div>
 
@@ -732,9 +1003,12 @@ function App() {
           ) : (
             <div className="clear-box">
               <p className="clear-title">Stage Clear!</p>
-              <p className="clear-time">Clear time: {formatElapsedTime(elapsedMs)}</p>
               <p className="clear-time">
-                Final questions: {requiredCount} (base {selectedStage.baseQuestionCount})
+                Clear time: {formatElapsedTime(elapsedMs)}
+              </p>
+              <p className="clear-time">
+                Final questions: {requiredCount} (base{" "}
+                {selectedStage.baseQuestionCount})
               </p>
               <p className="clear-time">Wrong answers: {wrongAnswerCount}</p>
             </div>
@@ -749,7 +1023,11 @@ function App() {
             >
               Close
             </button>
-            <button className="clear-retry-button" type="button" onClick={resetStage}>
+            <button
+              className="clear-retry-button"
+              type="button"
+              onClick={resetStage}
+            >
               Retry
             </button>
           </div>
