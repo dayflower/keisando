@@ -1,3 +1,4 @@
+import { CircleUserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 type StageExpression = {
@@ -32,7 +33,7 @@ type Player = {
   createdAt: number;
 };
 
-type Screen = "stageSelect" | "playerSelect" | "playerRegister" | "playing";
+type Screen = "stageSelect" | "playerSelect" | "playing";
 
 const ROUND_COUNTDOWN_SECONDS = 3;
 const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
@@ -172,8 +173,13 @@ const loadActivePlayerId = (): string | null => {
   }
 };
 
-const saveActivePlayerId = (activePlayerId: string) => {
+const saveActivePlayerId = (activePlayerId: string | null) => {
   try {
+    if (activePlayerId === null) {
+      localStorage.removeItem(ACTIVE_PLAYER_ID_STORAGE_KEY);
+      return;
+    }
+
     localStorage.setItem(ACTIVE_PLAYER_ID_STORAGE_KEY, activePlayerId);
   } catch {
     // Ignore storage write errors to keep gameplay uninterrupted.
@@ -311,13 +317,14 @@ function App() {
   );
 
   const playingPlayer = useMemo(
-    () => players.find((player) => player.id === playingPlayerId) ?? activePlayer,
-    [activePlayer, players, playingPlayerId],
+    () => players.find((player) => player.id === playingPlayerId) ?? null,
+    [players, playingPlayerId],
   );
 
   const isPlaying =
     screen === "playing" && selectedStage !== null && question !== null;
   const isCleared = isPlaying && answeredCount >= requiredCount;
+  const canStartStage = activePlayer !== null;
 
   const remainingCount = useMemo(
     () => Math.max(requiredCount - answeredCount, 0),
@@ -336,28 +343,26 @@ function App() {
   const countdownDisplay = Math.max(countdownSeconds, 1);
 
   useEffect(() => {
-    if (players.length > 0) return;
+    if (players.length === 0) {
+      if (activePlayerId !== null) {
+        setActivePlayerId(null);
+      }
+      return;
+    }
 
-    const defaultPlayer = createPlayer("Player 1");
-    setPlayers([defaultPlayer]);
-    setActivePlayerId(defaultPlayer.id);
-  }, [players]);
-
-  useEffect(() => {
-    if (players.length === 0) return;
-
-    if (!activePlayerId || !players.some((player) => player.id === activePlayerId)) {
+    if (
+      activePlayerId !== null &&
+      !players.some((player) => player.id === activePlayerId)
+    ) {
       setActivePlayerId(players[0].id);
     }
   }, [activePlayerId, players]);
 
   useEffect(() => {
-    if (players.length === 0) return;
     savePlayers(players);
   }, [players]);
 
   useEffect(() => {
-    if (!activePlayerId) return;
     saveActivePlayerId(activePlayerId);
   }, [activePlayerId]);
 
@@ -469,13 +474,9 @@ function App() {
   };
 
   const openPlayerSelect = () => {
-    setScreen("playerSelect");
-  };
-
-  const openPlayerRegister = () => {
     setRegisterError(null);
     setNewPlayerName("");
-    setScreen("playerRegister");
+    setScreen("playerSelect");
   };
 
   const handleSelectPlayer = (playerId: string) => {
@@ -509,50 +510,34 @@ function App() {
     setScreen("stageSelect");
   };
 
-  if (!activePlayer) {
-    return (
-      <main className="app">
-        <section className="stage-card">
-          <p className="stage-tag">Preparing Player</p>
-          <h1 className="title">Keisando</h1>
-        </section>
-      </main>
-    );
-  }
-
   if (screen === "stageSelect") {
     return (
       <main className="app">
         <section className="stage-card">
           <div className="stage-head-row">
             <p className="stage-tag">Select Stage</p>
-            <p className="active-player-chip">Player: {activePlayer.name}</p>
+            <button
+              className="player-trigger"
+              type="button"
+              onClick={openPlayerSelect}
+              aria-label="Open player selection"
+            >
+              <CircleUserRound size={18} aria-hidden="true" />
+              <span>{activePlayer?.name ?? "No Player"}</span>
+            </button>
           </div>
           <h1 className="title">Keisando</h1>
           <p className="stage-select-description">
             Choose a stage to start Time Attack.
           </p>
-
-          <div className="player-actions">
-            <button
-              className="player-nav-button"
-              type="button"
-              onClick={openPlayerSelect}
-            >
-              Select Player
-            </button>
-            <button
-              className="player-nav-button player-nav-button-secondary"
-              type="button"
-              onClick={openPlayerRegister}
-            >
-              Register Player
-            </button>
-          </div>
+          {!canStartStage && (
+            <p className="stage-select-hint">Select a player before starting a stage.</p>
+          )}
 
           <div className="stage-list">
             {STAGES.map((stage) => {
-              const stageBestTimeMs = loadBestTime(stage.id, activePlayer.id);
+              const stageBestTimeMs =
+                activePlayer === null ? null : loadBestTime(stage.id, activePlayer.id);
 
               return (
                 <button
@@ -560,6 +545,7 @@ function App() {
                   key={stage.id}
                   type="button"
                   onClick={() => startStage(stage)}
+                  disabled={!canStartStage}
                 >
                   <span className="stage-item-header">
                     <strong>{stage.name}</strong>
@@ -598,49 +584,31 @@ function App() {
           <h1 className="title">Keisando</h1>
           <p className="stage-select-description">Choose your active player.</p>
 
-          <div className="player-list">
-            {players.map((player) => {
-              const isCurrent = player.id === activePlayer.id;
+          {players.length > 0 ? (
+            <div className="player-list">
+              {players.map((player) => {
+                const isCurrent = player.id === activePlayerId;
 
-              return (
-                <button
-                  className={`player-item ${isCurrent ? "player-item-active" : ""}`}
-                  key={player.id}
-                  type="button"
-                  onClick={() => handleSelectPlayer(player.id)}
-                >
-                  <span className="player-item-name">{player.name}</span>
-                  {isCurrent && <span className="player-item-badge">Active</span>}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (screen === "playerRegister") {
-    return (
-      <main className="app">
-        <section className="stage-card">
-          <div className="stage-head-row">
-            <p className="stage-tag">Register Player</p>
-            <button
-              className="close-button"
-              type="button"
-              onClick={() => setScreen("stageSelect")}
-              aria-label="Back to stage select"
-            >
-              ×
-            </button>
-          </div>
-          <h1 className="title">Keisando</h1>
-          <p className="stage-select-description">Create a new local player profile.</p>
+                return (
+                  <button
+                    className={`player-item ${isCurrent ? "player-item-active" : ""}`}
+                    key={player.id}
+                    type="button"
+                    onClick={() => handleSelectPlayer(player.id)}
+                  >
+                    <span className="player-item-name">{player.name}</span>
+                    {isCurrent && <span className="player-item-badge">Active</span>}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="stage-select-hint">No player yet. Register one below.</p>
+          )}
 
           <form className="player-register-form" onSubmit={handleRegisterPlayer}>
             <label className="player-register-label" htmlFor="player-name-input">
-              Player Name
+              New Player Name
             </label>
             <input
               id="player-name-input"
@@ -654,20 +622,11 @@ function App() {
                   setRegisterError(null);
                 }
               }}
-              autoFocus
             />
             {registerError && <p className="player-register-error">{registerError}</p>}
-
             <div className="player-register-actions">
               <button className="clear-close-button" type="submit">
                 Register
-              </button>
-              <button
-                className="clear-retry-button"
-                type="button"
-                onClick={() => setScreen("stageSelect")}
-              >
-                Cancel
               </button>
             </div>
           </form>

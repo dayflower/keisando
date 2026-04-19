@@ -83,45 +83,28 @@ body {
   font-weight: 600;
 }
 
-.active-player-chip {
-  margin: 0;
-  padding: 0.3rem 0.65rem;
-  border-radius: 999px;
-  background: #eff4ff;
-  color: #224982;
+.stage-select-hint {
+  margin: 0 0 0.95rem;
+  color: #1f4f91;
   font-weight: 700;
-  font-size: 0.82rem;
 }
 
-.player-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
-  margin-bottom: 0.85rem;
-}
-
-.player-nav-button {
+.player-trigger {
   border: none;
   border-radius: 999px;
-  padding: 0.65rem 0.75rem;
-  background: #1e4f93;
-  color: #fff;
-  font-size: 0.84rem;
+  padding: 0.32rem 0.65rem;
+  background: #eff4ff;
+  color: #224982;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
   transition:
     transform 120ms ease,
-    filter 120ms ease;
-}
-
-.player-nav-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
-.player-nav-button-secondary {
-  background: #f3e6cf;
-  color: #3d2500;
+    filter 120ms ease,
+    background-color 120ms ease;
 }
 
 .stage-list {
@@ -154,6 +137,13 @@ body {
 
 .stage-item:active {
   transform: translateY(0);
+}
+
+.stage-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  filter: saturate(0.7);
 }
 
 .stage-item-header {
@@ -309,12 +299,18 @@ body {
 .close-button:focus-visible,
 .clear-close-button:focus-visible,
 .clear-retry-button:focus-visible,
-.player-nav-button:focus-visible,
+.player-trigger:focus-visible,
 .player-item:focus-visible,
 .player-register-input:focus-visible,
 .stage-item:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
+}
+
+.player-trigger:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  background: #e5efff;
 }
 
 .choice-top {
@@ -424,6 +420,7 @@ body {
 }
 
 .player-register-form {
+  margin-top: 1rem;
   display: grid;
   gap: 0.55rem;
 }
@@ -452,7 +449,7 @@ body {
 .player-register-actions {
   margin-top: 0.2rem;
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 0.6rem;
 }
 
