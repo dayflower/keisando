@@ -119,7 +119,11 @@ const createOptions = (
     guard += 1;
   }
 
-  for (let value = answerMin; candidates.size < 4 && value <= answerMax; value += 1) {
+  for (
+    let value = answerMin;
+    candidates.size < 4 && value <= answerMax;
+    value += 1
+  ) {
     if (value !== answer) {
       candidates.add(value);
     }
@@ -182,11 +186,15 @@ const saveBestTime = (stageId: string, elapsedMs: number) => {
 
 function App() {
   const usedExpressionsRef = useRef(new Set<string>());
-  const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(null);
+  const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(
+    null,
+  );
   const [question, setQuestion] = useState<Question | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
   const [requiredCount, setRequiredCount] = useState(0);
-  const [lastResult, setLastResult] = useState<"correct" | "wrong" | null>(null);
+  const [lastResult, setLastResult] = useState<"correct" | "wrong" | null>(
+    null,
+  );
   const [stageStartMs, setStageStartMs] = useState(() => Date.now());
   const [countdownEndMs, setCountdownEndMs] = useState(
     () => Date.now() + ROUND_COUNTDOWN_MS,
@@ -313,14 +321,17 @@ function App() {
         <section className="stage-card">
           <div className="stage-head-row">
             <p className="stage-tag">Select Stage</p>
-            <span className="stage-head-action-placeholder" aria-hidden="true" />
+            <span
+              className="stage-head-action-placeholder"
+              aria-hidden="true"
+            />
           </div>
           <h1 className="title">Keisando</h1>
           <p className="stage-select-description">
             Choose a stage to start Time Attack.
           </p>
 
-          <div className="stage-list" role="list" aria-label="Stage list">
+          <div className="stage-list">
             {STAGES.map((stage) => {
               const stageBestTimeMs = loadBestTime(stage.id);
 
@@ -335,9 +346,14 @@ function App() {
                     <strong>{stage.name}</strong>
                     <span className="stage-item-tag">{stage.tag}</span>
                   </span>
-                  <span className="stage-item-description">{stage.description}</span>
+                  <span className="stage-item-description">
+                    {stage.description}
+                  </span>
                   <span className="stage-item-record">
-                    Best: {stageBestTimeMs ? formatElapsedTime(stageBestTimeMs) : "--:--.--"}
+                    Best:{" "}
+                    {stageBestTimeMs
+                      ? formatElapsedTime(stageBestTimeMs)
+                      : "--:--.--"}
                   </span>
                 </button>
               );
@@ -376,7 +392,8 @@ function App() {
         <div className="timer-row">
           <p className="timer-pill">Time: {formatElapsedTime(elapsedMs)}</p>
           <p className="timer-pill">
-            Best: {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
+            Best:{" "}
+            {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
           </p>
         </div>
 
@@ -388,7 +405,7 @@ function App() {
                   {question.left} {question.operator} {question.right} = ?
                 </p>
 
-                <div className="diamond-grid" role="group" aria-label="Answer choices">
+                <div className="diamond-grid">
                   <button
                     className="choice choice-top"
                     type="button"
@@ -440,9 +457,12 @@ function App() {
           ) : (
             <div className="clear-box">
               <p className="clear-title">Stage Clear!</p>
-              <p className="clear-time">Clear time: {formatElapsedTime(elapsedMs)}</p>
               <p className="clear-time">
-                Final questions: {requiredCount} (base {selectedStage.baseQuestionCount})
+                Clear time: {formatElapsedTime(elapsedMs)}
+              </p>
+              <p className="clear-time">
+                Final questions: {requiredCount} (base{" "}
+                {selectedStage.baseQuestionCount})
               </p>
               <p className="clear-time">Wrong answers: {wrongAnswerCount}</p>
             </div>
@@ -450,10 +470,18 @@ function App() {
         </div>
         {isCleared && (
           <div className="clear-actions">
-            <button className="clear-close-button" type="button" onClick={backToStageSelect}>
+            <button
+              className="clear-close-button"
+              type="button"
+              onClick={backToStageSelect}
+            >
               Close
             </button>
-            <button className="clear-retry-button" type="button" onClick={resetStage}>
+            <button
+              className="clear-retry-button"
+              type="button"
+              onClick={resetStage}
+            >
               Retry
             </button>
           </div>
