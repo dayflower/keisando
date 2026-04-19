@@ -1,0 +1,9 @@
+export const ROUND_COUNTDOWN_SECONDS = 3;
+export const ROUND_COUNTDOWN_MS = ROUND_COUNTDOWN_SECONDS * 1000;
+export const PLAYER_NAME_MIN_LENGTH = 1;
+export const PLAYER_NAME_MAX_LENGTH = 20;
+export const RANKING_LIMIT = 10;
+export const HISTORY_RETENTION_DAYS = 10;
+export const HISTORY_RETENTION_MS =
+  HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+export const APP_VERSION = "0.0.0";
