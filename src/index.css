@@ -428,7 +428,8 @@ body {
 .player-register-input:focus-visible,
 .stage-item:focus-visible,
 .stage-ranking-button:focus-visible,
-.ranking-tab:focus-visible {
+.ranking-tab:focus-visible,
+.history-icon-button:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
 }
@@ -629,19 +630,4 @@ body {
   padding: 0.2rem;
   max-height: 150px;
   overflow: auto;
-}
-
-.choice:focus-visible,
-.close-button:focus-visible,
-.clear-close-button:focus-visible,
-.clear-retry-button:focus-visible,
-.player-trigger:focus-visible,
-.player-item:focus-visible,
-.player-register-input:focus-visible,
-.stage-item:focus-visible,
-.stage-ranking-button:focus-visible,
-.ranking-tab:focus-visible,
-.history-icon-button:focus-visible {
-  outline: 3px solid #225eb5;
-  outline-offset: 2px;
 }

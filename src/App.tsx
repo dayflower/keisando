@@ -673,6 +673,12 @@ function App() {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [clearElapsedMs, setClearElapsedMs] = useState<number | null>(null);
   const [bestTimeMs, setBestTimeMs] = useState<number | null>(null);
+  const [historyRecords, setHistoryRecords] = useState<PlayHistoryRecord[]>([]);
+  const [historySummary, setHistorySummary] =
+    useState<PlayerLifetimeSummary | null>(null);
+  const [stageSummaries, setStageSummaries] = useState<StageLifetimeSummary[]>(
+    [],
+  );
 
   const [newPlayerName, setNewPlayerName] = useState("");
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -682,18 +688,7 @@ function App() {
     [activePlayerId, players],
   );
 
-  const historyPlayerId = activePlayer?.id ?? null;
-  const historyRecords = historyPlayerId
-    ? loadPlayerHistory(historyPlayerId).sort((a, b) => b.playedAt - a.playedAt)
-    : [];
-  const historySummary = historyPlayerId
-    ? loadPlayerLifetimeSummary(historyPlayerId)
-    : null;
-  const stageSummaries = historyPlayerId
-    ? loadPlayerStageLifetimeSummary(historyPlayerId).sort((a, b) =>
-        a.stageId.localeCompare(b.stageId),
-      )
-    : [];
+  const historyPlayerId = activePlayerId;
 
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === playingPlayerId) ?? null,
@@ -775,6 +770,25 @@ function App() {
   useEffect(() => {
     saveRecords(records);
   }, [records]);
+
+  useEffect(() => {
+    if (!activePlayerId) {
+      setHistoryRecords([]);
+      setHistorySummary(null);
+      setStageSummaries([]);
+      return;
+    }
+
+    setHistoryRecords(
+      loadPlayerHistory(activePlayerId).sort((a, b) => b.playedAt - a.playedAt),
+    );
+    setHistorySummary(loadPlayerLifetimeSummary(activePlayerId));
+    setStageSummaries(
+      loadPlayerStageLifetimeSummary(activePlayerId).sort((a, b) =>
+        a.stageId.localeCompare(b.stageId),
+      ),
+    );
+  }, [activePlayerId]);
 
   useEffect(() => {
     if (!isPlaying || isCleared) return;
@@ -879,30 +893,47 @@ function App() {
         appVersion: APP_VERSION,
       };
 
-      const playerHistory = loadPlayerHistory(playingPlayerId);
+      const isActiveHistoryTarget = playingPlayerId === historyPlayerId;
+      const baseHistory = isActiveHistoryTarget
+        ? historyRecords
+        : loadPlayerHistory(playingPlayerId).sort(
+            (a, b) => b.playedAt - a.playedAt,
+          );
       const nextHistory = pruneHistoryRecords(
-        [...playerHistory, historyRecord],
+        [...baseHistory, historyRecord],
         finishedAtMs,
       ).sort((a, b) => b.playedAt - a.playedAt);
+      if (isActiveHistoryTarget) {
+        setHistoryRecords(nextHistory);
+      }
       savePlayerHistory(playingPlayerId, nextHistory);
 
-      const currentLifetime = loadPlayerLifetimeSummary(playingPlayerId);
+      const currentLifetime = isActiveHistoryTarget
+        ? (historySummary ?? createDefaultLifetimeSummary(playingPlayerId))
+        : loadPlayerLifetimeSummary(playingPlayerId);
       const nextLifetime = updateLifetimeSummary(
         currentLifetime,
         score,
         finishedAtMs,
       );
+      if (isActiveHistoryTarget) {
+        setHistorySummary(nextLifetime);
+      }
       savePlayerLifetimeSummary(playingPlayerId, nextLifetime);
 
-      const currentStageSummaries =
-        loadPlayerStageLifetimeSummary(playingPlayerId);
+      const currentStageSummaries = isActiveHistoryTarget
+        ? stageSummaries
+        : loadPlayerStageLifetimeSummary(playingPlayerId);
       const nextStageSummaries = updateStageLifetimeSummaries(
         currentStageSummaries,
         playingPlayerId,
         selectedStage.id,
         score,
         elapsedAtClear,
-      );
+      ).sort((a, b) => a.stageId.localeCompare(b.stageId));
+      if (isActiveHistoryTarget) {
+        setStageSummaries(nextStageSummaries);
+      }
       savePlayerStageLifetimeSummary(playingPlayerId, nextStageSummaries);
 
       setNowMs(finishedAtMs);
