@@ -348,9 +348,16 @@ function App() {
           <p className="stage-tag">
             {selectedStage.name} / {selectedStage.tag}
           </p>
-          <button className="back-button" type="button" onClick={backToStageSelect}>
-            Stage Select
-          </button>
+          {!isCleared && (
+            <button
+              className="close-button"
+              type="button"
+              onClick={backToStageSelect}
+              aria-label="Back to stage select"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         <h1 className="title">Keisando</h1>
@@ -433,10 +440,16 @@ function App() {
             </div>
           )}
         </div>
-
-        <button className="restart-button" type="button" onClick={resetStage}>
-          Restart Stage
-        </button>
+        {isCleared && (
+          <div className="clear-actions">
+            <button className="clear-close-button" type="button" onClick={backToStageSelect}>
+              Close
+            </button>
+            <button className="clear-retry-button" type="button" onClick={resetStage}>
+              Retry
+            </button>
+          </div>
+        )}
       </section>
     </main>
   );

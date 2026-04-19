@@ -259,8 +259,9 @@ body {
 }
 
 .choice:focus-visible,
-.restart-button:focus-visible,
-.back-button:focus-visible,
+.close-button:focus-visible,
+.clear-close-button:focus-visible,
+.clear-retry-button:focus-visible,
 .stage-item:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
@@ -321,25 +322,43 @@ body {
   font-weight: 700;
 }
 
-.restart-button {
-  width: 100%;
+.close-button {
   border: none;
   border-radius: 999px;
-  padding: 0.9rem 1rem;
-  background: #1e4f93;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  background: #f3e6cf;
+  color: #3d2500;
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1;
   cursor: pointer;
 }
 
-.back-button {
+.clear-actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.6rem;
+}
+
+.clear-close-button,
+.clear-retry-button {
   border: none;
   border-radius: 999px;
-  padding: 0.42rem 0.8rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.98rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.clear-close-button {
+  background: #1e4f93;
+  color: #fff;
+}
+
+.clear-retry-button {
   background: #f3e6cf;
   color: #3d2500;
-  font-size: 0.84rem;
-  font-weight: 700;
-  cursor: pointer;
 }
