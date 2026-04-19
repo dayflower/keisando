@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --no-clear-screen",
+    "check": "biome check .",
+    "fix": "biome check --write .",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
