@@ -81,7 +81,6 @@ type Screen =
   | "playerSelect"
   | "playing"
   | "ranking"
-  | "historyList"
   | "historyDetail";
 
 const ROUND_COUNTDOWN_SECONDS = 3;
@@ -654,11 +653,6 @@ function App() {
   );
   const [records, setRecords] = useState<StageRunRecord[]>(() => loadRecords());
 
-  const [selectedHistoryPlayerId, setSelectedHistoryPlayerId] = useState<
-    string | null
-  >(null);
-  const [historyFilter, setHistoryFilter] = useState("");
-
   const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(
     null,
   );
@@ -688,15 +682,7 @@ function App() {
     [activePlayerId, players],
   );
 
-  const historyPlayer = useMemo(
-    () =>
-      players.find((player) => player.id === selectedHistoryPlayerId) ??
-      activePlayer ??
-      null,
-    [activePlayer, players, selectedHistoryPlayerId],
-  );
-
-  const historyPlayerId = historyPlayer?.id ?? null;
+  const historyPlayerId = activePlayer?.id ?? null;
   const historyRecords = historyPlayerId
     ? loadPlayerHistory(historyPlayerId).sort((a, b) => b.playedAt - a.playedAt)
     : [];
@@ -741,22 +727,6 @@ function App() {
     );
   }, [rankingStageId, activePlayerId, records]);
 
-  const normalizedHistoryFilter =
-    normalizePlayerName(historyFilter).toLowerCase();
-  const filteredHistoryPlayers = [...players]
-    .sort((a, b) => {
-      const summaryA = loadPlayerLifetimeSummary(a.id);
-      const summaryB = loadPlayerLifetimeSummary(b.id);
-      const aPlayed = summaryA.lastPlayedAt ?? 0;
-      const bPlayed = summaryB.lastPlayedAt ?? 0;
-      if (aPlayed !== bPlayed) return bPlayed - aPlayed;
-      return a.name.localeCompare(b.name);
-    })
-    .filter((player) => {
-      if (!normalizedHistoryFilter) return true;
-      return player.name.toLowerCase().includes(normalizedHistoryFilter);
-    });
-
   const isPlaying =
     screen === "playing" && selectedStage !== null && question !== null;
   const isCleared = isPlaying && answeredCount >= requiredCount;
@@ -783,9 +753,6 @@ function App() {
       if (activePlayerId !== null) {
         setActivePlayerId(null);
       }
-      if (selectedHistoryPlayerId !== null) {
-        setSelectedHistoryPlayerId(null);
-      }
       return;
     }
 
@@ -795,14 +762,7 @@ function App() {
     ) {
       setActivePlayerId(players[0].id);
     }
-
-    if (
-      selectedHistoryPlayerId !== null &&
-      !players.some((player) => player.id === selectedHistoryPlayerId)
-    ) {
-      setSelectedHistoryPlayerId(players[0].id);
-    }
-  }, [activePlayerId, players, selectedHistoryPlayerId]);
+  }, [activePlayerId, players]);
 
   useEffect(() => {
     savePlayers(players);
@@ -865,13 +825,8 @@ function App() {
     setScreen("ranking");
   };
 
-  const openHistoryList = () => {
-    setHistoryFilter("");
-    setScreen("historyList");
-  };
-
-  const openHistoryDetail = (playerId: string) => {
-    setSelectedHistoryPlayerId(playerId);
+  const openPlayHistory = () => {
+    if (!activePlayerId) return;
     setScreen("historyDetail");
   };
 
@@ -999,7 +954,6 @@ function App() {
 
   const handleSelectPlayer = (playerId: string) => {
     setActivePlayerId(playerId);
-    setSelectedHistoryPlayerId(playerId);
     setScreen("stageSelect");
   };
 
@@ -1024,7 +978,6 @@ function App() {
     const nextPlayer = createPlayer(normalizedName);
     setPlayers((prev) => [...prev, nextPlayer]);
     setActivePlayerId(nextPlayer.id);
-    setSelectedHistoryPlayerId(nextPlayer.id);
     savePlayerLifetimeSummary(
       nextPlayer.id,
       createDefaultLifetimeSummary(nextPlayer.id),
@@ -1044,8 +997,9 @@ function App() {
               <button
                 className="history-icon-button"
                 type="button"
-                onClick={openHistoryList}
-                aria-label="Open player history"
+                onClick={openPlayHistory}
+                aria-label="Open play history"
+                disabled={!activePlayer}
               >
                 <History size={16} aria-hidden="true" />
               </button>
@@ -1130,12 +1084,16 @@ function App() {
     );
   }
 
-  if (screen === "historyList") {
+  if (screen === "historyDetail") {
+    if (!activePlayer || !historySummary) {
+      return null;
+    }
+
     return (
       <main className="app">
         <section className="stage-card">
           <div className="stage-head-row">
-            <p className="stage-tag">Player History</p>
+            <p className="stage-tag">Play History</p>
             <button
               className="close-button"
               type="button"
@@ -1146,98 +1104,11 @@ function App() {
             </button>
           </div>
           <h1 className="title">Keisando</h1>
-          <p className="stage-select-description">
-            Lifetime summary list, sorted by last played.
-          </p>
-
-          <input
-            className="history-filter-input"
-            type="text"
-            value={historyFilter}
-            placeholder="Filter players by name"
-            onChange={(event) => setHistoryFilter(event.target.value)}
-          />
-
-          <div className="ranking-table-wrap">
-            {filteredHistoryPlayers.length === 0 ? (
-              <p className="stage-select-hint">No players found.</p>
-            ) : (
-              <table className="ranking-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Total plays</th>
-                    <th scope="col">Clear rate</th>
-                    <th scope="col">Avg score</th>
-                    <th scope="col">Last played</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredHistoryPlayers.map((player) => {
-                    const summary = loadPlayerLifetimeSummary(player.id);
-                    return (
-                      <tr key={player.id} className="history-row">
-                        <td>
-                          <button
-                            className="history-row-button"
-                            type="button"
-                            onClick={() => openHistoryDetail(player.id)}
-                          >
-                            {player.name}
-                          </button>
-                        </td>
-                        <td>{summary.totalPlays}</td>
-                        <td>
-                          {formatRate(summary.totalClears, summary.totalPlays)}
-                        </td>
-                        <td>
-                          {formatAverageScore(
-                            summary.totalScore,
-                            summary.totalPlays,
-                          )}
-                        </td>
-                        <td>
-                          {summary.lastPlayedAt
-                            ? formatRecordedAt(summary.lastPlayedAt)
-                            : "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (screen === "historyDetail") {
-    if (!historyPlayer || !historySummary) {
-      return null;
-    }
-
-    return (
-      <main className="app">
-        <section className="stage-card">
-          <div className="stage-head-row">
-            <p className="stage-tag">Player Detail</p>
-            <button
-              className="close-button"
-              type="button"
-              onClick={() => setScreen("historyList")}
-              aria-label="Back to player history list"
-            >
-              ×
-            </button>
-          </div>
-          <h1 className="title">{historyPlayer.name}</h1>
 
           <div className="history-section">
             <h2 className="history-section-title">Header</h2>
             <p className="history-item">
-              Created at: {formatRecordedAt(historyPlayer.createdAt)}
+              Created at: {formatRecordedAt(activePlayer.createdAt)}
             </p>
             <p className="history-item">
               Last played at:{" "}

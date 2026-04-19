@@ -605,54 +605,6 @@ body {
   color: #3d2500;
 }
 
-.history-open-button {
-  margin: 0 0 0.85rem;
-  border: none;
-  border-radius: 999px;
-  padding: 0.5rem 0.85rem;
-  background: #e5efff;
-  color: #1f4f91;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.84rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.history-open-button:hover {
-  filter: brightness(1.05);
-}
-
-.history-filter-input {
-  border: 2px solid #d8e3f7;
-  border-radius: 12px;
-  padding: 0.68rem 0.8rem;
-  margin: 0 0 0.75rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #18345e;
-}
-
-.history-row {
-  cursor: pointer;
-}
-
-.history-row-button {
-  border: none;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 800;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-}
-
-.history-row:hover {
-  background: #fff1d6;
-}
-
 .history-section {
   margin-bottom: 0.8rem;
 }
@@ -689,10 +641,7 @@ body {
 .stage-item:focus-visible,
 .stage-ranking-button:focus-visible,
 .ranking-tab:focus-visible,
-.history-open-button:focus-visible,
-.history-icon-button:focus-visible,
-.history-filter-input:focus-visible,
-.history-row-button:focus-visible {
+.history-icon-button:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
 }
