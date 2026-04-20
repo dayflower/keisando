@@ -41,16 +41,15 @@ const UI_TAP_PATTERN: SoundPattern = [
   { frequency: 900, duration: 0.045, gain: 0.07, type: "triangle" },
 ];
 const COUNTDOWN_PATTERN: SoundPattern = [
-  { frequency: 660, duration: 0.07, gain: 0.06, type: "square" },
+  { frequency: 150, duration: 0.8, gain: 0.08, type: "square" },
 ];
 const ROUND_START_PATTERN: SoundPattern = [
-  { frequency: 580, duration: 0.07, gain: 0.075, type: "triangle", delay: 0 },
   {
-    frequency: 820,
-    duration: 0.085,
-    gain: 0.075,
-    type: "triangle",
-    delay: 0.075,
+    frequency: 587.33,
+    duration: 1.0,
+    gain: 0.11,
+    type: "square",
+    delay: 0,
   },
 ];
 const CORRECT_PATTERN: SoundPattern = [
@@ -64,7 +63,7 @@ const CORRECT_PATTERN: SoundPattern = [
   },
 ];
 const WRONG_PATTERN: SoundPattern = [
-  { frequency: 240, duration: 0.12, gain: 0.08, type: "sawtooth" },
+  { frequency: 150, duration: 0.84, gain: 0.08, type: "sawtooth" },
 ];
 const STAGE_CLEAR_PATTERN: SoundPattern = [
   { frequency: 660, duration: 0.08, gain: 0.075, type: "triangle", delay: 0 },
