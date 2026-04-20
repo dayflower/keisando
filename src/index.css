@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans+Code:wght@700;900&display=swap");
+
 :root {
   font-family: "Hiragino Maru Gothic ProN", "Avenir Next", sans-serif;
   color: #152238;
@@ -171,6 +173,7 @@ body {
   right: -0.25rem;
   bottom: -5rem;
   font-size: 16rem;
+  font-family: "Google Sans Code", monospace;
   font-weight: 900;
   line-height: 1;
   color: rgb(143 79 0 / 20%);
@@ -179,10 +182,6 @@ body {
   pointer-events: none;
   user-select: none;
   z-index: 1;
-}
-
-.stage-item[data-stage-id="stage2"]::after {
-  right: 2rem;
 }
 
 .stage-item > span {
