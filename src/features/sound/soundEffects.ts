@@ -69,64 +69,99 @@ const WRONG_PATTERN: SoundPattern = [
   { frequency: 150, duration: 0.84, gain: 0.08, type: "sawtooth" },
 ];
 const CLEAR_GLOBAL_BEST_PATTERN: SoundPattern = [
-  { frequency: 783.99, duration: 0.09, gain: 0.09, type: "triangle", delay: 0 },
+  { frequency: 783.99, duration: 0.12, gain: 0.1, type: "triangle", delay: 0 },
   {
     frequency: 987.77,
-    duration: 0.09,
-    gain: 0.095,
+    duration: 0.13,
+    gain: 0.105,
     type: "triangle",
-    delay: 0.08,
+    delay: 0.12,
   },
   {
     frequency: 1174.66,
-    duration: 0.1,
-    gain: 0.1,
+    duration: 0.14,
+    gain: 0.11,
     type: "triangle",
-    delay: 0.16,
+    delay: 0.25,
   },
   {
     frequency: 1567.98,
-    duration: 0.3,
-    gain: 0.105,
+    duration: 0.4,
+    gain: 0.115,
     type: "sine",
-    delay: 0.24,
+    delay: 0.38,
+  },
+  {
+    frequency: 1975.53,
+    duration: 0.29,
+    gain: 0.075,
+    type: "triangle",
+    delay: 0.48,
   },
 ];
 const CLEAR_MY_BEST_PATTERN: SoundPattern = [
-  { frequency: 659.25, duration: 0.1, gain: 0.08, type: "triangle", delay: 0 },
+  { frequency: 783.99, duration: 0.12, gain: 0.09, type: "triangle", delay: 0 },
+  {
+    frequency: 987.77,
+    duration: 0.12,
+    gain: 0.095,
+    type: "triangle",
+    delay: 0.14,
+  },
+  {
+    frequency: 1174.66,
+    duration: 0.13,
+    gain: 0.1,
+    type: "triangle",
+    delay: 0.27,
+  },
+  {
+    frequency: 1567.98,
+    duration: 0.36,
+    gain: 0.105,
+    type: "sine",
+    delay: 0.4,
+  },
+];
+const CLEAR_NO_MISTAKE_PATTERN: SoundPattern = [
+  { frequency: 659.25, duration: 0.12, gain: 0.09, type: "triangle", delay: 0 },
+  {
+    frequency: 880,
+    duration: 0.13,
+    gain: 0.09,
+    type: "triangle",
+    delay: 0.12,
+  },
+  {
+    frequency: 1046.5,
+    duration: 0.23,
+    gain: 0.095,
+    type: "triangle",
+    delay: 0.24,
+  },
+  {
+    frequency: 1318.5,
+    duration: 0.17,
+    gain: 0.065,
+    type: "sine",
+    delay: 0.34,
+  },
+];
+const CLEAR_WITH_MISTAKE_PATTERN: SoundPattern = [
+  { frequency: 659.25, duration: 0.11, gain: 0.08, type: "triangle", delay: 0 },
   {
     frequency: 880,
     duration: 0.12,
     gain: 0.08,
     type: "triangle",
-    delay: 0.11,
+    delay: 0.12,
   },
   {
     frequency: 1046.5,
-    duration: 0.2,
+    duration: 0.21,
     gain: 0.085,
     type: "triangle",
-    delay: 0.24,
-  },
-];
-const CLEAR_NO_MISTAKE_PATTERN: SoundPattern = [
-  { frequency: 523.25, duration: 0.1, gain: 0.08, type: "sine", delay: 0 },
-  {
-    frequency: 659.25,
-    duration: 0.18,
-    gain: 0.08,
-    type: "sine",
-    delay: 0.1,
-  },
-];
-const CLEAR_WITH_MISTAKE_PATTERN: SoundPattern = [
-  { frequency: 196, duration: 0.1, gain: 0.06, type: "sawtooth", delay: 0 },
-  {
-    frequency: 246.94,
-    duration: 0.11,
-    gain: 0.055,
-    type: "triangle",
-    delay: 0.08,
+    delay: 0.22,
   },
 ];
 

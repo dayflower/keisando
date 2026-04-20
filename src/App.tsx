@@ -220,6 +220,9 @@ function App() {
         case "noMistake":
           playClearNoMistake();
           break;
+        case "withMistake":
+          playClearWithMistake();
+          break;
         default:
           playClearWithMistake();
       }
