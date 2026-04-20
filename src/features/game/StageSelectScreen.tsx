@@ -156,16 +156,18 @@ export const StageSelectScreen = ({
             );
           })}
         </div>
-        <button
-          className="sound-debug-entry-button"
-          type="button"
-          onClick={() => {
-            onUiTap?.();
-            onOpenSoundDebug();
-          }}
-        >
-          Open Sound Debug
-        </button>
+        {import.meta.env.DEV ? (
+          <button
+            className="sound-debug-entry-button"
+            type="button"
+            onClick={() => {
+              onUiTap?.();
+              onOpenSoundDebug();
+            }}
+          >
+            Open Sound Debug
+          </button>
+        ) : null}
       </section>
     </main>
   );
