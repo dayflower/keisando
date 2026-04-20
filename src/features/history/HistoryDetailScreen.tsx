@@ -44,9 +44,9 @@ export const HistoryDetailScreen = ({
         <h1 className="title">Keisando</h1>
 
         <div className="history-section">
-          <h2 className="history-section-title">Header</h2>
+          <h2 className="history-section-title">Profile</h2>
           <p className="history-item">
-            Created at: {formatRecordedAt(activePlayer.createdAt)}
+            Joined at: {formatRecordedAt(activePlayer.createdAt)}
           </p>
           <p className="history-item">
             Last played at:{" "}
