@@ -123,7 +123,7 @@ export const PlayingScreen = ({
                 </p>
               </>
             ) : (
-              <div className="countdown-box" role="status">
+              <div className="countdown-status" role="status">
                 <p className="countdown-label">Round starts in</p>
                 <p key={countdownDisplay} className="countdown-number">
                   {countdownDisplay}
