@@ -147,6 +147,8 @@ body {
 }
 
 .stage-item {
+  position: relative;
+  overflow: hidden;
   border: none;
   border-radius: 16px;
   background: linear-gradient(140deg, #fff2d7, #ffe0b0);
@@ -161,6 +163,31 @@ body {
     transform 120ms ease,
     box-shadow 120ms ease,
     filter 120ms ease;
+}
+
+.stage-item::after {
+  content: attr(data-operator);
+  position: absolute;
+  right: -0.25rem;
+  bottom: -5rem;
+  font-size: 16rem;
+  font-weight: 900;
+  line-height: 1;
+  color: rgb(143 79 0 / 20%);
+  transform: rotate(-17deg);
+  letter-spacing: -0.05em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+.stage-item[data-stage-id="stage2"]::after {
+  right: 2rem;
+}
+
+.stage-item > span {
+  position: relative;
+  z-index: 2;
 }
 
 .stage-item:hover {

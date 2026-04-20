@@ -20,6 +20,12 @@ type StageSelectScreenProps = {
   onOpenPlayerSelect: () => void;
 };
 
+const stageOperatorById: Record<string, string> = {
+  stage1: "+",
+  stage2: "-",
+  stage3: "--",
+};
+
 export const StageSelectScreen = ({
   activePlayer,
   canStartStage,
@@ -90,6 +96,8 @@ export const StageSelectScreen = ({
               <article className="stage-item-shell" key={stage.id}>
                 <button
                   className="stage-item"
+                  data-operator={stageOperatorById[stage.id] ?? ""}
+                  data-stage-id={stage.id}
                   type="button"
                   onClick={() => onStartStage(stage)}
                   disabled={!canStartStage}
