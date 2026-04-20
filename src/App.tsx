@@ -179,7 +179,7 @@ function App() {
         }}
         onSelectPlayer={handleSelectPlayer}
         onRegisterPlayer={handleRegisterPlayer}
-        onClose={() => setScreen("stageSelect")}
+        onBackToStageSelect={() => setScreen("stageSelect")}
       />
     );
   }

@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 
@@ -48,12 +49,12 @@ export const PlayingScreen = ({
           </p>
           {!isCleared && (
             <button
-              className="close-button"
+              className="back-icon-button"
               type="button"
               onClick={onBackToStageSelect}
               aria-label="Back to stage select"
             >
-              ×
+              <ArrowLeft size={16} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -146,11 +147,12 @@ export const PlayingScreen = ({
         {isCleared && (
           <div className="clear-actions">
             <button
-              className="clear-close-button"
+              className="primary-back-button"
               type="button"
               onClick={onBackToStageSelect}
             >
-              Close
+              <ArrowLeft size={16} aria-hidden="true" />
+              <span>Back</span>
             </button>
             <button
               className="clear-retry-button"

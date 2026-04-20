@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { formatElapsedTime, formatRecordedAt } from "../../shared/formatters";
 import type {
   Player,
@@ -31,12 +32,12 @@ export const RankingScreen = ({
         <div className="stage-head-row">
           <p className="stage-tag">{rankingStage.name} Rankings</p>
           <button
-            className="close-button"
+            className="back-icon-button"
             type="button"
             onClick={onBackToStageSelect}
             aria-label="Back to stage select"
           >
-            ×
+            <ArrowLeft size={16} aria-hidden="true" />
           </button>
         </div>
         <h1 className="title">Keisando</h1>

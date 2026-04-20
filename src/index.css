@@ -420,8 +420,9 @@ body {
 }
 
 .choice:focus-visible,
-.close-button:focus-visible,
-.clear-close-button:focus-visible,
+.back-icon-button:focus-visible,
+.primary-back-button:focus-visible,
+.primary-action-button:focus-visible,
 .clear-retry-button:focus-visible,
 .player-trigger:focus-visible,
 .player-item:focus-visible,
@@ -495,7 +496,7 @@ body {
   font-weight: 700;
 }
 
-.close-button {
+.back-icon-button {
   border: none;
   border-radius: 999px;
   width: 2rem;
@@ -586,7 +587,8 @@ body {
   gap: 0.6rem;
 }
 
-.clear-close-button,
+.primary-back-button,
+.primary-action-button,
 .clear-retry-button {
   border: none;
   border-radius: 999px;
@@ -596,9 +598,17 @@ body {
   cursor: pointer;
 }
 
-.clear-close-button {
+.primary-back-button,
+.primary-action-button {
   background: #1e4f93;
   color: #fff;
+}
+
+.primary-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
 }
 
 .clear-retry-button {

@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import type { FormEvent } from "react";
 import { PLAYER_NAME_MAX_LENGTH } from "../../shared/constants";
 import type { Player } from "../../shared/types";
@@ -10,7 +11,7 @@ type PlayerSelectScreenProps = {
   onSetNewPlayerName: (name: string) => void;
   onSelectPlayer: (playerId: string) => void;
   onRegisterPlayer: (event: FormEvent<HTMLFormElement>) => void;
-  onClose: () => void;
+  onBackToStageSelect: () => void;
 };
 
 export const PlayerSelectScreen = ({
@@ -21,7 +22,7 @@ export const PlayerSelectScreen = ({
   onSetNewPlayerName,
   onSelectPlayer,
   onRegisterPlayer,
-  onClose,
+  onBackToStageSelect,
 }: PlayerSelectScreenProps) => {
   return (
     <main className="app">
@@ -29,12 +30,12 @@ export const PlayerSelectScreen = ({
         <div className="stage-head-row">
           <p className="stage-tag">Select Player</p>
           <button
-            className="close-button"
+            className="back-icon-button"
             type="button"
-            onClick={onClose}
+            onClick={onBackToStageSelect}
             aria-label="Back to stage select"
           >
-            ×
+            <ArrowLeft size={16} aria-hidden="true" />
           </button>
         </div>
         <h1 className="title">Keisando</h1>
@@ -84,7 +85,7 @@ export const PlayerSelectScreen = ({
             <p className="player-register-error">{registerError}</p>
           )}
           <div className="player-register-actions">
-            <button className="clear-close-button" type="submit">
+            <button className="primary-action-button" type="submit">
               Register
             </button>
           </div>
