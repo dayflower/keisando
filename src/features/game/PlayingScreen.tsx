@@ -46,6 +46,13 @@ export const PlayingScreen = ({
   onToggleMute,
   onUiTap,
 }: PlayingScreenProps) => {
+  const correctCount = Math.max(answeredCount - wrongAnswerCount, 0);
+  const progressMax = selectedStage.baseQuestionCount;
+  const progressPercent =
+    progressMax > 0
+      ? Math.min((correctCount / progressMax) * 100, 100)
+      : 0;
+
   return (
     <main className="app">
       <section className="stage-card">
@@ -81,6 +88,21 @@ export const PlayingScreen = ({
           <p>Answered: {answeredCount}</p>
           <p>Total: {requiredCount}</p>
           <p>Remaining: {remainingCount}</p>
+        </div>
+        <div className="progress-bar-block">
+          <div
+            className="progress-bar-track"
+            role="progressbar"
+            aria-label="Question progress"
+            aria-valuemin={0}
+            aria-valuemax={progressMax}
+            aria-valuenow={Math.min(correctCount, progressMax)}
+          >
+            <span
+              className="progress-bar-fill"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
         </div>
         <div className="timer-row">
           <p className="timer-pill">Time: {formatElapsedTime(elapsedMs)}</p>
