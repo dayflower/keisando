@@ -26,7 +26,10 @@ describe("createSoundEffectsController", () => {
     expect(() => controller.playCountdownTick()).not.toThrow();
     expect(() => controller.playRoundStart()).not.toThrow();
     expect(() => controller.playWrong()).not.toThrow();
-    expect(() => controller.playStageClear()).not.toThrow();
+    expect(() => controller.playClearGlobalBest()).not.toThrow();
+    expect(() => controller.playClearMyBest()).not.toThrow();
+    expect(() => controller.playClearNoMistake()).not.toThrow();
+    expect(() => controller.playClearWithMistake()).not.toThrow();
   });
 
   it("initializes audio and plays when unmuted", () => {

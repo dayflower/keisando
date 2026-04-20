@@ -9,9 +9,23 @@ import { usePlayers } from "./features/player/usePlayers";
 import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
+import { SoundDebugScreen } from "./features/sound/SoundDebugScreen";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
 import type { STAGES } from "./shared/stages";
-import type { Screen } from "./shared/types";
+import type { Screen, StageRunRecord } from "./shared/types";
+
+type ClearSoundVariant = "globalBest" | "myBest" | "noMistake" | "withMistake";
+
+const isNewBestRecord = (
+  candidate: StageRunRecord,
+  best: StageRunRecord | null,
+): boolean => {
+  if (!best) return true;
+  if (candidate.elapsedMs !== best.elapsedMs) {
+    return candidate.elapsedMs < best.elapsedMs;
+  }
+  return candidate.recordedAt < best.recordedAt;
+};
 
 function App() {
   const [screen, setScreen] = useState<Screen>("stageSelect");
@@ -25,7 +39,10 @@ function App() {
     playRoundStart,
     playCorrect,
     playWrong,
-    playStageClear,
+    playClearGlobalBest,
+    playClearMyBest,
+    playClearNoMistake,
+    playClearWithMistake,
   } = useSoundEffects();
 
   const {
@@ -57,6 +74,43 @@ function App() {
     activePlayer,
     records,
     onStageClear: (payload) => {
+      const globalBest =
+        records
+          .filter((record) => record.stageId === payload.stageId)
+          .sort((a, b) =>
+            a.elapsedMs === b.elapsedMs
+              ? a.recordedAt - b.recordedAt
+              : a.elapsedMs - b.elapsedMs,
+          )[0] ?? null;
+      const myBest =
+        records
+          .filter(
+            (record) =>
+              record.stageId === payload.stageId &&
+              record.playerId === payload.playerId,
+          )
+          .sort((a, b) =>
+            a.elapsedMs === b.elapsedMs
+              ? a.recordedAt - b.recordedAt
+              : a.elapsedMs - b.elapsedMs,
+          )[0] ?? null;
+      const isGlobalBestUpdated = isNewBestRecord(
+        payload.clearRecord,
+        globalBest,
+      );
+      const isMyBestUpdated = isNewBestRecord(payload.clearRecord, myBest);
+      const isNoMistakeClear = payload.mistakeCount === 0;
+
+      if (isGlobalBestUpdated) {
+        clearSoundVariantRef.current = "globalBest";
+      } else if (isMyBestUpdated) {
+        clearSoundVariantRef.current = "myBest";
+      } else {
+        clearSoundVariantRef.current = isNoMistakeClear
+          ? "noMistake"
+          : "withMistake";
+      }
+
       addRecord(payload.clearRecord);
       appendClearRecord({
         playerId: payload.playerId,
@@ -74,6 +128,7 @@ function App() {
   const previousRoundActiveRef = useRef<boolean>(false);
   const previousAnsweredCountRef = useRef<number>(0);
   const previousClearedRef = useRef<boolean>(false);
+  const clearSoundVariantRef = useRef<ClearSoundVariant>("withMistake");
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
     [game.playingPlayerId, players],
@@ -155,10 +210,30 @@ function App() {
       game.isCleared &&
       !previousClearedRef.current
     ) {
-      playStageClear();
+      switch (clearSoundVariantRef.current) {
+        case "globalBest":
+          playClearGlobalBest();
+          break;
+        case "myBest":
+          playClearMyBest();
+          break;
+        case "noMistake":
+          playClearNoMistake();
+          break;
+        default:
+          playClearWithMistake();
+      }
     }
     previousClearedRef.current = game.isCleared;
-  }, [screen, game.isPlaying, game.isCleared, playStageClear]);
+  }, [
+    screen,
+    game.isPlaying,
+    game.isCleared,
+    playClearGlobalBest,
+    playClearMyBest,
+    playClearNoMistake,
+    playClearWithMistake,
+  ]);
 
   const backToStageSelect = () => {
     setScreen("stageSelect");
@@ -186,6 +261,10 @@ function App() {
     setRegisterError(null);
     setNewPlayerName("");
     setScreen("playerSelect");
+  };
+
+  const handleOpenSoundDebug = () => {
+    setScreen("soundDebug");
   };
 
   const handleSelectPlayer = (playerId: string) => {
@@ -222,9 +301,29 @@ function App() {
         onOpenRankingScreen={handleOpenRanking}
         onOpenPlayHistory={handleOpenPlayHistory}
         onOpenPlayerSelect={handleOpenPlayerSelect}
+        onOpenSoundDebug={handleOpenSoundDebug}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onUiTap={playUiTap}
+      />
+    );
+  }
+
+  if (screen === "soundDebug") {
+    return (
+      <SoundDebugScreen
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onBackToStageSelect={() => setScreen("stageSelect")}
+        onPlayUiTap={playUiTap}
+        onPlayCountdownTick={playCountdownTick}
+        onPlayRoundStart={playRoundStart}
+        onPlayCorrect={playCorrect}
+        onPlayWrong={playWrong}
+        onPlayClearGlobalBest={playClearGlobalBest}
+        onPlayClearMyBest={playClearMyBest}
+        onPlayClearNoMistake={playClearNoMistake}
+        onPlayClearWithMistake={playClearWithMistake}
       />
     );
   }

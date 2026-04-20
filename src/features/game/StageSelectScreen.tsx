@@ -19,6 +19,7 @@ type StageSelectScreenProps = {
   onOpenRankingScreen: (stageId: string) => void;
   onOpenPlayHistory: () => void;
   onOpenPlayerSelect: () => void;
+  onOpenSoundDebug: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
   onUiTap?: () => void;
@@ -39,6 +40,7 @@ export const StageSelectScreen = ({
   onOpenRankingScreen,
   onOpenPlayHistory,
   onOpenPlayerSelect,
+  onOpenSoundDebug,
   isMuted,
   onToggleMute,
   onUiTap,
@@ -154,6 +156,16 @@ export const StageSelectScreen = ({
             );
           })}
         </div>
+        <button
+          className="sound-debug-entry-button"
+          type="button"
+          onClick={() => {
+            onUiTap?.();
+            onOpenSoundDebug();
+          }}
+        >
+          Open Sound Debug
+        </button>
       </section>
     </main>
   );

@@ -78,4 +78,5 @@ export type Screen =
   | "playerSelect"
   | "playing"
   | "ranking"
-  | "historyDetail";
+  | "historyDetail"
+  | "soundDebug";

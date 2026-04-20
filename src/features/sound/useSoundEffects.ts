@@ -32,7 +32,10 @@ export const useSoundEffects = () => {
       playRoundStart: () => controllerRef.current.playRoundStart(),
       playCorrect: () => controllerRef.current.playCorrect(),
       playWrong: () => controllerRef.current.playWrong(),
-      playStageClear: () => controllerRef.current.playStageClear(),
+      playClearGlobalBest: () => controllerRef.current.playClearGlobalBest(),
+      playClearMyBest: () => controllerRef.current.playClearMyBest(),
+      playClearNoMistake: () => controllerRef.current.playClearNoMistake(),
+      playClearWithMistake: () => controllerRef.current.playClearWithMistake(),
     }),
     [isMuted, toggleMute],
   );

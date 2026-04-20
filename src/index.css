@@ -100,6 +100,29 @@ textarea {
   font-weight: 600;
 }
 
+.sound-debug-entry-button {
+  margin: auto 0 0;
+  border: none;
+  border-radius: 999px;
+  align-self: flex-start;
+  padding: 0.42rem 0.82rem;
+  background: #e7f0ff;
+  color: #1e4f93;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    background-color 120ms ease;
+}
+
+.sound-debug-entry-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  background: #dbe9ff;
+}
+
 .stage-select-hint {
   margin: 0 0 0.95rem;
   color: #1f4f91;
@@ -483,7 +506,9 @@ textarea {
 .stage-ranking-button:focus-visible,
 .ranking-tab:focus-visible,
 .history-icon-button:focus-visible,
-.sound-icon-button:focus-visible {
+.sound-icon-button:focus-visible,
+.sound-debug-entry-button:focus-visible,
+.sound-debug-button:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
 }
@@ -638,6 +663,32 @@ textarea {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 0.6rem;
+}
+
+.sound-debug-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.sound-debug-button {
+  border: none;
+  border-radius: 12px;
+  padding: 0.68rem 0.82rem;
+  text-align: left;
+  background: #f7ecd7;
+  color: #3d2500;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    background-color 120ms ease;
+}
+
+.sound-debug-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  background: #f3e3c6;
 }
 
 .primary-back-button,

@@ -23,7 +23,10 @@ export type SoundEffectsController = {
   playRoundStart: () => void;
   playCorrect: () => void;
   playWrong: () => void;
-  playStageClear: () => void;
+  playClearGlobalBest: () => void;
+  playClearMyBest: () => void;
+  playClearNoMistake: () => void;
+  playClearWithMistake: () => void;
 };
 
 const defaultGetAudioContextConstructor =
@@ -65,21 +68,65 @@ const CORRECT_PATTERN: SoundPattern = [
 const WRONG_PATTERN: SoundPattern = [
   { frequency: 150, duration: 0.84, gain: 0.08, type: "sawtooth" },
 ];
-const STAGE_CLEAR_PATTERN: SoundPattern = [
-  { frequency: 660, duration: 0.08, gain: 0.075, type: "triangle", delay: 0 },
+const CLEAR_GLOBAL_BEST_PATTERN: SoundPattern = [
+  { frequency: 783.99, duration: 0.09, gain: 0.09, type: "triangle", delay: 0 },
   {
-    frequency: 880,
-    duration: 0.1,
-    gain: 0.075,
+    frequency: 987.77,
+    duration: 0.09,
+    gain: 0.095,
     type: "triangle",
-    delay: 0.09,
+    delay: 0.08,
   },
   {
-    frequency: 1175,
-    duration: 0.14,
+    frequency: 1174.66,
+    duration: 0.1,
+    gain: 0.1,
+    type: "triangle",
+    delay: 0.16,
+  },
+  {
+    frequency: 1567.98,
+    duration: 0.3,
+    gain: 0.105,
+    type: "sine",
+    delay: 0.24,
+  },
+];
+const CLEAR_MY_BEST_PATTERN: SoundPattern = [
+  { frequency: 659.25, duration: 0.1, gain: 0.08, type: "triangle", delay: 0 },
+  {
+    frequency: 880,
+    duration: 0.12,
     gain: 0.08,
     type: "triangle",
-    delay: 0.21,
+    delay: 0.11,
+  },
+  {
+    frequency: 1046.5,
+    duration: 0.2,
+    gain: 0.085,
+    type: "triangle",
+    delay: 0.24,
+  },
+];
+const CLEAR_NO_MISTAKE_PATTERN: SoundPattern = [
+  { frequency: 523.25, duration: 0.1, gain: 0.08, type: "sine", delay: 0 },
+  {
+    frequency: 659.25,
+    duration: 0.18,
+    gain: 0.08,
+    type: "sine",
+    delay: 0.1,
+  },
+];
+const CLEAR_WITH_MISTAKE_PATTERN: SoundPattern = [
+  { frequency: 196, duration: 0.1, gain: 0.06, type: "sawtooth", delay: 0 },
+  {
+    frequency: 246.94,
+    duration: 0.11,
+    gain: 0.055,
+    type: "triangle",
+    delay: 0.08,
   },
 ];
 
@@ -170,6 +217,9 @@ export const createSoundEffectsController = ({
     playRoundStart: () => play(ROUND_START_PATTERN),
     playCorrect: () => play(CORRECT_PATTERN),
     playWrong: () => play(WRONG_PATTERN),
-    playStageClear: () => play(STAGE_CLEAR_PATTERN),
+    playClearGlobalBest: () => play(CLEAR_GLOBAL_BEST_PATTERN),
+    playClearMyBest: () => play(CLEAR_MY_BEST_PATTERN),
+    playClearNoMistake: () => play(CLEAR_NO_MISTAKE_PATTERN),
+    playClearWithMistake: () => play(CLEAR_WITH_MISTAKE_PATTERN),
   };
 };
