@@ -98,9 +98,6 @@ export const StageSelectScreen = ({
                     <strong>{stage.name}</strong>
                     <span className="stage-item-tag">{stage.tag}</span>
                   </span>
-                  <span className="stage-item-description">
-                    {stage.description}
-                  </span>
                   <span className="stage-item-record">
                     Global Best:{" "}
                     {stageGlobalBest
