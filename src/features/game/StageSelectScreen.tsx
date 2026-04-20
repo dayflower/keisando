@@ -1,4 +1,5 @@
 import { CircleUserRound, History } from "lucide-react";
+import { useMemo } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import { STAGES } from "../../shared/stages";
 import type {
@@ -6,7 +7,7 @@ import type {
   StageDefinition,
   StageRunRecord,
 } from "../../shared/types";
-import { getTopRecords } from "../ranking/logic";
+import { buildBestRecordByStageId } from "../ranking/logic";
 
 type StageSelectScreenProps = {
   activePlayer: Player | null;
@@ -29,6 +30,18 @@ export const StageSelectScreen = ({
   onOpenPlayHistory,
   onOpenPlayerSelect,
 }: StageSelectScreenProps) => {
+  const bestGlobalByStageId = useMemo(
+    () => buildBestRecordByStageId(records),
+    [records],
+  );
+  const bestMyByStageId = useMemo(() => {
+    if (!activePlayer) {
+      return new Map<string, StageRunRecord>();
+    }
+
+    return buildBestRecordByStageId(records, activePlayer.id);
+  }, [activePlayer, records]);
+
   return (
     <main className="app">
       <section className="stage-card">
@@ -67,19 +80,11 @@ export const StageSelectScreen = ({
 
         <div className="stage-list">
           {STAGES.map((stage) => {
-            const stageGlobalBest = getTopRecords(
-              records.filter((record) => record.stageId === stage.id),
-            )[0];
+            const stageGlobalBest = bestGlobalByStageId.get(stage.id);
             const stageMyBest =
               activePlayer === null
                 ? null
-                : (getTopRecords(
-                    records.filter(
-                      (record) =>
-                        record.stageId === stage.id &&
-                        record.playerId === activePlayer.id,
-                    ),
-                  )[0] ?? null);
+                : (bestMyByStageId.get(stage.id) ?? null);
 
             return (
               <article className="stage-item-shell" key={stage.id}>

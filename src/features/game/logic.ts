@@ -21,7 +21,7 @@ const shuffle = <T>(items: T[]): T[] => {
   return next;
 };
 
-const createOptions = (
+export const createOptions = (
   answer: number,
   answerMin: number,
   answerMax: number,
