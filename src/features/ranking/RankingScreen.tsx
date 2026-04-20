@@ -6,6 +6,7 @@ import type {
   StageDefinition,
   StageRunRecord,
 } from "../../shared/types";
+import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type RankingScreenProps = {
   rankingStage: StageDefinition;
@@ -15,6 +16,9 @@ type RankingScreenProps = {
   rows: StageRunRecord[];
   onSetRankingTab: (tab: RankingTab) => void;
   onBackToStageSelect: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
+  onUiTap?: () => void;
 };
 
 export const RankingScreen = ({
@@ -25,20 +29,33 @@ export const RankingScreen = ({
   rows,
   onSetRankingTab,
   onBackToStageSelect,
+  isMuted,
+  onToggleMute,
+  onUiTap,
 }: RankingScreenProps) => {
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">{rankingStage.name} Rankings</p>
-          <button
-            className="back-icon-button"
-            type="button"
-            onClick={onBackToStageSelect}
-            aria-label="Back to stage select"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-          </button>
+          <div className="stage-head-actions">
+            <button
+              className="back-icon-button"
+              type="button"
+              onClick={() => {
+                onUiTap?.();
+                onBackToStageSelect();
+              }}
+              aria-label="Back to stage select"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+            </button>
+            <SoundToggleButton
+              isMuted={isMuted}
+              onToggleMute={onToggleMute}
+              onUiTap={onUiTap}
+            />
+          </div>
         </div>
         <h1 className="title">Keisando</h1>
         <p className="stage-select-description">
@@ -51,7 +68,10 @@ export const RankingScreen = ({
             type="button"
             role="tab"
             aria-selected={rankingTab === "global"}
-            onClick={() => onSetRankingTab("global")}
+            onClick={() => {
+              onUiTap?.();
+              onSetRankingTab("global");
+            }}
           >
             Global Top10
           </button>
@@ -60,7 +80,10 @@ export const RankingScreen = ({
             type="button"
             role="tab"
             aria-selected={rankingTab === "player"}
-            onClick={() => onSetRankingTab("player")}
+            onClick={() => {
+              onUiTap?.();
+              onSetRankingTab("player");
+            }}
             disabled={activePlayer === null}
           >
             My Top10

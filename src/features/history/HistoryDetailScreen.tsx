@@ -11,6 +11,7 @@ import type {
   PlayHistoryRecord,
   StageLifetimeSummary,
 } from "../../shared/types";
+import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type HistoryDetailScreenProps = {
   activePlayer: Player;
@@ -18,6 +19,9 @@ type HistoryDetailScreenProps = {
   historyRecords: PlayHistoryRecord[];
   stageSummaries: StageLifetimeSummary[];
   onBackToStageSelect: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
+  onUiTap?: () => void;
 };
 
 export const HistoryDetailScreen = ({
@@ -26,20 +30,33 @@ export const HistoryDetailScreen = ({
   historyRecords,
   stageSummaries,
   onBackToStageSelect,
+  isMuted,
+  onToggleMute,
+  onUiTap,
 }: HistoryDetailScreenProps) => {
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">Play History</p>
-          <button
-            className="back-icon-button"
-            type="button"
-            onClick={onBackToStageSelect}
-            aria-label="Back to stage select"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-          </button>
+          <div className="stage-head-actions">
+            <button
+              className="back-icon-button"
+              type="button"
+              onClick={() => {
+                onUiTap?.();
+                onBackToStageSelect();
+              }}
+              aria-label="Back to stage select"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+            </button>
+            <SoundToggleButton
+              isMuted={isMuted}
+              onToggleMute={onToggleMute}
+              onUiTap={onUiTap}
+            />
+          </div>
         </div>
         <h1 className="title">Keisando</h1>
 

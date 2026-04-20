@@ -1,9 +1,8 @@
-@import url(
-  "https://fonts.googleapis.com/css2?family=Alice&family=Google+Sans+Code:wght@700;900&family=Kaisei+Decol:wght@400;500;700&display=swap"
-);
+@import url("https://fonts.googleapis.com/css2?family=Alice&family=Google+Sans+Code:wght@700;900&family=Kaisei+Decol:wght@400;500;700&display=swap");
 
 :root {
-  font-family: "Alice", "Kaisei Decol", "Helvetica Neue", "Roboto", "Segoe UI", Arial,
+  font-family:
+    "Alice", "Kaisei Decol", "Helvetica Neue", "Roboto", "Segoe UI", Arial,
     sans-serif;
   color: #152238;
   background: #fff6e9;
@@ -142,7 +141,29 @@ textarea {
     background-color 120ms ease;
 }
 
+.sound-icon-button {
+  border: none;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  background: #eff4ff;
+  color: #224982;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    background-color 120ms ease;
+}
+
 .history-icon-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  background: #e5efff;
+}
+
+.sound-icon-button:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);
   background: #e5efff;
@@ -461,7 +482,8 @@ textarea {
 .stage-item:focus-visible,
 .stage-ranking-button:focus-visible,
 .ranking-tab:focus-visible,
-.history-icon-button:focus-visible {
+.history-icon-button:focus-visible,
+.sound-icon-button:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
 }

@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
 import { useGameSession } from "./features/game/useGameSession";
@@ -9,6 +9,7 @@ import { usePlayers } from "./features/player/usePlayers";
 import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
+import { useSoundEffects } from "./features/sound/useSoundEffects";
 import type { STAGES } from "./shared/stages";
 import type { Screen } from "./shared/types";
 
@@ -16,6 +17,16 @@ function App() {
   const [screen, setScreen] = useState<Screen>("stageSelect");
   const [newPlayerName, setNewPlayerName] = useState("");
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const {
+    isMuted,
+    toggleMute,
+    playUiTap,
+    playCountdownTick,
+    playRoundStart,
+    playCorrect,
+    playWrong,
+    playStageClear,
+  } = useSoundEffects();
 
   const {
     players,
@@ -59,10 +70,85 @@ function App() {
   });
 
   const canStartStage = activePlayer !== null;
+  const previousCountdownRef = useRef<number | null>(null);
+  const previousRoundActiveRef = useRef<boolean>(false);
+  const previousResultRef = useRef<"correct" | "wrong" | null>(null);
+  const previousClearedRef = useRef<boolean>(false);
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
     [game.playingPlayerId, players],
   );
+
+  useEffect(() => {
+    if (
+      screen !== "playing" ||
+      !game.isPlaying ||
+      game.isCleared ||
+      game.isRoundActive
+    ) {
+      previousCountdownRef.current = null;
+      return;
+    }
+
+    if (previousCountdownRef.current !== game.countdownDisplay) {
+      playCountdownTick();
+      previousCountdownRef.current = game.countdownDisplay;
+    }
+  }, [
+    screen,
+    game.isPlaying,
+    game.isCleared,
+    game.isRoundActive,
+    game.countdownDisplay,
+    playCountdownTick,
+  ]);
+
+  useEffect(() => {
+    if (
+      screen === "playing" &&
+      game.isPlaying &&
+      !game.isCleared &&
+      !previousRoundActiveRef.current &&
+      game.isRoundActive
+    ) {
+      playRoundStart();
+    }
+    previousRoundActiveRef.current = game.isRoundActive;
+  }, [
+    screen,
+    game.isPlaying,
+    game.isCleared,
+    game.isRoundActive,
+    playRoundStart,
+  ]);
+
+  useEffect(() => {
+    if (
+      screen === "playing" &&
+      game.isPlaying &&
+      game.lastResult !== null &&
+      game.lastResult !== previousResultRef.current
+    ) {
+      if (game.lastResult === "correct") {
+        playCorrect();
+      } else {
+        playWrong();
+      }
+    }
+    previousResultRef.current = game.lastResult;
+  }, [screen, game.isPlaying, game.lastResult, playCorrect, playWrong]);
+
+  useEffect(() => {
+    if (
+      screen === "playing" &&
+      game.isPlaying &&
+      game.isCleared &&
+      !previousClearedRef.current
+    ) {
+      playStageClear();
+    }
+    previousClearedRef.current = game.isCleared;
+  }, [screen, game.isPlaying, game.isCleared, playStageClear]);
 
   const backToStageSelect = () => {
     setScreen("stageSelect");
@@ -126,6 +212,9 @@ function App() {
         onOpenRankingScreen={handleOpenRanking}
         onOpenPlayHistory={handleOpenPlayHistory}
         onOpenPlayerSelect={handleOpenPlayerSelect}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onUiTap={playUiTap}
       />
     );
   }
@@ -142,6 +231,9 @@ function App() {
         historyRecords={historyRecords}
         stageSummaries={stageSummaries}
         onBackToStageSelect={backToStageSelect}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onUiTap={playUiTap}
       />
     );
   }
@@ -160,6 +252,9 @@ function App() {
         rows={rankingRows}
         onSetRankingTab={setRankingTab}
         onBackToStageSelect={backToStageSelect}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onUiTap={playUiTap}
       />
     );
   }
@@ -180,6 +275,9 @@ function App() {
         onSelectPlayer={handleSelectPlayer}
         onRegisterPlayer={handleRegisterPlayer}
         onBackToStageSelect={() => setScreen("stageSelect")}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onUiTap={playUiTap}
       />
     );
   }
@@ -206,6 +304,9 @@ function App() {
       onAnswer={game.handleAnswer}
       onBackToStageSelect={backToStageSelect}
       onResetStage={game.resetStage}
+      isMuted={isMuted}
+      onToggleMute={toggleMute}
+      onUiTap={playUiTap}
     />
   );
 }

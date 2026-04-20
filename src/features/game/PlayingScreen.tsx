@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
+import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type PlayingScreenProps = {
   selectedStage: StageDefinition;
@@ -19,6 +20,9 @@ type PlayingScreenProps = {
   onAnswer: (selected: number) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
+  onUiTap?: () => void;
 };
 
 export const PlayingScreen = ({
@@ -38,6 +42,9 @@ export const PlayingScreen = ({
   onAnswer,
   onBackToStageSelect,
   onResetStage,
+  isMuted,
+  onToggleMute,
+  onUiTap,
 }: PlayingScreenProps) => {
   return (
     <main className="app">
@@ -47,16 +54,26 @@ export const PlayingScreen = ({
             {selectedStage.name} / {selectedStage.tag}
             {playingPlayer && ` / ${playingPlayer.name}`}
           </p>
-          {!isCleared && (
-            <button
-              className="back-icon-button"
-              type="button"
-              onClick={onBackToStageSelect}
-              aria-label="Back to stage select"
-            >
-              <ArrowLeft size={16} aria-hidden="true" />
-            </button>
-          )}
+          <div className="stage-head-actions">
+            {!isCleared && (
+              <button
+                className="back-icon-button"
+                type="button"
+                onClick={() => {
+                  onUiTap?.();
+                  onBackToStageSelect();
+                }}
+                aria-label="Back to stage select"
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+              </button>
+            )}
+            <SoundToggleButton
+              isMuted={isMuted}
+              onToggleMute={onToggleMute}
+              onUiTap={onUiTap}
+            />
+          </div>
         </div>
 
         <h1 className="title">Keisando</h1>
@@ -149,7 +166,10 @@ export const PlayingScreen = ({
             <button
               className="primary-back-button"
               type="button"
-              onClick={onBackToStageSelect}
+              onClick={() => {
+                onUiTap?.();
+                onBackToStageSelect();
+              }}
             >
               <ArrowLeft size={16} aria-hidden="true" />
               <span>Back</span>
@@ -157,7 +177,10 @@ export const PlayingScreen = ({
             <button
               className="clear-retry-button"
               type="button"
-              onClick={onResetStage}
+              onClick={() => {
+                onUiTap?.();
+                onResetStage();
+              }}
             >
               Retry
             </button>

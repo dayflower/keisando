@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import type { FormEvent } from "react";
 import { PLAYER_NAME_MAX_LENGTH } from "../../shared/constants";
 import type { Player } from "../../shared/types";
+import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type PlayerSelectScreenProps = {
   players: Player[];
@@ -12,6 +13,9 @@ type PlayerSelectScreenProps = {
   onSelectPlayer: (playerId: string) => void;
   onRegisterPlayer: (event: FormEvent<HTMLFormElement>) => void;
   onBackToStageSelect: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
+  onUiTap?: () => void;
 };
 
 export const PlayerSelectScreen = ({
@@ -23,20 +27,33 @@ export const PlayerSelectScreen = ({
   onSelectPlayer,
   onRegisterPlayer,
   onBackToStageSelect,
+  isMuted,
+  onToggleMute,
+  onUiTap,
 }: PlayerSelectScreenProps) => {
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">Select Player</p>
-          <button
-            className="back-icon-button"
-            type="button"
-            onClick={onBackToStageSelect}
-            aria-label="Back to stage select"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-          </button>
+          <div className="stage-head-actions">
+            <button
+              className="back-icon-button"
+              type="button"
+              onClick={() => {
+                onUiTap?.();
+                onBackToStageSelect();
+              }}
+              aria-label="Back to stage select"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+            </button>
+            <SoundToggleButton
+              isMuted={isMuted}
+              onToggleMute={onToggleMute}
+              onUiTap={onUiTap}
+            />
+          </div>
         </div>
         <h1 className="title">Keisando</h1>
         <p className="stage-select-description">Choose your active player.</p>
@@ -51,7 +68,10 @@ export const PlayerSelectScreen = ({
                   className={`player-item ${isCurrent ? "player-item-active" : ""}`}
                   key={player.id}
                   type="button"
-                  onClick={() => onSelectPlayer(player.id)}
+                  onClick={() => {
+                    onUiTap?.();
+                    onSelectPlayer(player.id);
+                  }}
                 >
                   <span className="player-item-name">{player.name}</span>
                   {isCurrent && (
@@ -67,7 +87,13 @@ export const PlayerSelectScreen = ({
           </p>
         )}
 
-        <form className="player-register-form" onSubmit={onRegisterPlayer}>
+        <form
+          className="player-register-form"
+          onSubmit={(event) => {
+            onUiTap?.();
+            onRegisterPlayer(event);
+          }}
+        >
           <label className="player-register-label" htmlFor="player-name-input">
             New Player Name
           </label>

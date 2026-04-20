@@ -1,6 +1,7 @@
 export const USERS_STORAGE_KEY = "keisando:users";
 export const CURRENT_USER_ID_STORAGE_KEY = "keisando:current-user-id";
 export const RECORDS_STORAGE_KEY = "keisando:records:v1";
+export const SOUND_MUTED_STORAGE_KEY = "keisando:sound-muted";
 
 export const getHistoryStorageKey = (playerId: string): string =>
   `keisando:user:${playerId}:history`;

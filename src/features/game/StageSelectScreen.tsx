@@ -8,6 +8,7 @@ import type {
   StageRunRecord,
 } from "../../shared/types";
 import { buildBestRecordByStageId } from "../ranking/logic";
+import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type StageSelectScreenProps = {
   activePlayer: Player | null;
@@ -18,6 +19,9 @@ type StageSelectScreenProps = {
   onOpenRankingScreen: (stageId: string) => void;
   onOpenPlayHistory: () => void;
   onOpenPlayerSelect: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
+  onUiTap?: () => void;
 };
 
 const stageOperatorById: Record<string, string> = {
@@ -35,6 +39,9 @@ export const StageSelectScreen = ({
   onOpenRankingScreen,
   onOpenPlayHistory,
   onOpenPlayerSelect,
+  isMuted,
+  onToggleMute,
+  onUiTap,
 }: StageSelectScreenProps) => {
   const bestGlobalByStageId = useMemo(
     () => buildBestRecordByStageId(records),
@@ -54,10 +61,18 @@ export const StageSelectScreen = ({
         <div className="stage-head-row">
           <p className="stage-tag">Select Stage</p>
           <div className="stage-head-actions">
+            <SoundToggleButton
+              isMuted={isMuted}
+              onToggleMute={onToggleMute}
+              onUiTap={onUiTap}
+            />
             <button
               className="history-icon-button"
               type="button"
-              onClick={onOpenPlayHistory}
+              onClick={() => {
+                onUiTap?.();
+                onOpenPlayHistory();
+              }}
               aria-label="Open play history"
               disabled={!activePlayer}
             >
@@ -66,7 +81,10 @@ export const StageSelectScreen = ({
             <button
               className="player-trigger"
               type="button"
-              onClick={onOpenPlayerSelect}
+              onClick={() => {
+                onUiTap?.();
+                onOpenPlayerSelect();
+              }}
               aria-label="Open player selection"
             >
               <CircleUserRound size={18} aria-hidden="true" />
@@ -99,7 +117,10 @@ export const StageSelectScreen = ({
                   data-operator={stageOperatorById[stage.id] ?? ""}
                   data-stage-id={stage.id}
                   type="button"
-                  onClick={() => onStartStage(stage)}
+                  onClick={() => {
+                    onUiTap?.();
+                    onStartStage(stage);
+                  }}
                   disabled={!canStartStage}
                 >
                   <span className="stage-item-header">
@@ -122,7 +143,10 @@ export const StageSelectScreen = ({
                 <button
                   className="stage-ranking-button"
                   type="button"
-                  onClick={() => onOpenRankingScreen(stage.id)}
+                  onClick={() => {
+                    onUiTap?.();
+                    onOpenRankingScreen(stage.id);
+                  }}
                 >
                   Ranking
                 </button>
