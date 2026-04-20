@@ -72,7 +72,7 @@ function App() {
   const canStartStage = activePlayer !== null;
   const previousCountdownRef = useRef<number | null>(null);
   const previousRoundActiveRef = useRef<boolean>(false);
-  const previousResultRef = useRef<"correct" | "wrong" | null>(null);
+  const previousAnsweredCountRef = useRef<number>(0);
   const previousClearedRef = useRef<boolean>(false);
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
@@ -123,11 +123,14 @@ function App() {
   ]);
 
   useEffect(() => {
+    if (screen !== "playing" || !game.isPlaying) {
+      previousAnsweredCountRef.current = game.answeredCount;
+      return;
+    }
+
     if (
-      screen === "playing" &&
-      game.isPlaying &&
       game.lastResult !== null &&
-      game.lastResult !== previousResultRef.current
+      game.answeredCount !== previousAnsweredCountRef.current
     ) {
       if (game.lastResult === "correct") {
         playCorrect();
@@ -135,8 +138,15 @@ function App() {
         playWrong();
       }
     }
-    previousResultRef.current = game.lastResult;
-  }, [screen, game.isPlaying, game.lastResult, playCorrect, playWrong]);
+    previousAnsweredCountRef.current = game.answeredCount;
+  }, [
+    screen,
+    game.isPlaying,
+    game.answeredCount,
+    game.lastResult,
+    playCorrect,
+    playWrong,
+  ]);
 
   useEffect(() => {
     if (

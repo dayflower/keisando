@@ -74,4 +74,104 @@ describe("createSoundEffectsController", () => {
     controller.playUiTap();
     expect(context.createOscillator).toHaveBeenCalledTimes(1);
   });
+
+  it("recreates audio context when existing one is closed", () => {
+    const oscillator = {
+      type: "sine" as OscillatorType,
+      frequency: {
+        setValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
+    const gainNode = {
+      gain: {
+        setValueAtTime: vi.fn(),
+        linearRampToValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+    };
+    const firstContext = {
+      state: "closed",
+      currentTime: 0,
+      destination: {},
+      resume: vi.fn().mockResolvedValue(undefined),
+      createOscillator: vi.fn(() => oscillator),
+      createGain: vi.fn(() => gainNode),
+    };
+    const secondContext = {
+      state: "running",
+      currentTime: 0,
+      destination: {},
+      resume: vi.fn().mockResolvedValue(undefined),
+      createOscillator: vi.fn(() => oscillator),
+      createGain: vi.fn(() => gainNode),
+    };
+    const mockCtor = vi
+      .fn()
+      .mockImplementationOnce(() => firstContext)
+      .mockImplementationOnce(() => secondContext);
+    const ctorFactory = vi.fn(() => {
+      return function MockAudioContext(this: unknown) {
+        return mockCtor();
+      } as unknown as typeof AudioContext;
+    });
+    const controller = createSoundEffectsController({
+      initialMuted: false,
+      getAudioContextConstructor: ctorFactory,
+    });
+
+    controller.playUiTap();
+    controller.playUiTap();
+
+    expect(ctorFactory).toHaveBeenCalledTimes(2);
+    expect(secondContext.createOscillator).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumes suspended context before playback", async () => {
+    const oscillator = {
+      type: "sine" as OscillatorType,
+      frequency: {
+        setValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
+    const gainNode = {
+      gain: {
+        setValueAtTime: vi.fn(),
+        linearRampToValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+    };
+    const context = {
+      state: "suspended" as AudioContextState,
+      currentTime: 0,
+      destination: {},
+      resume: vi.fn(async () => {
+        context.state = "running";
+      }),
+      createOscillator: vi.fn(() => oscillator),
+      createGain: vi.fn(() => gainNode),
+    };
+    const ctorFactory = vi.fn(() => {
+      return function MockAudioContext(this: unknown) {
+        return context;
+      } as unknown as typeof AudioContext;
+    });
+    const controller = createSoundEffectsController({
+      initialMuted: false,
+      getAudioContextConstructor: ctorFactory,
+    });
+
+    controller.playUiTap();
+    await Promise.resolve();
+
+    expect(context.resume).toHaveBeenCalledTimes(1);
+    expect(context.createOscillator).toHaveBeenCalledTimes(1);
+  });
 });

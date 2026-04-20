@@ -116,12 +116,11 @@ export const createSoundEffectsController = ({
   let audioContext: AudioContext | null = null;
 
   const ensureAudioContext = (): AudioContext | null => {
+    if (audioContext?.state === "closed") {
+      audioContext = null;
+    }
+
     if (audioContext) {
-      if (audioContext.state === "suspended") {
-        void audioContext.resume().catch(() => {
-          // Ignore resume failures and try on future interactions.
-        });
-      }
       return audioContext;
     }
 
@@ -130,11 +129,6 @@ export const createSoundEffectsController = ({
 
     try {
       audioContext = new AudioContextCtor();
-      if (audioContext.state === "suspended") {
-        void audioContext.resume().catch(() => {
-          // Ignore resume failures and try on future interactions.
-        });
-      }
       return audioContext;
     } catch {
       return null;
@@ -146,6 +140,19 @@ export const createSoundEffectsController = ({
 
     const context = ensureAudioContext();
     if (!context) return;
+
+    if (context.state !== "running") {
+      void context
+        .resume()
+        .then(() => {
+          if (context.state !== "running") return;
+          playPattern(context, pattern);
+        })
+        .catch(() => {
+          // Ignore resume failures and try on future interactions.
+        });
+      return;
+    }
 
     try {
       playPattern(context, pattern);
