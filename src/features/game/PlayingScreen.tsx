@@ -1,8 +1,9 @@
 import { ArrowLeft } from "lucide-react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
+import type { EffectOrigin } from "./useGameSession";
 
 type PlayingScreenProps = {
   selectedStage: StageDefinition;
@@ -10,6 +11,11 @@ type PlayingScreenProps = {
   question: Question;
   answeredCount: number;
   requiredCount: number;
+  currentCombo: number;
+  comboEffectTick: number;
+  comboMilestoneTick: number;
+  comboMilestoneValue: number;
+  comboEffectOrigin: EffectOrigin;
   remainingCount: number;
   elapsedMs: number;
   bestTimeMs: number | null;
@@ -18,7 +24,7 @@ type PlayingScreenProps = {
   countdownDisplay: number;
   wrongAnswerCount: number;
   lastResult: "correct" | "wrong" | null;
-  onAnswer: (selected: number) => void;
+  onAnswer: (selected: number, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
   isMuted: boolean;
@@ -32,6 +38,11 @@ export const PlayingScreen = ({
   question,
   answeredCount,
   requiredCount,
+  currentCombo,
+  comboEffectTick,
+  comboMilestoneTick,
+  comboMilestoneValue,
+  comboEffectOrigin,
   remainingCount,
   elapsedMs,
   bestTimeMs,
@@ -53,10 +64,43 @@ export const PlayingScreen = ({
     progressMax > 0 ? Math.min((correctCount / progressMax) * 100, 100) : 0;
   const roundProgress =
     progressMax > 0 ? Math.min(correctCount / progressMax, 1) : 0;
+  const comboTier =
+    currentCombo >= 10
+      ? "high"
+      : currentCombo >= 5
+        ? "mid"
+        : currentCombo >= 3
+          ? "low"
+          : "none";
+  const comboParticleCount =
+    comboTier === "high" ? 14 : comboTier === "mid" ? 10 : 0;
+  const comboParticleIndexes = Array.from(
+    { length: comboParticleCount },
+    (_, index) => index,
+  );
+  const showComboBurst = lastResult === "correct" && comboTier !== "none";
+  const comboMilestoneLabel =
+    comboMilestoneValue > 0 ? `${comboMilestoneValue} COMBO!` : "";
   const effectStyle = {
     "--fx-hue-shift": `${Math.round(roundProgress * 64)}deg`,
     "--fx-drift-duration": `${Math.max(12, 22 - roundProgress * 8).toFixed(2)}s`,
   } as CSSProperties;
+  const comboEffectStyle = {
+    "--combo-origin-x":
+      comboEffectOrigin.x > 0 ? `${comboEffectOrigin.x}px` : "50%",
+    "--combo-origin-y":
+      comboEffectOrigin.y > 0 ? `${comboEffectOrigin.y}px` : "53%",
+  } as CSSProperties;
+  const resolveEffectOrigin = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+  ): EffectOrigin => {
+    if (event.clientX > 0 || event.clientY > 0) {
+      return { x: event.clientX, y: event.clientY };
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  };
 
   return (
     <main className="app app-playing" style={effectStyle}>
@@ -65,6 +109,23 @@ export const PlayingScreen = ({
         <span className="performance-bg-shape performance-bg-shape-b" />
         <span className="performance-bg-shape performance-bg-shape-c" />
       </div>
+      {showComboBurst && (
+        <div
+          key={comboEffectTick}
+          className={`combo-effects combo-effects-active combo-tier-${comboTier}`}
+          style={comboEffectStyle}
+          aria-hidden="true"
+        >
+          <span className="combo-ring" />
+          {comboParticleIndexes.map((particleIndex) => (
+            <span
+              key={`combo-particle-${particleIndex}`}
+              className="combo-particle"
+              style={{ "--combo-index": particleIndex } as CSSProperties}
+            />
+          ))}
+        </div>
+      )}
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
@@ -112,6 +173,15 @@ export const PlayingScreen = ({
               className="progress-bar-fill"
               style={{ width: `${progressPercent}%` }}
             />
+            {comboMilestoneLabel && (
+              <span
+                key={comboMilestoneTick}
+                className="combo-progress-overlay"
+                aria-hidden="true"
+              >
+                {comboMilestoneLabel}
+              </span>
+            )}
           </div>
         </div>
         <div className="timer-row">
@@ -134,28 +204,36 @@ export const PlayingScreen = ({
                   <button
                     className="choice choice-top"
                     type="button"
-                    onClick={() => onAnswer(question.options[0])}
+                    onClick={(event) =>
+                      onAnswer(question.options[0], resolveEffectOrigin(event))
+                    }
                   >
                     {question.options[0]}
                   </button>
                   <button
                     className="choice choice-left"
                     type="button"
-                    onClick={() => onAnswer(question.options[1])}
+                    onClick={(event) =>
+                      onAnswer(question.options[1], resolveEffectOrigin(event))
+                    }
                   >
                     {question.options[1]}
                   </button>
                   <button
                     className="choice choice-right"
                     type="button"
-                    onClick={() => onAnswer(question.options[2])}
+                    onClick={(event) =>
+                      onAnswer(question.options[2], resolveEffectOrigin(event))
+                    }
                   >
                     {question.options[2]}
                   </button>
                   <button
                     className="choice choice-bottom"
                     type="button"
-                    onClick={() => onAnswer(question.options[3])}
+                    onClick={(event) =>
+                      onAnswer(question.options[3], resolveEffectOrigin(event))
+                    }
                   >
                     {question.options[3]}
                   </button>

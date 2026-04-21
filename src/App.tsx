@@ -435,6 +435,11 @@ function App() {
       question={game.question}
       answeredCount={game.answeredCount}
       requiredCount={game.requiredCount}
+      currentCombo={game.currentCombo}
+      comboEffectTick={game.comboEffectTick}
+      comboMilestoneTick={game.comboMilestoneTick}
+      comboMilestoneValue={game.comboMilestoneValue}
+      comboEffectOrigin={game.comboEffectOrigin}
       remainingCount={game.remainingCount}
       elapsedMs={game.elapsedMs}
       bestTimeMs={game.bestTimeMs}
