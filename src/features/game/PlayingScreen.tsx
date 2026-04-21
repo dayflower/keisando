@@ -259,16 +259,17 @@ export const PlayingScreen = ({
               </div>
             )
           ) : (
-            <div className="clear-box">
+            <div className="clear-summary" role="status" aria-live="polite">
               <p className="clear-title">Stage Clear!</p>
-              <p className="clear-time">
-                Clear time: {formatElapsedTime(elapsedMs)}
+              <p className="clear-primary-time">
+                {formatElapsedTime(elapsedMs)}
               </p>
-              <p className="clear-time">
+              <p className="clear-primary-label">Clear time</p>
+              <p className="clear-meta">
                 Final questions: {requiredCount} (base{" "}
                 {selectedStage.baseQuestionCount})
               </p>
-              <p className="clear-time">Wrong answers: {wrongAnswerCount}</p>
+              <p className="clear-meta">Wrong answers: {wrongAnswerCount}</p>
             </div>
           )}
         </div>
