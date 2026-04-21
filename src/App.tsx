@@ -34,6 +34,8 @@ function App() {
   const {
     isMuted,
     toggleMute,
+    startBgm,
+    stopBgm,
     playUiTap,
     playCountdownTick,
     playRoundStart,
@@ -135,6 +137,30 @@ function App() {
   );
 
   useEffect(() => {
+    const shouldPlayBgm =
+      screen === "playing" &&
+      game.isPlaying &&
+      game.isRoundActive &&
+      !game.isCleared;
+    if (shouldPlayBgm) {
+      startBgm();
+    } else {
+      stopBgm();
+    }
+
+    return () => {
+      stopBgm();
+    };
+  }, [
+    screen,
+    game.isPlaying,
+    game.isRoundActive,
+    game.isCleared,
+    startBgm,
+    stopBgm,
+  ]);
+
+  useEffect(() => {
     if (
       screen !== "playing" ||
       !game.isPlaying ||
@@ -210,6 +236,7 @@ function App() {
       game.isCleared &&
       !previousClearedRef.current
     ) {
+      stopBgm();
       switch (clearSoundVariantRef.current) {
         case "globalBest":
           playClearGlobalBest();
@@ -236,6 +263,7 @@ function App() {
     playClearMyBest,
     playClearNoMistake,
     playClearWithMistake,
+    stopBgm,
   ]);
 
   const backToStageSelect = () => {
@@ -319,6 +347,8 @@ function App() {
         onToggleMute={toggleMute}
         onBackToStageSelect={() => setScreen("stageSelect")}
         onPlayUiTap={playUiTap}
+        onStartBgm={startBgm}
+        onStopBgm={stopBgm}
         onPlayCountdownTick={playCountdownTick}
         onPlayRoundStart={playRoundStart}
         onPlayCorrect={playCorrect}

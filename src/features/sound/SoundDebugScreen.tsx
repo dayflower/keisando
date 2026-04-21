@@ -6,6 +6,8 @@ type SoundDebugScreenProps = {
   onToggleMute: () => void;
   onBackToStageSelect: () => void;
   onPlayUiTap: () => void;
+  onStartBgm: () => void;
+  onStopBgm: () => void;
   onPlayCountdownTick: () => void;
   onPlayRoundStart: () => void;
   onPlayCorrect: () => void;
@@ -21,6 +23,8 @@ export const SoundDebugScreen = ({
   onToggleMute,
   onBackToStageSelect,
   onPlayUiTap,
+  onStartBgm,
+  onStopBgm,
   onPlayCountdownTick,
   onPlayRoundStart,
   onPlayCorrect,
@@ -54,6 +58,20 @@ export const SoundDebugScreen = ({
         </p>
 
         <div className="sound-debug-list">
+          <button
+            className="sound-debug-button"
+            type="button"
+            onClick={onStartBgm}
+          >
+            BGM Start
+          </button>
+          <button
+            className="sound-debug-button"
+            type="button"
+            onClick={onStopBgm}
+          >
+            BGM Stop
+          </button>
           <button
             className="sound-debug-button"
             type="button"

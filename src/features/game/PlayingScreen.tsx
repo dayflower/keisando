@@ -49,9 +49,7 @@ export const PlayingScreen = ({
   const correctCount = Math.max(answeredCount - wrongAnswerCount, 0);
   const progressMax = selectedStage.baseQuestionCount;
   const progressPercent =
-    progressMax > 0
-      ? Math.min((correctCount / progressMax) * 100, 100)
-      : 0;
+    progressMax > 0 ? Math.min((correctCount / progressMax) * 100, 100) : 0;
 
   return (
     <main className="app">

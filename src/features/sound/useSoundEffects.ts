@@ -27,6 +27,8 @@ export const useSoundEffects = () => {
     () => ({
       isMuted,
       toggleMute,
+      startBgm: () => controllerRef.current.startBgm(),
+      stopBgm: () => controllerRef.current.stopBgm(),
       playUiTap: () => controllerRef.current.playUiTap(),
       playCountdownTick: () => controllerRef.current.playCountdownTick(),
       playRoundStart: () => controllerRef.current.playRoundStart(),

@@ -14,6 +14,8 @@ describe("createSoundEffectsController", () => {
 
     expect(() => controller.playUiTap()).not.toThrow();
     expect(() => controller.playCorrect()).not.toThrow();
+    expect(() => controller.startBgm()).not.toThrow();
+    expect(() => controller.stopBgm()).not.toThrow();
     expect(ctorFactory).not.toHaveBeenCalled();
   });
 
@@ -30,6 +32,8 @@ describe("createSoundEffectsController", () => {
     expect(() => controller.playClearMyBest()).not.toThrow();
     expect(() => controller.playClearNoMistake()).not.toThrow();
     expect(() => controller.playClearWithMistake()).not.toThrow();
+    expect(() => controller.startBgm()).not.toThrow();
+    expect(() => controller.stopBgm()).not.toThrow();
   });
 
   it("initializes audio and plays when unmuted", () => {
@@ -73,9 +77,13 @@ describe("createSoundEffectsController", () => {
     expect(ctorFactory).toHaveBeenCalledTimes(1);
     expect(context.createOscillator).toHaveBeenCalledTimes(1);
 
+    controller.startBgm();
+    expect(context.createOscillator.mock.calls.length).toBeGreaterThan(1);
+    const callCountBeforeMute = context.createOscillator.mock.calls.length;
+
     controller.setMuted(true);
     controller.playUiTap();
-    expect(context.createOscillator).toHaveBeenCalledTimes(1);
+    expect(context.createOscillator).toHaveBeenCalledTimes(callCountBeforeMute);
   });
 
   it("recreates audio context when existing one is closed", () => {
