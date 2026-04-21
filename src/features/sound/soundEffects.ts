@@ -440,6 +440,7 @@ const BGM_PATTERN_BANK: SoundPattern[] = [
 type PlayPatternOptions = {
   startTime?: number;
   gainScale?: number;
+  outputNode?: AudioNode;
 };
 
 const playPattern = (
@@ -468,7 +469,7 @@ const playPattern = (
     gainNode.gain.exponentialRampToValueAtTime(0.0001, stopTime);
 
     oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    gainNode.connect(options.outputNode ?? audioContext.destination);
 
     oscillator.start(startTime);
     oscillator.stop(stopTime + 0.01);
@@ -481,6 +482,7 @@ export const createSoundEffectsController = ({
 }: CreateSoundEffectsControllerInput): SoundEffectsController => {
   let isMuted = initialMuted;
   let audioContext: AudioContext | null = null;
+  let bgmOutputNode: GainNode | null = null;
   let bgmLoopTimeoutId: ReturnType<typeof setTimeout> | null = null;
   let bgmStartedAt: number | null = null;
   let previousBgmPatternIndex: number | null = null;
@@ -488,6 +490,7 @@ export const createSoundEffectsController = ({
   const ensureAudioContext = (): AudioContext | null => {
     if (audioContext?.state === "closed") {
       audioContext = null;
+      bgmOutputNode = null;
     }
 
     if (audioContext) {
@@ -502,6 +505,27 @@ export const createSoundEffectsController = ({
       return audioContext;
     } catch {
       return null;
+    }
+  };
+
+  const ensureBgmOutputNode = (context: AudioContext): GainNode => {
+    if (bgmOutputNode) {
+      return bgmOutputNode;
+    }
+
+    const output = context.createGain();
+    output.gain.setValueAtTime(0, context.currentTime);
+    output.connect(context.destination);
+    bgmOutputNode = output;
+    return output;
+  };
+
+  const cancelScheduledValuesIfSupported = (
+    param: AudioParam,
+    time: number,
+  ) => {
+    if (typeof param.cancelScheduledValues === "function") {
+      param.cancelScheduledValues(time);
     }
   };
 
@@ -538,6 +562,13 @@ export const createSoundEffectsController = ({
     }
     bgmStartedAt = null;
     previousBgmPatternIndex = null;
+    if (audioContext && audioContext.state !== "closed" && bgmOutputNode) {
+      cancelScheduledValuesIfSupported(
+        bgmOutputNode.gain,
+        audioContext.currentTime,
+      );
+      bgmOutputNode.gain.setValueAtTime(0, audioContext.currentTime);
+    }
   };
 
   const scheduleBgmLoop = (loopStartTime: number) => {
@@ -559,10 +590,12 @@ export const createSoundEffectsController = ({
         return (baseIndex + 1) % BGM_PATTERN_BANK.length;
       })();
       previousBgmPatternIndex = patternIndex;
+      const bgmOutput = ensureBgmOutputNode(context);
 
       playPattern(context, BGM_PATTERN_BANK[patternIndex], {
         startTime: loopStartTime,
         gainScale: BGM_LOOP_GAIN,
+        outputNode: bgmOutput,
       });
     } catch {
       stopBgm();
@@ -584,6 +617,10 @@ export const createSoundEffectsController = ({
 
     const context = ensureAudioContext();
     if (!context) return;
+    const bgmOutput = ensureBgmOutputNode(context);
+    cancelScheduledValuesIfSupported(bgmOutput.gain, context.currentTime);
+    bgmOutput.gain.setValueAtTime(bgmOutput.gain.value, context.currentTime);
+    bgmOutput.gain.linearRampToValueAtTime(1, context.currentTime + 0.008);
 
     if (context.state !== "running") {
       void context
