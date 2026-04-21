@@ -156,8 +156,9 @@ export const PlayingScreen = ({
 
         <h1 className="title">Keisando</h1>
         <div className="progress-row">
-          <p>Answered: {answeredCount}</p>
-          <p>Total: {requiredCount}</p>
+          <p>
+            Answered: {answeredCount} / {requiredCount}
+          </p>
           <p>Remaining: {remainingCount}</p>
         </div>
         <div className="progress-bar-block">
