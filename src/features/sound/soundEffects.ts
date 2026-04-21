@@ -170,38 +170,14 @@ const CLEAR_WITH_MISTAKE_PATTERN: SoundPattern = [
 const BGM_LOOP_SECONDS = 1.6;
 const BGM_LOOP_GAIN = 0.44;
 const BGM_HAT_DELAYS = [0.2, 0.6, 1.0, 1.4] as const;
-const BGM_HAT_PATTERN: SoundPattern = BGM_HAT_DELAYS.flatMap((delay) => [
-  {
-    frequency: 4200,
-    duration: 0.018,
-    gain: 0.024,
-    type: "square",
-    delay,
-    attack: 0.001,
-  },
-  {
-    frequency: 6200,
-    duration: 0.015,
-    gain: 0.02,
-    type: "triangle",
-    delay,
-    attack: 0.001,
-  },
-  {
-    frequency: 8800,
-    duration: 0.012,
-    gain: 0.017,
-    type: "sawtooth",
-    delay,
-    attack: 0.001,
-  },
-]);
+const BGM_HAT_NOISE_DURATION = 0.03;
+const BGM_HAT_NOISE_GAIN = 0.06;
+const BGM_HAT_HIGHPASS_FREQUENCY = 6500;
 const BGM_KICK_AND_HAT_PATTERN: SoundPattern = [
   { frequency: 58, duration: 0.11, gain: 0.16, type: "sine", delay: 0 },
   { frequency: 58, duration: 0.11, gain: 0.16, type: "sine", delay: 0.4 },
   { frequency: 58, duration: 0.11, gain: 0.16, type: "sine", delay: 0.8 },
   { frequency: 58, duration: 0.11, gain: 0.16, type: "sine", delay: 1.2 },
-  ...BGM_HAT_PATTERN,
 ];
 const BGM_PATTERN_BANK: SoundPattern[] = [
   [
@@ -483,6 +459,7 @@ export const createSoundEffectsController = ({
   let isMuted = initialMuted;
   let audioContext: AudioContext | null = null;
   let bgmOutputNode: GainNode | null = null;
+  let whiteNoiseBuffer: AudioBuffer | null = null;
   let bgmLoopTimeoutId: ReturnType<typeof setTimeout> | null = null;
   let bgmStartedAt: number | null = null;
   let previousBgmPatternIndex: number | null = null;
@@ -491,6 +468,7 @@ export const createSoundEffectsController = ({
     if (audioContext?.state === "closed") {
       audioContext = null;
       bgmOutputNode = null;
+      whiteNoiseBuffer = null;
     }
 
     if (audioContext) {
@@ -526,6 +504,86 @@ export const createSoundEffectsController = ({
   ) => {
     if (typeof param.cancelScheduledValues === "function") {
       param.cancelScheduledValues(time);
+    }
+  };
+
+  const ensureWhiteNoiseBuffer = (
+    context: AudioContext,
+  ): AudioBuffer | null => {
+    if (
+      whiteNoiseBuffer &&
+      whiteNoiseBuffer.sampleRate === context.sampleRate
+    ) {
+      return whiteNoiseBuffer;
+    }
+
+    if (typeof context.createBuffer !== "function") {
+      return null;
+    }
+
+    try {
+      const frameCount = Math.max(1, Math.floor(context.sampleRate));
+      const buffer = context.createBuffer(1, frameCount, context.sampleRate);
+      const channelData = buffer.getChannelData(0);
+      for (let index = 0; index < channelData.length; index += 1) {
+        channelData[index] = Math.random() * 2 - 1;
+      }
+      whiteNoiseBuffer = buffer;
+      return buffer;
+    } catch {
+      return null;
+    }
+  };
+
+  const playBgmNoiseHats = (
+    context: AudioContext,
+    loopStartTime: number,
+    outputNode: AudioNode,
+  ) => {
+    if (
+      typeof context.createBufferSource !== "function" ||
+      typeof context.createBiquadFilter !== "function"
+    ) {
+      return;
+    }
+
+    const noiseBuffer = ensureWhiteNoiseBuffer(context);
+    if (!noiseBuffer) return;
+
+    for (const delay of BGM_HAT_DELAYS) {
+      const startTime = loopStartTime + delay;
+      const stopTime = startTime + BGM_HAT_NOISE_DURATION;
+
+      try {
+        const noiseSource = context.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+        noiseSource.loop = true;
+
+        const highpass = context.createBiquadFilter();
+        highpass.type = "highpass";
+        highpass.frequency.setValueAtTime(
+          BGM_HAT_HIGHPASS_FREQUENCY,
+          startTime,
+        );
+        highpass.Q.setValueAtTime(0.9, startTime);
+
+        const gainNode = context.createGain();
+        gainNode.gain.setValueAtTime(0.0001, startTime);
+        gainNode.gain.linearRampToValueAtTime(
+          BGM_HAT_NOISE_GAIN * BGM_LOOP_GAIN,
+          startTime + 0.001,
+        );
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, stopTime);
+
+        noiseSource.connect(highpass);
+        highpass.connect(gainNode);
+        gainNode.connect(outputNode);
+
+        noiseSource.start(startTime);
+        noiseSource.stop(stopTime + 0.01);
+      } catch {
+        // Ignore per-hit failures and continue scheduling the loop.
+      }
     }
   };
 
@@ -597,6 +655,7 @@ export const createSoundEffectsController = ({
         gainScale: BGM_LOOP_GAIN,
         outputNode: bgmOutput,
       });
+      playBgmNoiseHats(context, loopStartTime, bgmOutput);
     } catch {
       stopBgm();
       return;
