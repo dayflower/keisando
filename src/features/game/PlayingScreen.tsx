@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import type { CSSProperties } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
@@ -50,9 +51,20 @@ export const PlayingScreen = ({
   const progressMax = selectedStage.baseQuestionCount;
   const progressPercent =
     progressMax > 0 ? Math.min((correctCount / progressMax) * 100, 100) : 0;
+  const roundProgress =
+    progressMax > 0 ? Math.min(correctCount / progressMax, 1) : 0;
+  const effectStyle = {
+    "--fx-hue-shift": `${Math.round(roundProgress * 64)}deg`,
+    "--fx-drift-duration": `${Math.max(12, 22 - roundProgress * 8).toFixed(2)}s`,
+  } as CSSProperties;
 
   return (
-    <main className="app">
+    <main className="app app-playing" style={effectStyle}>
+      <div className="performance-bg" aria-hidden="true">
+        <span className="performance-bg-shape performance-bg-shape-a" />
+        <span className="performance-bg-shape performance-bg-shape-b" />
+        <span className="performance-bg-shape performance-bg-shape-c" />
+      </div>
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
