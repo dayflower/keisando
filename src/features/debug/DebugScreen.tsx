@@ -51,6 +51,7 @@ export const DebugScreen = ({
   const [clearCelebrationTier, setClearCelebrationTier] =
     useState<ClearCelebrationTier>("normal");
   const [clearBestBadge, setClearBestBadge] = useState<ClearBestBadge>("none");
+  const [hasTriggeredClearEffect, setHasTriggeredClearEffect] = useState(false);
 
   const comboParticleCount =
     comboTier === "high" ? 14 : comboTier === "mid" ? 10 : 0;
@@ -99,6 +100,7 @@ export const DebugScreen = ({
     nextTier: ClearCelebrationTier,
     nextBadge: ClearBestBadge,
   ) => {
+    setHasTriggeredClearEffect(true);
     setClearCelebrationTier(nextTier);
     setClearBestBadge(nextBadge);
     setClearCelebrationTick((prev) => prev + 1);
@@ -193,27 +195,29 @@ export const DebugScreen = ({
               <div className="debug-effects-subsection">
                 <p className="debug-effects-label">Clear Celebration</p>
                 <div className="clear-summary debug-clear-summary">
-                  <div
-                    key={clearCelebrationTick}
-                    className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
-                    aria-hidden="true"
-                  >
-                    <span className="clear-radial-core" />
-                    <span className="clear-radial-ring clear-radial-ring-a" />
-                    <span className="clear-radial-ring clear-radial-ring-b" />
-                    {clearConfettiIndexes.map((confettiIndex) => (
-                      <span
-                        key={`debug-clear-confetti-${confettiIndex}`}
-                        className="clear-confetti"
-                        style={
-                          {
-                            "--clear-confetti-index": confettiIndex,
-                          } as CSSProperties
-                        }
-                      />
-                    ))}
-                  </div>
-                  {clearBestBadgeLabel && (
+                  {hasTriggeredClearEffect && (
+                    <div
+                      key={clearCelebrationTick}
+                      className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
+                      aria-hidden="true"
+                    >
+                      <span className="clear-radial-core" />
+                      <span className="clear-radial-ring clear-radial-ring-a" />
+                      <span className="clear-radial-ring clear-radial-ring-b" />
+                      {clearConfettiIndexes.map((confettiIndex) => (
+                        <span
+                          key={`debug-clear-confetti-${confettiIndex}`}
+                          className="clear-confetti"
+                          style={
+                            {
+                              "--clear-confetti-index": confettiIndex,
+                            } as CSSProperties
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {hasTriggeredClearEffect && clearBestBadgeLabel && (
                     <p className="clear-best-badge">{clearBestBadgeLabel}</p>
                   )}
                   <p className="clear-title">Stage Clear!</p>
