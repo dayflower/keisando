@@ -123,11 +123,18 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
     saveLifetimeSummary(playerId, createDefaultLifetimeSummary(playerId));
   }, []);
 
+  const resetHistory = useCallback(() => {
+    setHistoryRecords([]);
+    setHistorySummary(null);
+    setStageSummaries([]);
+  }, []);
+
   return {
     historyRecords,
     historySummary,
     stageSummaries,
     appendClearRecord,
     initializePlayerHistory,
+    resetHistory,
   };
 };

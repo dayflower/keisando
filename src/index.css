@@ -274,7 +274,7 @@ textarea {
   font-weight: 600;
 }
 
-.sound-debug-entry-button {
+.debug-entry-button {
   margin: auto 0 0;
   border: none;
   border-radius: 999px;
@@ -291,7 +291,7 @@ textarea {
     background-color 120ms ease;
 }
 
-.sound-debug-entry-button:hover {
+.debug-entry-button:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);
   background: #dbe9ff;
@@ -877,8 +877,9 @@ textarea {
 .ranking-tab:focus-visible,
 .history-icon-button:focus-visible,
 .sound-icon-button:focus-visible,
-.sound-debug-entry-button:focus-visible,
-.sound-debug-button:focus-visible {
+.debug-entry-button:focus-visible,
+.debug-button:focus-visible,
+.debug-danger-button:focus-visible {
   outline: 3px solid #225eb5;
   outline-offset: 2px;
 }
@@ -1164,12 +1165,12 @@ textarea {
   gap: 0.6rem;
 }
 
-.sound-debug-list {
+.debug-list {
   display: grid;
   gap: 0.55rem;
 }
 
-.sound-debug-button {
+.debug-button {
   border: none;
   border-radius: 12px;
   padding: 0.68rem 0.82rem;
@@ -1184,10 +1185,46 @@ textarea {
     background-color 120ms ease;
 }
 
-.sound-debug-button:hover {
+.debug-button:hover {
   transform: translateY(-1px);
   filter: brightness(1.03);
   background: #f3e3c6;
+}
+
+.debug-section {
+  margin-top: 1rem;
+}
+
+.debug-card {
+  overflow: auto;
+}
+
+.debug-section-title {
+  margin: 0 0 0.45rem;
+  color: #6f460d;
+  font-size: 0.9rem;
+}
+
+.debug-danger-button {
+  border: none;
+  border-radius: 12px;
+  width: 100%;
+  padding: 0.7rem 0.82rem;
+  text-align: left;
+  background: #fce3e3;
+  color: #8a1414;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    background-color 120ms ease;
+}
+
+.debug-danger-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  background: #fad6d6;
 }
 
 .primary-back-button,

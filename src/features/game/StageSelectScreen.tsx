@@ -19,7 +19,7 @@ type StageSelectScreenProps = {
   onOpenRankingScreen: (stageId: string) => void;
   onOpenPlayHistory: () => void;
   onOpenPlayerSelect: () => void;
-  onOpenSoundDebug: () => void;
+  onOpenDebug: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
   onUiTap?: () => void;
@@ -40,7 +40,7 @@ export const StageSelectScreen = ({
   onOpenRankingScreen,
   onOpenPlayHistory,
   onOpenPlayerSelect,
-  onOpenSoundDebug,
+  onOpenDebug,
   isMuted,
   onToggleMute,
   onUiTap,
@@ -158,14 +158,14 @@ export const StageSelectScreen = ({
         </div>
         {import.meta.env.DEV ? (
           <button
-            className="sound-debug-entry-button"
+            className="debug-entry-button"
             type="button"
             onClick={() => {
               onUiTap?.();
-              onOpenSoundDebug();
+              onOpenDebug();
             }}
           >
-            Open Sound Debug
+            Open Debug
           </button>
         ) : null}
       </section>

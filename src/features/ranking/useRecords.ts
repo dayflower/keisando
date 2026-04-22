@@ -16,8 +16,13 @@ export const useRecords = () => {
     setRecords((prev) => [...prev, record]);
   };
 
+  const clearRecords = () => {
+    setRecords([]);
+  };
+
   return {
     records,
     addRecord,
+    clearRecords,
   };
 };

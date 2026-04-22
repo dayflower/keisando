@@ -79,4 +79,4 @@ export type Screen =
   | "playing"
   | "ranking"
   | "historyDetail"
-  | "soundDebug";
+  | "debug";

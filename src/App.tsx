@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { DebugScreen } from "./features/debug/DebugScreen";
 import {
   type ClearSoundVariant,
   isNewBestRecord,
@@ -14,10 +15,10 @@ import { usePlayers } from "./features/player/usePlayers";
 import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
-import { SoundDebugScreen } from "./features/sound/SoundDebugScreen";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
 import type { STAGES } from "./shared/stages";
 import type { Screen } from "./shared/types";
+import { clearAppStorage } from "./storage/repositories/debugRepo";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("stageSelect");
@@ -37,6 +38,7 @@ function App() {
     playClearMyBest,
     playClearNoMistake,
     playClearWithMistake,
+    setMuted,
   } = useSoundEffects();
 
   const {
@@ -46,14 +48,16 @@ function App() {
     playerNameById,
     selectPlayer,
     registerPlayer,
+    resetPlayers,
   } = usePlayers();
-  const { records, addRecord } = useRecords();
+  const { records, addRecord, clearRecords } = useRecords();
   const {
     historyRecords,
     historySummary,
     stageSummaries,
     appendClearRecord,
     initializePlayerHistory,
+    resetHistory,
   } = useHistory({ activePlayerId });
   const {
     rankingStage,
@@ -291,8 +295,31 @@ function App() {
     setScreen("playerSelect");
   };
 
-  const handleOpenSoundDebug = () => {
-    setScreen("soundDebug");
+  const handleOpenDebug = () => {
+    setScreen("debug");
+  };
+
+  const handleClearAllData = () => {
+    const confirmed = window.confirm(
+      "Delete all local Keisando data? This cannot be undone.",
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    stopBgm();
+    clearAppStorage();
+    game.stopSession();
+    clearRecords();
+    resetPlayers();
+    resetHistory();
+    clearSoundVariantRef.current = "withMistake";
+    setClearCelebrationTick(0);
+    setRegisterError(null);
+    setNewPlayerName("");
+    closeRankingScreen();
+    setMuted(false);
+    setScreen("stageSelect");
   };
 
   const handleSelectPlayer = (playerId: string) => {
@@ -329,7 +356,7 @@ function App() {
         onOpenRankingScreen={handleOpenRanking}
         onOpenPlayHistory={handleOpenPlayHistory}
         onOpenPlayerSelect={handleOpenPlayerSelect}
-        onOpenSoundDebug={handleOpenSoundDebug}
+        onOpenDebug={handleOpenDebug}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onUiTap={playUiTap}
@@ -337,9 +364,9 @@ function App() {
     );
   }
 
-  if (screen === "soundDebug") {
+  if (screen === "debug") {
     return (
-      <SoundDebugScreen
+      <DebugScreen
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onBackToStageSelect={() => setScreen("stageSelect")}
@@ -354,6 +381,7 @@ function App() {
         onPlayClearMyBest={playClearMyBest}
         onPlayClearNoMistake={playClearNoMistake}
         onPlayClearWithMistake={playClearWithMistake}
+        onClearAllData={handleClearAllData}
       />
     );
   }

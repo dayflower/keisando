@@ -26,6 +26,7 @@ export const useSoundEffects = () => {
   const api = useMemo(
     () => ({
       isMuted,
+      setMuted: (nextMuted: boolean) => applyMuted(nextMuted),
       toggleMute,
       startBgm: () => controllerRef.current.startBgm(),
       stopBgm: () => controllerRef.current.stopBgm(),
@@ -39,7 +40,7 @@ export const useSoundEffects = () => {
       playClearNoMistake: () => controllerRef.current.playClearNoMistake(),
       playClearWithMistake: () => controllerRef.current.playClearWithMistake(),
     }),
-    [isMuted, toggleMute],
+    [applyMuted, isMuted, toggleMute],
   );
 
   return api;

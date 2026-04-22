@@ -92,6 +92,11 @@ export const usePlayers = () => {
     };
   };
 
+  const resetPlayers = () => {
+    setPlayers([]);
+    setActivePlayerId(null);
+  };
+
   return {
     players,
     activePlayerId,
@@ -99,5 +104,6 @@ export const usePlayers = () => {
     playerNameById,
     selectPlayer,
     registerPlayer,
+    resetPlayers,
   };
 };
