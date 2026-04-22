@@ -169,6 +169,8 @@ describe("getPlayingShortcutAction", () => {
     expect(getPlayingShortcutAction("Escape", true)).toBe("back");
     expect(getPlayingShortcutAction("ArrowLeft", true)).toBe("back");
     expect(getPlayingShortcutAction("Enter", true)).toBe("retry");
+    expect(getPlayingShortcutAction(" ", true)).toBe("retry");
+    expect(getPlayingShortcutAction("Spacebar", true)).toBe("retry");
     expect(getPlayingShortcutAction("ArrowUp", true)).toBeNull();
   });
 });

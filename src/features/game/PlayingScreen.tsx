@@ -80,7 +80,7 @@ export const getPlayingShortcutAction = (
     if (key === "Escape" || key === "Esc" || key === "ArrowLeft") {
       return "back";
     }
-    if (key === "Enter") {
+    if (key === "Enter" || key === " " || key === "Spacebar") {
       return "retry";
     }
     return null;
