@@ -891,6 +891,16 @@ textarea {
   grid-row: 1;
 }
 
+.stage-item:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 2px #ffbe68,
+    0 8px 14px rgb(214 120 13 / 18%),
+    0 0 0 2px rgb(255 190 104 / 42%);
+  filter: brightness(1.03);
+}
+
 .choice-left {
   grid-column: 1;
   grid-row: 2;
