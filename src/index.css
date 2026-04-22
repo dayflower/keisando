@@ -17,6 +17,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at top right, #ffd8a8 0%, transparent 45%),
     radial-gradient(circle at bottom left, #ffe9c9 0%, transparent 35%), #fff6e9;
@@ -34,10 +35,12 @@ textarea {
 }
 
 .app {
+  --app-shell-padding: clamp(0.6rem, 2.5vmin, 1.2rem);
   min-height: 100vh;
+  height: 100vh;
   display: grid;
   place-items: center;
-  padding: 1.2rem;
+  padding: var(--app-shell-padding);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -189,7 +192,9 @@ textarea {
 
 .stage-card {
   width: min(100%, 440px);
-  min-height: clamp(560px, calc(100dvh - 2.4rem), 720px);
+  height: calc(100vh - (var(--app-shell-padding) * 2));
+  min-height: min(560px, calc(100vh - (var(--app-shell-padding) * 2)));
+  max-height: 720px;
   border-radius: 24px;
   padding: 1.5rem 1.25rem 1.75rem;
   display: flex;
@@ -200,6 +205,26 @@ textarea {
     inset 0 0 0 2px #ffedcf;
   position: relative;
   z-index: 1;
+}
+
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+
+  .app {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+
+  .stage-card {
+    height: calc(100dvh - (var(--app-shell-padding) * 2));
+    min-height: min(560px, calc(100dvh - (var(--app-shell-padding) * 2)));
+  }
 }
 
 .round-content {
