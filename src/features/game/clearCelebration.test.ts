@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { StageRunRecord } from "../../shared/types";
 import {
+  buildClearBurstSpecs,
   isNewBestRecord,
   mapClearSoundVariantToCelebration,
+  shouldUseClearShockwave,
 } from "./clearCelebration";
 
 const createRecord = (
@@ -69,5 +71,32 @@ describe("isNewBestRecord", () => {
     expect(
       isNewBestRecord(createRecord(2200, 90), createRecord(2000, 100)),
     ).toBe(false);
+  });
+});
+
+describe("buildClearBurstSpecs", () => {
+  it("applies burst counts for each requested celebration level", () => {
+    expect(buildClearBurstSpecs("normal", "none")).toHaveLength(1);
+    expect(buildClearBurstSpecs("noMistake", "none")).toHaveLength(3);
+    expect(buildClearBurstSpecs("best", "my")).toHaveLength(3);
+    expect(buildClearBurstSpecs("best", "global")).toHaveLength(7);
+  });
+
+  it("distributes burst positions instead of using a single fixed point", () => {
+    const specs = buildClearBurstSpecs("best", "global");
+    const uniquePositions = new Set(
+      specs.map((spec) => `${spec.x.toFixed(2)}-${spec.y.toFixed(2)}`),
+    );
+
+    expect(uniquePositions.size).toBeGreaterThan(6);
+  });
+});
+
+describe("shouldUseClearShockwave", () => {
+  it("enables shockwave only for my/global best", () => {
+    expect(shouldUseClearShockwave("normal", "none")).toBe(false);
+    expect(shouldUseClearShockwave("noMistake", "none")).toBe(false);
+    expect(shouldUseClearShockwave("best", "my")).toBe(true);
+    expect(shouldUseClearShockwave("best", "global")).toBe(true);
   });
 });

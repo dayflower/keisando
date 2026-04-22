@@ -81,9 +81,13 @@ describe("PlayingScreen clear celebration", () => {
 
     expect(html).toContain("clear-celebration-noMistake");
     expect(html).not.toContain("clear-best-badge");
+    expect(html).not.toContain("clear-burst-shockwave");
+    const burstCount =
+      html.match(/class="clear-burst(?: [^"]*)?"/g)?.length ?? 0;
+    expect(burstCount).toBe(3);
   });
 
-  it("uses normal celebration with minimal confetti count", () => {
+  it("uses normal celebration with one burst", () => {
     const html = renderToStaticMarkup(
       <PlayingScreen
         {...buildProps({
@@ -94,7 +98,40 @@ describe("PlayingScreen clear celebration", () => {
     );
 
     expect(html).toContain("clear-celebration-normal");
-    const confettiCount = html.match(/clear-confetti/g)?.length ?? 0;
-    expect(confettiCount).toBe(8);
+    const burstCount =
+      html.match(/class="clear-burst(?: [^"]*)?"/g)?.length ?? 0;
+    expect(burstCount).toBe(1);
+  });
+
+  it("uses my best celebration with shockwave and three bursts", () => {
+    const html = renderToStaticMarkup(
+      <PlayingScreen
+        {...buildProps({
+          clearCelebrationTier: "best",
+          clearBestBadge: "my",
+        })}
+      />,
+    );
+
+    const burstCount =
+      html.match(/class="clear-burst(?: [^"]*)?"/g)?.length ?? 0;
+    expect(burstCount).toBe(3);
+    expect(html).toContain("clear-burst-shockwave");
+  });
+
+  it("uses global best celebration with shockwave and seven bursts", () => {
+    const html = renderToStaticMarkup(
+      <PlayingScreen
+        {...buildProps({
+          clearCelebrationTier: "best",
+          clearBestBadge: "global",
+        })}
+      />,
+    );
+
+    const burstCount =
+      html.match(/class="clear-burst(?: [^"]*)?"/g)?.length ?? 0;
+    expect(burstCount).toBe(7);
+    expect(html).toContain("clear-burst-shockwave");
   });
 });

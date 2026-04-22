@@ -777,56 +777,52 @@ textarea {
   }
 }
 
-@keyframes clear-radial-core-pop {
+@keyframes clear-center-glow-pop {
   0% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.3);
   }
 
-  22% {
+  24% {
     opacity: 0.98;
     transform: translate(-50%, -50%) scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.32);
+    transform: translate(-50%, -50%) scale(1.4);
   }
 }
 
-@keyframes clear-radial-ring-expand {
+@keyframes clear-firework-ring-expand {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.42);
+    transform: translate(-50%, -50%) scale(0.2);
   }
 
-  14% {
-    opacity: 0.94;
+  20% {
+    opacity: 0.95;
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.26);
+    transform: translate(-50%, -50%) scale(1.12);
   }
 }
 
-@keyframes clear-confetti-burst {
+@keyframes clear-firework-shockwave {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%)
-      rotate(calc(var(--clear-confetti-index) * 16deg)) translateY(-8px)
-      scale(0.64);
+    transform: translate(-50%, -50%) scale(0.26);
   }
 
-  18% {
-    opacity: 1;
+  16% {
+    opacity: 0.8;
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%)
-      rotate(calc(var(--clear-confetti-index) * 16deg))
-      translateY(calc(-140px - var(--clear-distance, 0px))) scale(0.24);
+    transform: translate(-50%, -50%) scale(1.4);
   }
 }
 
@@ -937,8 +933,8 @@ textarea {
 }
 
 .clear-celebration {
-  --clear-distance: 0px;
-  --clear-duration: 900ms;
+  --clear-burst-size: 220px;
+  --clear-duration: 1100ms;
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -946,67 +942,69 @@ textarea {
 }
 
 .clear-celebration-noMistake {
-  --clear-distance: 38px;
-  --clear-duration: 980ms;
+  --clear-burst-size: 250px;
+  --clear-duration: 1220ms;
 }
 
 .clear-celebration-best {
-  --clear-distance: 86px;
-  --clear-duration: 1120ms;
+  --clear-burst-size: 290px;
+  --clear-duration: 1360ms;
 }
 
-.clear-radial-core,
-.clear-radial-ring {
+.clear-burst {
   position: absolute;
-  left: 50%;
-  top: 34%;
-  border-radius: 999px;
-  opacity: 0;
-}
-
-.clear-radial-core {
-  width: min(56vw, 260px);
+  left: var(--clear-burst-x, 50%);
+  top: var(--clear-burst-y, 34%);
+  width: min(66vw, calc(var(--clear-burst-size) * var(--clear-burst-scale, 1)));
   aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
   background: radial-gradient(
     circle,
-    rgb(255 235 169 / 76%) 0%,
-    rgb(255 188 88 / 18%) 58%,
+    rgb(255 240 193 / 82%) 0%,
+    rgb(255 192 102 / 24%) 56%,
     transparent 100%
   );
-  transform: translate(-50%, -50%) scale(0.3);
-  animation: clear-radial-core-pop var(--clear-duration) ease-out 1 both;
-}
-
-.clear-radial-ring {
-  width: min(66vw, 320px);
-  aspect-ratio: 1 / 1;
-  border: 3px solid rgb(255 177 74 / 0%);
-  box-shadow: 0 0 24px rgb(255 156 52 / 0%);
-  transform: translate(-50%, -50%) scale(0.42);
-  animation: clear-radial-ring-expand var(--clear-duration) ease-out 1 both;
-}
-
-.clear-radial-ring-a {
-  animation-delay: 30ms;
-}
-
-.clear-radial-ring-b {
-  animation-delay: 140ms;
-}
-
-.clear-confetti {
-  position: absolute;
-  left: 50%;
-  top: 34%;
-  width: 0.46rem;
-  height: 0.74rem;
-  border-radius: 999px;
-  background: linear-gradient(160deg, #ffd36f, #ff8f3f 64%, #ff5d2c);
-  box-shadow: 0 0 12px rgb(255 137 35 / 52%);
+  filter: hue-rotate(var(--clear-burst-hue-shift, 0deg));
   opacity: 0;
-  transform: translate(-50%, -50%);
-  animation: clear-confetti-burst var(--clear-duration) ease-out 1 both;
-  animation-delay: calc(var(--clear-confetti-index) * 0.018s);
+  animation: clear-center-glow-pop var(--clear-duration) ease-out 1 both;
+  animation-delay: var(--clear-burst-delay, 0ms);
+}
+
+.clear-burst::before,
+.clear-burst::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  opacity: 0;
+}
+
+.clear-burst::before {
+  border: 3px solid rgb(255 191 103 / 78%);
+  box-shadow: 0 0 24px rgb(255 149 46 / 48%);
+}
+
+.clear-burst::after {
+  border: 1.5px solid rgb(255 230 178 / 76%);
+  box-shadow: 0 0 22px rgb(255 190 92 / 44%);
+  transform: scale(0.62);
+}
+
+.clear-burst-shockwave::before {
+  animation: clear-firework-ring-expand calc(var(--clear-duration) * 0.9)
+    ease-out 1 both;
+  animation-delay: calc(var(--clear-burst-delay, 0ms) + 40ms);
+}
+
+.clear-burst-shockwave::after {
+  animation:
+    clear-firework-ring-expand calc(var(--clear-duration) * 0.82) ease-out 1
+    both,
+    clear-firework-shockwave calc(var(--clear-duration) * 0.64) ease-out 1 both;
+  animation-delay:
+    calc(var(--clear-burst-delay, 0ms) + 95ms),
+    calc(var(--clear-burst-delay, 0ms) + 30ms);
 }
 
 .clear-best-badge,
@@ -1347,9 +1345,9 @@ textarea {
   .performance-bg-shape-c,
   .combo-ring,
   .combo-particle,
-  .clear-radial-core,
-  .clear-radial-ring,
-  .clear-confetti {
+  .clear-burst,
+  .clear-burst::before,
+  .clear-burst::after {
     animation: none;
   }
 
@@ -1364,13 +1362,13 @@ textarea {
     filter: none;
   }
 
-  .clear-radial-core {
-    opacity: 0.58;
+  .clear-burst {
+    opacity: 0.52;
     transform: translate(-50%, -50%) scale(1);
   }
 
-  .clear-radial-ring,
-  .clear-confetti {
+  .clear-burst::before,
+  .clear-burst::after {
     opacity: 0;
   }
 }

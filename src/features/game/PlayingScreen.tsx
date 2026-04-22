@@ -3,7 +3,12 @@ import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
-import type { ClearBestBadge, ClearCelebrationTier } from "./clearCelebration";
+import {
+  buildClearBurstSpecs,
+  type ClearBestBadge,
+  type ClearCelebrationTier,
+  shouldUseClearShockwave,
+} from "./clearCelebration";
 import type { EffectOrigin } from "./useGameSession";
 
 export type PlayingScreenProps = {
@@ -88,15 +93,13 @@ export const PlayingScreen = ({
   const showComboBurst = lastResult === "correct" && comboTier !== "none";
   const comboMilestoneLabel =
     comboMilestoneValue > 0 ? `${comboMilestoneValue} COMBO!` : "";
-  const clearConfettiCount =
-    clearCelebrationTier === "best"
-      ? 22
-      : clearCelebrationTier === "noMistake"
-        ? 14
-        : 8;
-  const clearConfettiIndexes = Array.from(
-    { length: clearConfettiCount },
-    (_, index) => index,
+  const clearBurstSpecs = buildClearBurstSpecs(
+    clearCelebrationTier,
+    clearBestBadge,
+  );
+  const withShockwave = shouldUseClearShockwave(
+    clearCelebrationTier,
+    clearBestBadge,
   );
   const clearBestBadgeLabel =
     clearBestBadge === "global"
@@ -288,16 +291,19 @@ export const PlayingScreen = ({
                 className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
                 aria-hidden="true"
               >
-                <span className="clear-radial-core" />
-                <span className="clear-radial-ring clear-radial-ring-a" />
-                <span className="clear-radial-ring clear-radial-ring-b" />
-                {clearConfettiIndexes.map((confettiIndex) => (
+                {clearBurstSpecs.map((burstSpec) => (
                   <span
-                    key={`clear-confetti-${confettiIndex}`}
-                    className="clear-confetti"
+                    key={burstSpec.id}
+                    className={`clear-burst ${
+                      withShockwave ? "clear-burst-shockwave" : ""
+                    }`}
                     style={
                       {
-                        "--clear-confetti-index": confettiIndex,
+                        "--clear-burst-x": `${burstSpec.x}%`,
+                        "--clear-burst-y": `${burstSpec.y}%`,
+                        "--clear-burst-scale": burstSpec.scale,
+                        "--clear-burst-delay": `${burstSpec.delayMs}ms`,
+                        "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
                       } as CSSProperties
                     }
                   />
