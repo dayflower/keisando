@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { PlayingScreenProps } from "./PlayingScreen";
-import { PlayingScreen } from "./PlayingScreen";
+import {
+  getAnswerByArrowKey,
+  getPlayingShortcutAction,
+  PlayingScreen,
+} from "./PlayingScreen";
 
 const buildProps = (
   overrides: Partial<PlayingScreenProps> = {},
@@ -133,5 +137,38 @@ describe("PlayingScreen clear celebration", () => {
       html.match(/class="clear-burst(?: [^"]*)?"/g)?.length ?? 0;
     expect(burstCount).toBe(7);
     expect(html).toContain("clear-burst-shockwave");
+  });
+});
+
+describe("getAnswerByArrowKey", () => {
+  const options = [11, 22, 33, 44];
+
+  it("maps arrow keys to diamond layout options", () => {
+    expect(getAnswerByArrowKey("ArrowUp", options)).toBe(11);
+    expect(getAnswerByArrowKey("ArrowLeft", options)).toBe(22);
+    expect(getAnswerByArrowKey("ArrowRight", options)).toBe(33);
+    expect(getAnswerByArrowKey("ArrowDown", options)).toBe(44);
+  });
+
+  it("returns null for non-arrow keys", () => {
+    expect(getAnswerByArrowKey("Enter", options)).toBeNull();
+  });
+});
+
+describe("getPlayingShortcutAction", () => {
+  it("supports stage-play shortcuts before clear", () => {
+    expect(getPlayingShortcutAction("Escape", false)).toBe("back");
+    expect(getPlayingShortcutAction("ArrowUp", false)).toBe("answerTop");
+    expect(getPlayingShortcutAction("ArrowLeft", false)).toBe("answerLeft");
+    expect(getPlayingShortcutAction("ArrowRight", false)).toBe("answerRight");
+    expect(getPlayingShortcutAction("ArrowDown", false)).toBe("answerBottom");
+    expect(getPlayingShortcutAction("Enter", false)).toBeNull();
+  });
+
+  it("supports clear-screen shortcuts", () => {
+    expect(getPlayingShortcutAction("Escape", true)).toBe("back");
+    expect(getPlayingShortcutAction("ArrowLeft", true)).toBe("back");
+    expect(getPlayingShortcutAction("Enter", true)).toBe("retry");
+    expect(getPlayingShortcutAction("ArrowUp", true)).toBeNull();
   });
 });
