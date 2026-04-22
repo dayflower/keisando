@@ -3,9 +3,10 @@ import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
+import type { ClearBestBadge, ClearCelebrationTier } from "./clearCelebration";
 import type { EffectOrigin } from "./useGameSession";
 
-type PlayingScreenProps = {
+export type PlayingScreenProps = {
   selectedStage: StageDefinition;
   playingPlayer: Player | null;
   question: Question;
@@ -24,6 +25,9 @@ type PlayingScreenProps = {
   countdownDisplay: number;
   wrongAnswerCount: number;
   lastResult: "correct" | "wrong" | null;
+  clearCelebrationTier: ClearCelebrationTier;
+  clearBestBadge: ClearBestBadge;
+  clearCelebrationTick: number;
   onAnswer: (selected: number, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
@@ -51,6 +55,9 @@ export const PlayingScreen = ({
   countdownDisplay,
   wrongAnswerCount,
   lastResult,
+  clearCelebrationTier,
+  clearBestBadge,
+  clearCelebrationTick,
   onAnswer,
   onBackToStageSelect,
   onResetStage,
@@ -81,6 +88,22 @@ export const PlayingScreen = ({
   const showComboBurst = lastResult === "correct" && comboTier !== "none";
   const comboMilestoneLabel =
     comboMilestoneValue > 0 ? `${comboMilestoneValue} COMBO!` : "";
+  const clearConfettiCount =
+    clearCelebrationTier === "best"
+      ? 22
+      : clearCelebrationTier === "noMistake"
+        ? 14
+        : 8;
+  const clearConfettiIndexes = Array.from(
+    { length: clearConfettiCount },
+    (_, index) => index,
+  );
+  const clearBestBadgeLabel =
+    clearBestBadge === "global"
+      ? "GLOBAL BEST"
+      : clearBestBadge === "my"
+        ? "MY BEST"
+        : "";
   const effectStyle = {
     "--fx-hue-shift": `${Math.round(roundProgress * 64)}deg`,
     "--fx-drift-duration": `${Math.max(12, 22 - roundProgress * 8).toFixed(2)}s`,
@@ -260,6 +283,29 @@ export const PlayingScreen = ({
             )
           ) : (
             <div className="clear-summary" role="status" aria-live="polite">
+              <div
+                key={clearCelebrationTick}
+                className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
+                aria-hidden="true"
+              >
+                <span className="clear-radial-core" />
+                <span className="clear-radial-ring clear-radial-ring-a" />
+                <span className="clear-radial-ring clear-radial-ring-b" />
+                {clearConfettiIndexes.map((confettiIndex) => (
+                  <span
+                    key={`clear-confetti-${confettiIndex}`}
+                    className="clear-confetti"
+                    style={
+                      {
+                        "--clear-confetti-index": confettiIndex,
+                      } as CSSProperties
+                    }
+                  />
+                ))}
+              </div>
+              {clearBestBadgeLabel && (
+                <p className="clear-best-badge">{clearBestBadgeLabel}</p>
+              )}
               <p className="clear-title">Stage Clear!</p>
               <p className="clear-primary-time">
                 {formatElapsedTime(elapsedMs)}

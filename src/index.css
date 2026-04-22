@@ -777,6 +777,59 @@ textarea {
   }
 }
 
+@keyframes clear-radial-core-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+
+  22% {
+    opacity: 0.98;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.32);
+  }
+}
+
+@keyframes clear-radial-ring-expand {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.42);
+  }
+
+  14% {
+    opacity: 0.94;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.26);
+  }
+}
+
+@keyframes clear-confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      rotate(calc(var(--clear-confetti-index) * 16deg)) translateY(-8px)
+      scale(0.64);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      rotate(calc(var(--clear-confetti-index) * 16deg))
+      translateY(calc(-140px - var(--clear-distance, 0px))) scale(0.24);
+  }
+}
+
 .diamond-grid {
   width: min(100%, 320px);
   margin: 1.4rem auto;
@@ -872,6 +925,111 @@ textarea {
   color: #a71313;
 }
 
+.clear-summary {
+  margin: 2.6rem 0 0;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  text-align: center;
+  position: relative;
+  isolation: isolate;
+}
+
+.clear-celebration {
+  --clear-distance: 0px;
+  --clear-duration: 900ms;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.clear-celebration-noMistake {
+  --clear-distance: 38px;
+  --clear-duration: 980ms;
+}
+
+.clear-celebration-best {
+  --clear-distance: 86px;
+  --clear-duration: 1120ms;
+}
+
+.clear-radial-core,
+.clear-radial-ring {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  border-radius: 999px;
+  opacity: 0;
+}
+
+.clear-radial-core {
+  width: min(56vw, 260px);
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(
+    circle,
+    rgb(255 235 169 / 76%) 0%,
+    rgb(255 188 88 / 18%) 58%,
+    transparent 100%
+  );
+  transform: translate(-50%, -50%) scale(0.3);
+  animation: clear-radial-core-pop var(--clear-duration) ease-out 1 both;
+}
+
+.clear-radial-ring {
+  width: min(66vw, 320px);
+  aspect-ratio: 1 / 1;
+  border: 3px solid rgb(255 177 74 / 0%);
+  box-shadow: 0 0 24px rgb(255 156 52 / 0%);
+  transform: translate(-50%, -50%) scale(0.42);
+  animation: clear-radial-ring-expand var(--clear-duration) ease-out 1 both;
+}
+
+.clear-radial-ring-a {
+  animation-delay: 30ms;
+}
+
+.clear-radial-ring-b {
+  animation-delay: 140ms;
+}
+
+.clear-confetti {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 0.46rem;
+  height: 0.74rem;
+  border-radius: 999px;
+  background: linear-gradient(160deg, #ffd36f, #ff8f3f 64%, #ff5d2c);
+  box-shadow: 0 0 12px rgb(255 137 35 / 52%);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation: clear-confetti-burst var(--clear-duration) ease-out 1 both;
+  animation-delay: calc(var(--clear-confetti-index) * 0.018s);
+}
+
+.clear-best-badge,
+.clear-title,
+.clear-primary-time,
+.clear-primary-label,
+.clear-meta {
+  position: relative;
+  z-index: 1;
+}
+
+.clear-best-badge {
+  margin: 0 0 0.65rem;
+  padding: 0.3rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #12458f, #2b71d1);
+  box-shadow: 0 8px 16px rgb(18 69 143 / 25%);
+}
+
 .clear-title {
   margin: 0;
   font-size: clamp(2rem, 8vw, 2.8rem);
@@ -879,14 +1037,6 @@ textarea {
   line-height: 1.02;
   letter-spacing: 0.02em;
   color: #7c4a00;
-}
-
-.clear-summary {
-  margin: 2.6rem 0 0;
-  display: grid;
-  justify-items: center;
-  align-content: center;
-  text-align: center;
 }
 
 .clear-primary-time {
@@ -1101,7 +1251,10 @@ textarea {
   .performance-bg-shape-b,
   .performance-bg-shape-c,
   .combo-ring,
-  .combo-particle {
+  .combo-particle,
+  .clear-radial-core,
+  .clear-radial-ring,
+  .clear-confetti {
     animation: none;
   }
 
@@ -1114,5 +1267,15 @@ textarea {
     opacity: 0.86;
     transform: translate(-50%, -50%) scale(1);
     filter: none;
+  }
+
+  .clear-radial-core {
+    opacity: 0.58;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .clear-radial-ring,
+  .clear-confetti {
+    opacity: 0;
   }
 }

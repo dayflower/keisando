@@ -1,4 +1,9 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ClearSoundVariant,
+  isNewBestRecord,
+  mapClearSoundVariantToCelebration,
+} from "./features/game/clearCelebration";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
 import { useGameSession } from "./features/game/useGameSession";
@@ -12,20 +17,7 @@ import { useRecords } from "./features/ranking/useRecords";
 import { SoundDebugScreen } from "./features/sound/SoundDebugScreen";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
 import type { STAGES } from "./shared/stages";
-import type { Screen, StageRunRecord } from "./shared/types";
-
-type ClearSoundVariant = "globalBest" | "myBest" | "noMistake" | "withMistake";
-
-const isNewBestRecord = (
-  candidate: StageRunRecord,
-  best: StageRunRecord | null,
-): boolean => {
-  if (!best) return true;
-  if (candidate.elapsedMs !== best.elapsedMs) {
-    return candidate.elapsedMs < best.elapsedMs;
-  }
-  return candidate.recordedAt < best.recordedAt;
-};
+import type { Screen } from "./shared/types";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("stageSelect");
@@ -112,6 +104,7 @@ function App() {
           ? "noMistake"
           : "withMistake";
       }
+      setClearCelebrationTick((prev) => prev + 1);
 
       addRecord(payload.clearRecord);
       appendClearRecord({
@@ -131,9 +124,13 @@ function App() {
   const previousAnsweredCountRef = useRef<number>(0);
   const previousClearedRef = useRef<boolean>(false);
   const clearSoundVariantRef = useRef<ClearSoundVariant>("withMistake");
+  const [clearCelebrationTick, setClearCelebrationTick] = useState(0);
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
     [game.playingPlayerId, players],
+  );
+  const clearCelebration = mapClearSoundVariantToCelebration(
+    clearSoundVariantRef.current,
   );
 
   useEffect(() => {
@@ -448,6 +445,9 @@ function App() {
       countdownDisplay={game.countdownDisplay}
       wrongAnswerCount={game.wrongAnswerCount}
       lastResult={game.lastResult}
+      clearCelebrationTier={clearCelebration.clearCelebrationTier}
+      clearBestBadge={clearCelebration.clearBestBadge}
+      clearCelebrationTick={clearCelebrationTick}
       onAnswer={game.handleAnswer}
       onBackToStageSelect={backToStageSelect}
       onResetStage={game.resetStage}
