@@ -5,6 +5,10 @@ import {
   isNewBestRecord,
   mapClearSoundVariantToCelebration,
 } from "./features/game/clearCelebration";
+import {
+  isStageConditionClear,
+  normalizeClearCondition,
+} from "./features/game/clearConditions";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
 import { useGameSession } from "./features/game/useGameSession";
@@ -16,9 +20,17 @@ import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
-import type { STAGES } from "./shared/stages";
-import type { Screen } from "./shared/types";
+import { STAGES } from "./shared/stages";
+import type { Screen, StageClearCondition } from "./shared/types";
 import { clearAppStorage } from "./storage/repositories/debugRepo";
+import {
+  loadStageClearConditionOverrides,
+  saveStageClearConditionOverrides,
+} from "./storage/repositories/stageClearConditionsRepo";
+import {
+  loadUnlockedStageIdsByPlayer,
+  saveUnlockedStageIdsByPlayer,
+} from "./storage/repositories/unlockProgressRepo";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("stageSelect");
@@ -40,6 +52,13 @@ function App() {
     playClearWithMistake,
     setMuted,
   } = useSoundEffects();
+  const [stageClearConditionOverrides, setStageClearConditionOverrides] =
+    useState<Record<string, StageClearCondition>>(() =>
+      loadStageClearConditionOverrides(),
+    );
+  const [unlockedStageIdsByPlayer, setUnlockedStageIdsByPlayer] = useState<
+    Record<string, string[]>
+  >(() => loadUnlockedStageIdsByPlayer());
 
   const {
     players,
@@ -72,6 +91,39 @@ function App() {
     activePlayer,
     records,
     onStageClear: (payload) => {
+      const currentStageIndex = STAGES.findIndex(
+        (stage) => stage.id === payload.stageId,
+      );
+      const nextStage =
+        currentStageIndex >= 0 && currentStageIndex + 1 < STAGES.length
+          ? STAGES[currentStageIndex + 1]
+          : null;
+      const stageCondition = stageClearConditionById.get(payload.stageId);
+      const isConditionClear =
+        stageCondition === undefined
+          ? false
+          : isStageConditionClear(
+              payload.clearRecord.elapsedMs,
+              payload.clearRecord.wrongCount,
+              stageCondition,
+            );
+
+      const currentUnlockedStageIds =
+        unlockedStageIdsByPlayer[payload.playerId] ?? [];
+      const isNextStageNewlyUnlocked =
+        nextStage !== null &&
+        isConditionClear &&
+        !currentUnlockedStageIds.includes(nextStage.id);
+
+      if (isNextStageNewlyUnlocked && nextStage) {
+        setUnlockedStageIdsByPlayer((prev) => ({
+          ...prev,
+          [payload.playerId]: [...(prev[payload.playerId] ?? []), nextStage.id],
+        }));
+      }
+
+      setDidUnlockNextStageOnClear(isNextStageNewlyUnlocked);
+
       const globalBest =
         records
           .filter((record) => record.stageId === payload.stageId)
@@ -129,6 +181,8 @@ function App() {
   const previousClearedRef = useRef<boolean>(false);
   const clearSoundVariantRef = useRef<ClearSoundVariant>("withMistake");
   const [clearCelebrationTick, setClearCelebrationTick] = useState(0);
+  const [didUnlockNextStageOnClear, setDidUnlockNextStageOnClear] =
+    useState(false);
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
     [game.playingPlayerId, players],
@@ -136,6 +190,45 @@ function App() {
   const clearCelebration = mapClearSoundVariantToCelebration(
     clearSoundVariantRef.current,
   );
+  const stageClearConditionById = useMemo(() => {
+    const nextMap = new Map<string, StageClearCondition>();
+
+    for (const stage of STAGES) {
+      nextMap.set(
+        stage.id,
+        normalizeClearCondition(
+          stageClearConditionOverrides[stage.id],
+          stage.defaultClearCondition,
+        ),
+      );
+    }
+
+    return nextMap;
+  }, [stageClearConditionOverrides]);
+  const unlockedStageIds = useMemo(() => {
+    if (STAGES.length === 0) {
+      return new Set<string>();
+    }
+
+    const unlocked = new Set<string>([STAGES[0].id]);
+    if (!activePlayerId) {
+      return unlocked;
+    }
+
+    for (const stageId of unlockedStageIdsByPlayer[activePlayerId] ?? []) {
+      unlocked.add(stageId);
+    }
+
+    return unlocked;
+  }, [activePlayerId, unlockedStageIdsByPlayer]);
+
+  useEffect(() => {
+    saveStageClearConditionOverrides(stageClearConditionOverrides);
+  }, [stageClearConditionOverrides]);
+
+  useEffect(() => {
+    saveUnlockedStageIdsByPlayer(unlockedStageIdsByPlayer);
+  }, [unlockedStageIdsByPlayer]);
 
   useEffect(() => {
     const shouldPlayBgm =
@@ -270,13 +363,54 @@ function App() {
   const backToStageSelect = () => {
     setScreen("stageSelect");
     game.stopSession();
+    setDidUnlockNextStageOnClear(false);
     closeRankingScreen();
   };
 
   const handleStartStage = (stage: (typeof STAGES)[number]) => {
+    if (!unlockedStageIds.has(stage.id)) {
+      return;
+    }
+
+    setDidUnlockNextStageOnClear(false);
+
     if (game.startStage(stage)) {
       setScreen("playing");
     }
+  };
+
+  const handleUpdateStageClearCondition = (
+    stageId: string,
+    next: StageClearCondition,
+  ) => {
+    const targetStage = STAGES.find((stage) => stage.id === stageId);
+    if (!targetStage) {
+      return;
+    }
+
+    setStageClearConditionOverrides((prev) => ({
+      ...prev,
+      [stageId]: normalizeClearCondition(
+        next,
+        targetStage.defaultClearCondition,
+      ),
+    }));
+  };
+
+  const handleResetStageClearConditions = () => {
+    setStageClearConditionOverrides({});
+  };
+
+  const handleResetUnlockProgress = () => {
+    if (!activePlayerId) {
+      return;
+    }
+
+    setDidUnlockNextStageOnClear(false);
+    setUnlockedStageIdsByPlayer((prev) => ({
+      ...prev,
+      [activePlayerId]: [],
+    }));
   };
 
   const handleOpenRanking = (stageId: string) => {
@@ -315,6 +449,9 @@ function App() {
     resetHistory();
     clearSoundVariantRef.current = "withMistake";
     setClearCelebrationTick(0);
+    setDidUnlockNextStageOnClear(false);
+    setStageClearConditionOverrides({});
+    setUnlockedStageIdsByPlayer({});
     setRegisterError(null);
     setNewPlayerName("");
     closeRankingScreen();
@@ -350,6 +487,7 @@ function App() {
       <StageSelectScreen
         activePlayer={activePlayer}
         canStartStage={canStartStage}
+        unlockedStageIds={unlockedStageIds}
         playerNameById={playerNameById}
         records={records}
         onStartStage={handleStartStage}
@@ -381,6 +519,12 @@ function App() {
         onPlayClearMyBest={playClearMyBest}
         onPlayClearNoMistake={playClearNoMistake}
         onPlayClearWithMistake={playClearWithMistake}
+        stages={STAGES}
+        stageClearConditionById={stageClearConditionById}
+        onUpdateStageClearCondition={handleUpdateStageClearCondition}
+        onResetStageClearConditions={handleResetStageClearConditions}
+        canResetUnlockProgress={activePlayerId !== null}
+        onResetUnlockProgress={handleResetUnlockProgress}
         onClearAllData={handleClearAllData}
       />
     );
@@ -476,6 +620,7 @@ function App() {
       clearCelebrationTier={clearCelebration.clearCelebrationTier}
       clearBestBadge={clearCelebration.clearBestBadge}
       clearCelebrationTick={clearCelebrationTick}
+      didUnlockNextStageOnClear={didUnlockNextStageOnClear}
       onAnswer={game.handleAnswer}
       onBackToStageSelect={backToStageSelect}
       onResetStage={game.resetStage}

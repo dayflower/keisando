@@ -13,6 +13,7 @@ import { SoundToggleButton } from "../sound/SoundToggleButton";
 type StageSelectScreenProps = {
   activePlayer: Player | null;
   canStartStage: boolean;
+  unlockedStageIds: Set<string>;
   playerNameById: Map<string, string>;
   records: StageRunRecord[];
   onStartStage: (stage: StageDefinition) => void;
@@ -58,6 +59,7 @@ export const isStageSelectBlurKey = (key: string): boolean => key === "Escape";
 export const StageSelectScreen = ({
   activePlayer,
   canStartStage,
+  unlockedStageIds,
   playerNameById,
   records,
   onStartStage,
@@ -70,6 +72,10 @@ export const StageSelectScreen = ({
   onUiTap,
 }: StageSelectScreenProps) => {
   const stageButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const stageIndexById = useMemo(
+    () => new Map(STAGES.map((stage, index) => [stage.id, index])),
+    [],
+  );
 
   const bestGlobalByStageId = useMemo(
     () => buildBestRecordByStageId(records),
@@ -183,6 +189,12 @@ export const StageSelectScreen = ({
               activePlayer === null
                 ? null
                 : (bestMyByStageId.get(stage.id) ?? null);
+            const isUnlocked = unlockedStageIds.has(stage.id);
+            const stageOrder = stageIndexById.get(stage.id);
+            const stageAriaLabel =
+              typeof stageOrder === "number"
+                ? `Start ${stage.name}, stage ${stageOrder + 1}`
+                : `Start ${stage.name}`;
 
             return (
               <article className="stage-item-shell" key={stage.id}>
@@ -198,7 +210,8 @@ export const StageSelectScreen = ({
                     onUiTap?.();
                     onStartStage(stage);
                   }}
-                  disabled={!canStartStage}
+                  disabled={!canStartStage || !isUnlocked}
+                  aria-label={stageAriaLabel}
                 >
                   <span className="stage-item-header">
                     <strong>{stage.name}</strong>

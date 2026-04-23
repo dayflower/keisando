@@ -38,6 +38,7 @@ export type PlayingScreenProps = {
   clearCelebrationTier: ClearCelebrationTier;
   clearBestBadge: ClearBestBadge;
   clearCelebrationTick: number;
+  didUnlockNextStageOnClear: boolean;
   onAnswer: (selected: number, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
@@ -126,6 +127,7 @@ export const PlayingScreen = ({
   clearCelebrationTier,
   clearBestBadge,
   clearCelebrationTick,
+  didUnlockNextStageOnClear,
   onAnswer,
   onBackToStageSelect,
   onResetStage,
@@ -455,14 +457,14 @@ export const PlayingScreen = ({
                 <p className="clear-best-badge">{clearBestBadgeLabel}</p>
               )}
               <p className="clear-title">Stage Clear!</p>
+              {didUnlockNextStageOnClear && (
+                <p className="clear-meta">Next stage unlocked!</p>
+              )}
               <p className="clear-primary-time">
                 {formatElapsedTime(elapsedMs)}
               </p>
               <p className="clear-primary-label">Clear time</p>
-              <p className="clear-meta">
-                Final questions: {requiredCount} (base{" "}
-                {selectedStage.baseQuestionCount})
-              </p>
+              <p className="clear-meta">Final questions: {requiredCount}</p>
               <p className="clear-meta">Wrong answers: {wrongAnswerCount}</p>
             </div>
           )}

@@ -12,6 +12,10 @@ export const STAGES: StageDefinition[] = [
     baseQuestionCount: 10,
     answerMin: 0,
     answerMax: 18,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
     createExpression: () => {
       const left = Math.floor(Math.random() * 10);
       const right = Math.floor(Math.random() * 10);
@@ -31,6 +35,10 @@ export const STAGES: StageDefinition[] = [
     baseQuestionCount: 10,
     answerMin: 0,
     answerMax: 9,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
     createExpression: () => {
       let left = 0;
       let right = 0;
@@ -63,6 +71,10 @@ export const STAGES: StageDefinition[] = [
     baseQuestionCount: 10,
     answerMin: 0,
     answerMax: 9,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
     createExpression: () => {
       const answer = Math.floor(Math.random() * 10);
       const right = Math.floor(Math.random() * 9) + 1;

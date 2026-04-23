@@ -13,7 +13,13 @@ export type StageDefinition = {
   baseQuestionCount: number;
   answerMin: number;
   answerMax: number;
+  defaultClearCondition: StageClearCondition;
   createExpression: () => StageExpression;
+};
+
+export type StageClearCondition = {
+  maxElapsedMs: number;
+  requireNoMistake: boolean;
 };
 
 export type Question = {

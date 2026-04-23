@@ -18,6 +18,10 @@ const buildProps = (
     baseQuestionCount: 10,
     answerMin: 1,
     answerMax: 20,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
   },
   playingPlayer: {
@@ -50,6 +54,7 @@ const buildProps = (
   clearCelebrationTier: "normal",
   clearBestBadge: "none",
   clearCelebrationTick: 1,
+  didUnlockNextStageOnClear: true,
   onAnswer: () => {},
   onBackToStageSelect: () => {},
   onResetStage: () => {},

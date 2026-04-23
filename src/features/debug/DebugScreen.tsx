@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { type CSSProperties, useMemo, useState } from "react";
+import type { StageClearCondition, StageDefinition } from "../../shared/types";
 import {
   buildClearBurstSpecs,
   type ClearBestBadge,
@@ -23,6 +24,15 @@ type DebugScreenProps = {
   onPlayClearMyBest: () => void;
   onPlayClearNoMistake: () => void;
   onPlayClearWithMistake: () => void;
+  stages: StageDefinition[];
+  stageClearConditionById: Map<string, StageClearCondition>;
+  onUpdateStageClearCondition: (
+    stageId: string,
+    next: StageClearCondition,
+  ) => void;
+  onResetStageClearConditions: () => void;
+  canResetUnlockProgress: boolean;
+  onResetUnlockProgress: () => void;
   onClearAllData: () => void;
 };
 
@@ -41,6 +51,12 @@ export const DebugScreen = ({
   onPlayClearMyBest,
   onPlayClearNoMistake,
   onPlayClearWithMistake,
+  stages,
+  stageClearConditionById,
+  onUpdateStageClearCondition,
+  onResetStageClearConditions,
+  canResetUnlockProgress,
+  onResetUnlockProgress,
   onClearAllData,
 }: DebugScreenProps) => {
   const [comboEffectTick, setComboEffectTick] = useState(0);
@@ -136,12 +152,95 @@ export const DebugScreen = ({
           <h2 id="debug-storage-heading" className="debug-section-title">
             Storage
           </h2>
-          <button
-            className="debug-danger-button"
-            type="button"
-            onClick={onClearAllData}
+          <div className="debug-storage-actions">
+            <button
+              className="debug-button debug-storage-button"
+              type="button"
+              onClick={onResetUnlockProgress}
+              disabled={!canResetUnlockProgress}
+            >
+              Reset Stage Unlock Progress (Active Player)
+            </button>
+            <button
+              className="debug-danger-button"
+              type="button"
+              onClick={onClearAllData}
+            >
+              Clear All Local Data
+            </button>
+          </div>
+        </section>
+
+        <section
+          className="debug-section"
+          aria-labelledby="debug-clear-condition-heading"
+        >
+          <h2
+            id="debug-clear-condition-heading"
+            className="debug-section-title"
           >
-            Clear All Local Data
+            Stage Clear Conditions
+          </h2>
+          <div className="debug-condition-list">
+            {stages.map((stage) => {
+              const condition =
+                stageClearConditionById.get(stage.id) ??
+                stage.defaultClearCondition;
+
+              return (
+                <div key={stage.id} className="debug-condition-item">
+                  <p className="debug-condition-title">{stage.name}</p>
+                  <label
+                    className="debug-condition-label"
+                    htmlFor={`${stage.id}-seconds`}
+                  >
+                    Clear within (seconds)
+                  </label>
+                  <input
+                    id={`${stage.id}-seconds`}
+                    className="debug-condition-input"
+                    type="number"
+                    min={0.1}
+                    step={0.1}
+                    value={(condition.maxElapsedMs / 1000).toFixed(1)}
+                    onChange={(event) => {
+                      const nextSeconds = Number.parseFloat(event.target.value);
+                      if (!Number.isFinite(nextSeconds)) {
+                        return;
+                      }
+
+                      onUpdateStageClearCondition(stage.id, {
+                        maxElapsedMs: Math.max(
+                          Math.round(nextSeconds * 1000),
+                          100,
+                        ),
+                        requireNoMistake: condition.requireNoMistake,
+                      });
+                    }}
+                  />
+                  <label className="debug-condition-check-label">
+                    <input
+                      type="checkbox"
+                      checked={condition.requireNoMistake}
+                      onChange={(event) => {
+                        onUpdateStageClearCondition(stage.id, {
+                          maxElapsedMs: condition.maxElapsedMs,
+                          requireNoMistake: event.target.checked,
+                        });
+                      }}
+                    />
+                    No mistakes required
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+          <button
+            className="debug-button"
+            type="button"
+            onClick={onResetStageClearConditions}
+          >
+            Reset Clear Conditions to Default
           </button>
         </section>
 
