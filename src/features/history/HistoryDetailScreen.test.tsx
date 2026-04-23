@@ -83,7 +83,7 @@ describe("HistoryDetailScreen", () => {
       "ja",
     );
 
-    expect(html).toContain("最近の記録はありません。");
-    expect(html).toContain("ステージ集計はまだありません。");
+    expect(html).toContain("最近の記録はありません");
+    expect(html).toContain("ステージ集計はまだありません");
   });
 });

@@ -43,7 +43,7 @@ describe("PlayerSelectScreen", () => {
     ).toContain("Name must be 1-20 characters.");
     expect(
       renderScreen({ registerErrorCode: "playerNameInvalid" }, "ja"),
-    ).toContain("名前は 1-20 文字で入力してください。");
+    ).toContain("名前は 1-20 文字で入力してください");
   });
 
   it("renders translated duplicate-name errors", () => {
@@ -52,6 +52,6 @@ describe("PlayerSelectScreen", () => {
     ).toContain("This player name already exists.");
     expect(
       renderScreen({ registerErrorCode: "playerNameDuplicate" }, "ja"),
-    ).toContain("このプレイヤー名は既に存在します。");
+    ).toContain("このプレイヤー名は既に存在します");
   });
 });

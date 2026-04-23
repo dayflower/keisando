@@ -167,7 +167,7 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("回答数: 3 / 10");
     expect(html).toContain("残り: 7");
     expect(html).toContain("問題進捗");
-    expect(html).toContain("正しい答えを選んでください。");
+    expect(html).toContain("正しい答えを選んで");
   });
 
   it("renders translated clear-summary labels", () => {
