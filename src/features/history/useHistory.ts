@@ -17,6 +17,7 @@ import {
 } from "../../storage/repositories/historyRepo";
 import {
   pruneHistoryRecords,
+  updateLifetimeStreak,
   updateLifetimeSummary,
   updateStageLifetimeSummaries,
 } from "./logic";
@@ -52,6 +53,16 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
     );
   }, [activePlayerId]);
 
+  const getCurrentLifetimeSummary = useCallback(
+    (playerId: string) => {
+      const storedLifetime = loadLifetimeSummary(playerId);
+      return storedLifetime.playerId === playerId
+        ? storedLifetime
+        : (historySummary ?? createDefaultLifetimeSummary(playerId));
+    },
+    [historySummary],
+  );
+
   const appendClearRecord = useCallback(
     (args: {
       playerId: string;
@@ -85,9 +96,7 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
       }
       savePlayerHistory(playerId, nextHistory);
 
-      const currentLifetime = isActiveHistoryTarget
-        ? (historySummary ?? createDefaultLifetimeSummary(playerId))
-        : loadLifetimeSummary(playerId);
+      const currentLifetime = getCurrentLifetimeSummary(playerId);
       const nextLifetime = updateLifetimeSummary(currentLifetime, playedAt);
       if (isActiveHistoryTarget) {
         setHistorySummary(nextLifetime);
@@ -108,7 +117,23 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
       }
       saveStageSummaries(playerId, nextStageSummaries);
     },
-    [activePlayerId, historyRecords, historySummary, stageSummaries],
+    [activePlayerId, getCurrentLifetimeSummary, historyRecords, stageSummaries],
+  );
+
+  const recordAnsweredQuestion = useCallback(
+    (args: { playerId: string; isCorrect: boolean }) => {
+      const { playerId, isCorrect } = args;
+      const isActiveHistoryTarget = playerId === activePlayerId;
+      const currentLifetime = getCurrentLifetimeSummary(playerId);
+      const nextLifetime = updateLifetimeStreak(currentLifetime, isCorrect);
+
+      if (isActiveHistoryTarget) {
+        setHistorySummary(nextLifetime);
+      }
+
+      saveLifetimeSummary(playerId, nextLifetime);
+    },
+    [activePlayerId, getCurrentLifetimeSummary],
   );
 
   const initializePlayerHistory = useCallback((playerId: string) => {
@@ -126,6 +151,7 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
     historySummary,
     stageSummaries,
     appendClearRecord,
+    recordAnsweredQuestion,
     initializePlayerHistory,
     resetHistory,
   };

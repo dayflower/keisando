@@ -20,6 +20,8 @@ export const createDefaultLifetimeSummary = (
   totalPlays: 0,
   totalClears: 0,
   lastPlayedAt: null,
+  currentCorrectStreak: 0,
+  bestCorrectStreak: 0,
 });
 
 export const loadPlayerHistory = (playerId: string): PlayHistoryRecord[] => {
@@ -75,6 +77,21 @@ export const loadLifetimeSummary = (
     return createDefaultLifetimeSummary(playerId);
   }
 
+  if (
+    parsed.currentCorrectStreak !== undefined &&
+    (!isFiniteNumber(parsed.currentCorrectStreak) ||
+      parsed.currentCorrectStreak < 0)
+  ) {
+    return createDefaultLifetimeSummary(playerId);
+  }
+
+  if (
+    parsed.bestCorrectStreak !== undefined &&
+    (!isFiniteNumber(parsed.bestCorrectStreak) || parsed.bestCorrectStreak < 0)
+  ) {
+    return createDefaultLifetimeSummary(playerId);
+  }
+
   return {
     playerId,
     totalPlays: parsed.totalPlays,
@@ -83,6 +100,8 @@ export const loadLifetimeSummary = (
       parsed.lastPlayedAt === null || isFiniteNumber(parsed.lastPlayedAt)
         ? (parsed.lastPlayedAt ?? null)
         : null,
+    currentCorrectStreak: parsed.currentCorrectStreak ?? 0,
+    bestCorrectStreak: parsed.bestCorrectStreak ?? 0,
   };
 };
 

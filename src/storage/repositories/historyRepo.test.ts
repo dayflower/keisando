@@ -84,6 +84,53 @@ describe("historyRepo", () => {
     expect(loadStageSummaries(playerId)).toEqual([]);
   });
 
+  it("fills missing streak fields from legacy lifetime summaries", () => {
+    const playerId = "p1";
+    const store = new Map<string, string>([
+      [
+        getLifetimeSummaryStorageKey(playerId),
+        JSON.stringify({
+          playerId,
+          totalPlays: 10,
+          totalClears: 8,
+          lastPlayedAt: 1_700_000_000_010,
+        }),
+      ],
+    ]);
+    installTestLocalStorage(store);
+
+    expect(loadLifetimeSummary(playerId)).toEqual({
+      playerId,
+      totalPlays: 10,
+      totalClears: 8,
+      lastPlayedAt: 1_700_000_000_010,
+      currentCorrectStreak: 0,
+      bestCorrectStreak: 0,
+    });
+  });
+
+  it("falls back to defaults when stored streak values are invalid", () => {
+    const playerId = "p1";
+    const store = new Map<string, string>([
+      [
+        getLifetimeSummaryStorageKey(playerId),
+        JSON.stringify({
+          playerId,
+          totalPlays: 10,
+          totalClears: 8,
+          lastPlayedAt: 1_700_000_000_010,
+          currentCorrectStreak: -1,
+          bestCorrectStreak: 4,
+        }),
+      ],
+    ]);
+    installTestLocalStorage(store);
+
+    expect(loadLifetimeSummary(playerId)).toEqual(
+      createDefaultLifetimeSummary(playerId),
+    );
+  });
+
   it("saves history data", () => {
     const playerId = "p1";
     const store = new Map<string, string>();
@@ -106,6 +153,8 @@ describe("historyRepo", () => {
       totalPlays: 10,
       totalClears: 8,
       lastPlayedAt: 1_700_000_000_010,
+      currentCorrectStreak: 3,
+      bestCorrectStreak: 7,
     });
     saveStageSummaries(playerId, [
       {
@@ -137,6 +186,8 @@ describe("historyRepo", () => {
         totalPlays: 10,
         totalClears: 8,
         lastPlayedAt: 1_700_000_000_010,
+        currentCorrectStreak: 3,
+        bestCorrectStreak: 7,
       }),
     );
     expect(store.get(getStageSummaryStorageKey(playerId))).toBe(

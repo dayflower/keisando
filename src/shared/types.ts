@@ -63,6 +63,8 @@ export type PlayerLifetimeSummary = {
   totalPlays: number;
   totalClears: number;
   lastPlayedAt: number | null;
+  currentCorrectStreak: number;
+  bestCorrectStreak: number;
 };
 
 export type StageLifetimeSummary = {

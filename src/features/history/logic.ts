@@ -23,6 +23,29 @@ export const updateLifetimeSummary = (
   lastPlayedAt: playedAt,
 });
 
+export const updateLifetimeStreak = (
+  current: PlayerLifetimeSummary,
+  isCorrect: boolean,
+): PlayerLifetimeSummary => {
+  if (!isCorrect) {
+    return {
+      ...current,
+      currentCorrectStreak: 0,
+    };
+  }
+
+  const nextCurrentCorrectStreak = current.currentCorrectStreak + 1;
+
+  return {
+    ...current,
+    currentCorrectStreak: nextCurrentCorrectStreak,
+    bestCorrectStreak: Math.max(
+      current.bestCorrectStreak,
+      nextCurrentCorrectStreak,
+    ),
+  };
+};
+
 export const updateStageLifetimeSummaries = (
   current: StageLifetimeSummary[],
   playerId: string,

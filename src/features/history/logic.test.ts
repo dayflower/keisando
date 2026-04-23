@@ -3,7 +3,11 @@ import type {
   PlayerLifetimeSummary,
   StageLifetimeSummary,
 } from "../../shared/types";
-import { updateLifetimeSummary, updateStageLifetimeSummaries } from "./logic";
+import {
+  updateLifetimeStreak,
+  updateLifetimeSummary,
+  updateStageLifetimeSummaries,
+} from "./logic";
 
 describe("updateLifetimeSummary", () => {
   it("increments counters and updates last played time", () => {
@@ -12,6 +16,8 @@ describe("updateLifetimeSummary", () => {
       totalPlays: 3,
       totalClears: 2,
       lastPlayedAt: 1000,
+      currentCorrectStreak: 4,
+      bestCorrectStreak: 7,
     };
 
     expect(updateLifetimeSummary(current, 2000)).toEqual({
@@ -19,6 +25,50 @@ describe("updateLifetimeSummary", () => {
       totalPlays: 4,
       totalClears: 3,
       lastPlayedAt: 2000,
+      currentCorrectStreak: 4,
+      bestCorrectStreak: 7,
+    });
+  });
+});
+
+describe("updateLifetimeStreak", () => {
+  it("increments current and best streaks after a correct answer", () => {
+    const current: PlayerLifetimeSummary = {
+      playerId: "p1",
+      totalPlays: 3,
+      totalClears: 2,
+      lastPlayedAt: 1000,
+      currentCorrectStreak: 4,
+      bestCorrectStreak: 4,
+    };
+
+    expect(updateLifetimeStreak(current, true)).toEqual({
+      playerId: "p1",
+      totalPlays: 3,
+      totalClears: 2,
+      lastPlayedAt: 1000,
+      currentCorrectStreak: 5,
+      bestCorrectStreak: 5,
+    });
+  });
+
+  it("resets only the current streak after a wrong answer", () => {
+    const current: PlayerLifetimeSummary = {
+      playerId: "p1",
+      totalPlays: 3,
+      totalClears: 2,
+      lastPlayedAt: 1000,
+      currentCorrectStreak: 4,
+      bestCorrectStreak: 7,
+    };
+
+    expect(updateLifetimeStreak(current, false)).toEqual({
+      playerId: "p1",
+      totalPlays: 3,
+      totalClears: 2,
+      lastPlayedAt: 1000,
+      currentCorrectStreak: 0,
+      bestCorrectStreak: 7,
     });
   });
 });

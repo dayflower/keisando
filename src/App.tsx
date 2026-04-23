@@ -91,6 +91,7 @@ function App() {
     historySummary,
     stageSummaries,
     appendClearRecord,
+    recordAnsweredQuestion,
     initializePlayerHistory,
     resetHistory,
   } = useHistory({ activePlayerId });
@@ -129,6 +130,7 @@ function App() {
   const game = useGameSession({
     activePlayer,
     records,
+    onAnswerResolved: recordAnsweredQuestion,
     onStageClear: clearFlow.handleStageClear,
   });
 

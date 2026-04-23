@@ -17,6 +17,8 @@ const buildProps = (
     totalPlays: 12,
     totalClears: 9,
     lastPlayedAt: new Date(2025, 0, 2, 3, 4).getTime(),
+    currentCorrectStreak: 3,
+    bestCorrectStreak: 7,
   },
   historyRecords: [
     {
@@ -69,6 +71,8 @@ describe("HistoryDetailScreen", () => {
     expect(html).toContain("最終プレイ日時: 2025/01/02 03:04");
     expect(html).toContain("最近の履歴 (過去10日)");
     expect(html).toContain("プレイ日時");
+    expect(html).toContain("現在の連続正解数: 3");
+    expect(html).toContain("最高連続正解数: 7");
     expect(html).toContain("ステージ集計");
     expect(html).toContain("最速クリアタイム");
     expect(html).toContain("<td>Stage 1</td>");

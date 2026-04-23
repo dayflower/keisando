@@ -48,6 +48,10 @@ describe("translate", () => {
     expect(translate("en", "history.recentHistory")).toBe(
       "Recent History (Last 10 Days)",
     );
+    expect(translate("ja", "history.bestCorrectStreak")).toBe("最高連続正解数");
+    expect(translate("en", "history.currentCorrectStreak")).toBe(
+      "Current correct streak",
+    );
     expect(translate("ja", "playing.clearTitle")).toBe("ステージクリア!");
     expect(translate("en", "playing.clearTitle")).toBe("Stage Clear!");
   });

@@ -90,6 +90,13 @@ export const HistoryDetailScreen = ({
             {t("history.lifetimeClearRate")}:{" "}
             {formatRate(historySummary.totalClears, historySummary.totalPlays)}
           </p>
+          <p className="history-item">
+            {t("history.currentCorrectStreak")}:{" "}
+            {historySummary.currentCorrectStreak}
+          </p>
+          <p className="history-item">
+            {t("history.bestCorrectStreak")}: {historySummary.bestCorrectStreak}
+          </p>
         </div>
 
         <div className="history-section">

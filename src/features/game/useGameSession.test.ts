@@ -6,7 +6,10 @@ import type {
   StageExpression,
   StageRunRecord,
 } from "../../shared/types";
-import type { StageClearPayload } from "./useGameSession";
+import type {
+  AnswerResolvedPayload,
+  StageClearPayload,
+} from "./useGameSession";
 
 type HookSlot =
   | { kind: "state"; value: unknown }
@@ -253,10 +256,12 @@ const createWindowMock = () => {
 const renderHook = async ({
   activePlayer = createPlayer(),
   records = [createRecord(2400)],
+  onAnswerResolved = vi.fn(),
   onStageClear = vi.fn(),
 }: {
   activePlayer?: Player | null;
   records?: StageRunRecord[];
+  onAnswerResolved?: (payload: AnswerResolvedPayload) => void;
   onStageClear?: (payload: StageClearPayload) => void;
 } = {}) => {
   const runtime = createHookRuntime();
@@ -267,6 +272,7 @@ const renderHook = async ({
       module.useGameSession({
         activePlayer,
         records,
+        onAnswerResolved,
         onStageClear,
       }),
     );
@@ -319,9 +325,13 @@ describe("useGameSession", () => {
     const { window, tickAll } = createWindowMock();
     Object.assign(globalThis, { window });
 
+    const onAnswerResolved = vi.fn();
     const onStageClear = vi.fn();
     const stage = createTestStage();
-    const { runtime, render } = await renderHook({ onStageClear });
+    const { runtime, render } = await renderHook({
+      onAnswerResolved,
+      onStageClear,
+    });
 
     nowSpy.mockReturnValue(1_000);
     let game = render();
@@ -344,6 +354,13 @@ describe("useGameSession", () => {
     expect(game.elapsedMs).toBe(3_500);
     expect(game.lastResult).toBe("correct");
     expect(game.bestTimeMs).toBe(2400);
+    expect(onAnswerResolved).toHaveBeenCalledWith({
+      playerId: "player-1",
+      isCorrect: true,
+    });
+    expect(onAnswerResolved.mock.invocationCallOrder[0]).toBeLessThan(
+      onStageClear.mock.invocationCallOrder[0],
+    );
     expect(onStageClear).toHaveBeenCalledTimes(1);
 
     nowSpy.mockReturnValue(9_000);
@@ -360,6 +377,45 @@ describe("useGameSession", () => {
     expect(game.isRoundActive).toBe(false);
     expect(game.isCleared).toBe(false);
     expect(game.bestTimeMs).toBe(2400);
+
+    runtime.dispose();
+  });
+
+  it("reports wrong answers before continuing the round", async () => {
+    const nowSpy = vi.spyOn(Date, "now");
+    const { window, tickAll } = createWindowMock();
+    Object.assign(globalThis, { window });
+
+    const onAnswerResolved = vi.fn();
+    const onStageClear = vi.fn();
+    const stage = createTestStage();
+    const { runtime, render } = await renderHook({
+      onAnswerResolved,
+      onStageClear,
+    });
+
+    nowSpy.mockReturnValue(1_000);
+    let game = render();
+    game.startStage(stage);
+    game = render();
+
+    nowSpy.mockReturnValue(4_500);
+    tickAll();
+    game = render();
+    game = render();
+
+    game.handleAnswer(-1);
+    game = render();
+
+    expect(game.lastResult).toBe("wrong");
+    expect(game.answeredCount).toBe(1);
+    expect(game.requiredCount).toBe(2);
+    expect(game.isCleared).toBe(false);
+    expect(onAnswerResolved).toHaveBeenCalledWith({
+      playerId: "player-1",
+      isCorrect: false,
+    });
+    expect(onStageClear).not.toHaveBeenCalled();
 
     runtime.dispose();
   });

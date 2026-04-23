@@ -25,6 +25,11 @@ export type StageClearPayload = {
   playedAt: number;
 };
 
+export type AnswerResolvedPayload = {
+  playerId: string;
+  isCorrect: boolean;
+};
+
 export type EffectOrigin = {
   x: number;
   y: number;
@@ -33,6 +38,7 @@ export type EffectOrigin = {
 type UseGameSessionInput = {
   activePlayer: Player | null;
   records: StageRunRecord[];
+  onAnswerResolved: (payload: AnswerResolvedPayload) => void;
   onStageClear: (payload: StageClearPayload) => void;
 };
 
@@ -121,6 +127,7 @@ const createStoppedSessionState = (
 export const useGameSession = ({
   activePlayer,
   records,
+  onAnswerResolved,
   onStageClear,
 }: UseGameSessionInput) => {
   const usedExpressionsRef = useRef(new Set<string>());
@@ -241,6 +248,7 @@ export const useGameSession = ({
     const nextIsCleared = nextAnsweredCount >= nextRequiredCount;
 
     setLastResult(isCorrect ? "correct" : "wrong");
+    onAnswerResolved({ playerId: playingPlayerId, isCorrect });
     setAnsweredCount(nextAnsweredCount);
     setRequiredCount(nextRequiredCount);
     setCurrentCombo(nextCombo);
