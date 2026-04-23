@@ -7,7 +7,6 @@ import type {
   StageDefinition,
   StageRunRecord,
 } from "../../shared/types";
-import { buildBestRecordByStageId } from "../ranking/logic";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type StageSelectScreenProps = {
@@ -15,7 +14,8 @@ type StageSelectScreenProps = {
   canStartStage: boolean;
   unlockedStageIds: Set<string>;
   playerNameById: Map<string, string>;
-  records: StageRunRecord[];
+  bestGlobalByStageId: Map<string, StageRunRecord>;
+  bestMyByStageId: Map<string, StageRunRecord>;
   onStartStage: (stage: StageDefinition) => void;
   onOpenRankingScreen: (stageId: string) => void;
   onOpenPlayHistory: () => void;
@@ -61,7 +61,8 @@ export const StageSelectScreen = ({
   canStartStage,
   unlockedStageIds,
   playerNameById,
-  records,
+  bestGlobalByStageId,
+  bestMyByStageId,
   onStartStage,
   onOpenRankingScreen,
   onOpenPlayHistory,
@@ -76,18 +77,6 @@ export const StageSelectScreen = ({
     () => new Map(STAGES.map((stage, index) => [stage.id, index])),
     [],
   );
-
-  const bestGlobalByStageId = useMemo(
-    () => buildBestRecordByStageId(records),
-    [records],
-  );
-  const bestMyByStageId = useMemo(() => {
-    if (!activePlayer) {
-      return new Map<string, StageRunRecord>();
-    }
-
-    return buildBestRecordByStageId(records, activePlayer.id);
-  }, [activePlayer, records]);
 
   useEffect(() => {
     if (!canStartStage) {

@@ -14,13 +14,12 @@ import type {
   StageRunRecord,
 } from "../../shared/types";
 import { getPlayerBestTime } from "../ranking/logic";
-import { calculateScore, createQuestion } from "./logic";
+import { createQuestion } from "./logic";
 
 export type StageClearPayload = {
   clearRecord: StageRunRecord;
   playerId: string;
   stageId: string;
-  score: number;
   durationMs: number;
   mistakeCount: number;
   playedAt: number;
@@ -263,7 +262,6 @@ export const useGameSession = ({
         nextRequiredCount - selectedStage.baseQuestionCount,
         0,
       );
-      const score = calculateScore(elapsedAtClear, wrongCount);
       const clearRecord: StageRunRecord = {
         id: createRecordId(),
         stageId: selectedStage.id,
@@ -278,7 +276,6 @@ export const useGameSession = ({
         clearRecord,
         playerId: playingPlayerId,
         stageId: selectedStage.id,
-        score,
         durationMs: elapsedAtClear,
         mistakeCount: wrongCount,
         playedAt: finishedAtMs,

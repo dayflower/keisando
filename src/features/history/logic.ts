@@ -15,15 +15,11 @@ export const pruneHistoryRecords = (
 
 export const updateLifetimeSummary = (
   current: PlayerLifetimeSummary,
-  score: number,
   playedAt: number,
 ): PlayerLifetimeSummary => ({
   ...current,
   totalPlays: current.totalPlays + 1,
   totalClears: current.totalClears + 1,
-  totalScore: current.totalScore + score,
-  bestScore:
-    current.bestScore === null ? score : Math.max(current.bestScore, score),
   lastPlayedAt: playedAt,
 });
 
@@ -31,7 +27,6 @@ export const updateStageLifetimeSummaries = (
   current: StageLifetimeSummary[],
   playerId: string,
   stageId: string,
-  score: number,
   durationMs: number,
 ): StageLifetimeSummary[] => {
   const targetIndex = current.findIndex((item) => item.stageId === stageId);
@@ -43,8 +38,6 @@ export const updateStageLifetimeSummaries = (
         stageId,
         attempts: 1,
         clears: 1,
-        totalScore: score,
-        bestScore: score,
         bestDurationMs: durationMs,
       },
     ];
@@ -55,9 +48,6 @@ export const updateStageLifetimeSummaries = (
     ...target,
     attempts: target.attempts + 1,
     clears: target.clears + 1,
-    totalScore: target.totalScore + score,
-    bestScore:
-      target.bestScore === null ? score : Math.max(target.bestScore, score),
     bestDurationMs:
       target.bestDurationMs === null
         ? durationMs

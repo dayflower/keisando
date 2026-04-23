@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useRef, useState } from "react";
 import { STAGES } from "../../shared/stages";
 import type { StageClearCondition, StageRunRecord } from "../../shared/types";
+import { selectBestRecord } from "../ranking/logic";
 import {
   type ClearSoundVariant,
   isNewBestRecord,
@@ -13,7 +14,6 @@ import type { StageClearPayload } from "./useGameSession";
 type AppendClearRecordInput = {
   playerId: string;
   stageId: string;
-  score: number;
   durationMs: number;
   playedAt: number;
   mistakeCount: number;
@@ -34,37 +34,6 @@ export type StageClearResolution = {
   clearSoundVariant: ClearSoundVariant;
   didUnlockNextStageOnClear: boolean;
   nextUnlockedStageId: string | null;
-};
-
-const sortByRanking = (a: StageRunRecord, b: StageRunRecord): number => {
-  if (a.elapsedMs !== b.elapsedMs) {
-    return a.elapsedMs - b.elapsedMs;
-  }
-
-  return a.recordedAt - b.recordedAt;
-};
-
-const findBestRecord = (
-  records: StageRunRecord[],
-  stageId: string,
-  playerId?: string,
-): StageRunRecord | null => {
-  let best: StageRunRecord | null = null;
-
-  for (const record of records) {
-    if (record.stageId !== stageId) {
-      continue;
-    }
-    if (playerId && record.playerId !== playerId) {
-      continue;
-    }
-
-    if (!best || sortByRanking(record, best) < 0) {
-      best = record;
-    }
-  }
-
-  return best;
 };
 
 export const resolveStageClear = (
@@ -97,8 +66,8 @@ export const resolveStageClear = (
     isConditionClear &&
     !currentUnlockedStageIds.includes(nextStage.id);
 
-  const globalBest = findBestRecord(records, payload.stageId);
-  const myBest = findBestRecord(records, payload.stageId, payload.playerId);
+  const globalBest = selectBestRecord(records, payload.stageId);
+  const myBest = selectBestRecord(records, payload.stageId, payload.playerId);
   const isGlobalBestUpdated = isNewBestRecord(payload.clearRecord, globalBest);
   const isMyBestUpdated = isNewBestRecord(payload.clearRecord, myBest);
 
@@ -161,7 +130,6 @@ export const useStageClearFlow = ({
       appendClearRecord({
         playerId: payload.playerId,
         stageId: payload.stageId,
-        score: payload.score,
         durationMs: payload.durationMs,
         playedAt: payload.playedAt,
         mistakeCount: payload.mistakeCount,

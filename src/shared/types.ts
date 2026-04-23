@@ -52,7 +52,6 @@ export type PlayHistoryRecord = {
   playedAt: number;
   stageId: string;
   result: "clear" | "fail";
-  score: number;
   durationMs: number;
   mistakeCount: number;
   appVersion: string;
@@ -62,8 +61,6 @@ export type PlayerLifetimeSummary = {
   playerId: string;
   totalPlays: number;
   totalClears: number;
-  totalScore: number;
-  bestScore: number | null;
   lastPlayedAt: number | null;
 };
 
@@ -72,8 +69,6 @@ export type StageLifetimeSummary = {
   stageId: string;
   attempts: number;
   clears: number;
-  totalScore: number;
-  bestScore: number | null;
   bestDurationMs: number | null;
 };
 

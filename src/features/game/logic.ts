@@ -4,14 +4,6 @@ import type {
   StageExpression,
 } from "../../shared/types";
 
-export const calculateScore = (
-  durationMs: number,
-  wrongCount: number,
-): number => {
-  const denominator = Math.max(durationMs + wrongCount * 1000, 1);
-  return Math.round(1_000_000 / denominator);
-};
-
 const shuffle = <T>(items: T[]): T[] => {
   const next = [...items];
   for (let i = next.length - 1; i > 0; i -= 1) {

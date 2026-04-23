@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-react";
 import {
-  formatAverageScore,
   formatElapsedTime,
   formatRate,
   formatRecordedAt,
@@ -85,16 +84,6 @@ export const HistoryDetailScreen = ({
             Lifetime clear rate:{" "}
             {formatRate(historySummary.totalClears, historySummary.totalPlays)}
           </p>
-          <p className="history-item">
-            Lifetime best score: {historySummary.bestScore ?? 0}
-          </p>
-          <p className="history-item">
-            Lifetime average score:{" "}
-            {formatAverageScore(
-              historySummary.totalScore,
-              historySummary.totalPlays,
-            )}
-          </p>
         </div>
 
         <div className="history-section">
@@ -111,7 +100,6 @@ export const HistoryDetailScreen = ({
                     <th scope="col">Played at</th>
                     <th scope="col">Stage</th>
                     <th scope="col">Result</th>
-                    <th scope="col">Score</th>
                     <th scope="col">Duration</th>
                     <th scope="col">Mistakes</th>
                   </tr>
@@ -122,7 +110,6 @@ export const HistoryDetailScreen = ({
                       <td>{formatRecordedAt(record.playedAt)}</td>
                       <td>{record.stageId}</td>
                       <td>{record.result}</td>
-                      <td>{record.score}</td>
                       <td>{formatElapsedTime(record.durationMs)}</td>
                       <td>{record.mistakeCount}</td>
                     </tr>
@@ -145,8 +132,6 @@ export const HistoryDetailScreen = ({
                     <th scope="col">Stage</th>
                     <th scope="col">Attempts</th>
                     <th scope="col">Clears</th>
-                    <th scope="col">Best score</th>
-                    <th scope="col">Avg score</th>
                     <th scope="col">Best clear time</th>
                   </tr>
                 </thead>
@@ -156,13 +141,6 @@ export const HistoryDetailScreen = ({
                       <td>{summary.stageId}</td>
                       <td>{summary.attempts}</td>
                       <td>{summary.clears}</td>
-                      <td>{summary.bestScore ?? 0}</td>
-                      <td>
-                        {formatAverageScore(
-                          summary.totalScore,
-                          summary.attempts,
-                        )}
-                      </td>
                       <td>
                         {summary.bestDurationMs !== null
                           ? formatElapsedTime(summary.bestDurationMs)

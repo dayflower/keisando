@@ -26,7 +26,6 @@ const createPayload = (
   clearRecord,
   playerId: clearRecord.playerId,
   stageId: clearRecord.stageId,
-  score: 500,
   durationMs: clearRecord.elapsedMs,
   mistakeCount,
   playedAt: clearRecord.recordedAt,
@@ -60,6 +59,18 @@ describe("resolveStageClear", () => {
     );
 
     expect(result.clearSoundVariant).toBe("myBest");
+  });
+
+  it("does not mark globalBest when tied with a later recordedAt", () => {
+    const payload = createPayload(createRecord(1800, 300));
+    const result = resolveStageClear(
+      payload,
+      [createRecord(1800, 100, "player2"), createRecord(1800, 200, "player1")],
+      {},
+      createStageClearConditionById(),
+    );
+
+    expect(result.clearSoundVariant).toBe("noMistake");
   });
 
   it("marks noMistake when it is not a best record and has no mistakes", () => {

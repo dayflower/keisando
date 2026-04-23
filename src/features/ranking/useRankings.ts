@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { STAGES } from "../../shared/stages";
 import type { RankingTab, StageRunRecord } from "../../shared/types";
-import { getTopRecords } from "./logic";
+import { selectPlayerStageTopRecords, selectStageTopRecords } from "./logic";
 
 type UseRankingsInput = {
   records: StageRunRecord[];
@@ -19,20 +19,12 @@ export const useRankings = ({ records, activePlayerId }: UseRankingsInput) => {
 
   const rankingGlobalTop10 = useMemo(() => {
     if (!rankingStageId) return [];
-    return getTopRecords(
-      records.filter((record) => record.stageId === rankingStageId),
-    );
+    return selectStageTopRecords(records, rankingStageId);
   }, [rankingStageId, records]);
 
   const rankingPlayerTop10 = useMemo(() => {
     if (!rankingStageId || !activePlayerId) return [];
-    return getTopRecords(
-      records.filter(
-        (record) =>
-          record.stageId === rankingStageId &&
-          record.playerId === activePlayerId,
-      ),
-    );
+    return selectPlayerStageTopRecords(records, rankingStageId, activePlayerId);
   }, [rankingStageId, activePlayerId, records]);
 
   const openRankingScreen = (stageId: string) => {

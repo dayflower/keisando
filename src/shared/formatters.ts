@@ -22,11 +22,3 @@ export const formatRate = (numerator: number, denominator: number): string => {
   if (denominator <= 0) return "0.0%";
   return `${((numerator / denominator) * 100).toFixed(1)}%`;
 };
-
-export const formatAverageScore = (
-  totalScore: number,
-  count: number,
-): string => {
-  if (count <= 0) return "0";
-  return String(Math.round(totalScore / count));
-};

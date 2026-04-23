@@ -18,8 +18,6 @@ export const createDefaultLifetimeSummary = (
   playerId,
   totalPlays: 0,
   totalClears: 0,
-  totalScore: 0,
-  bestScore: null,
   lastPlayedAt: null,
 });
 
@@ -41,7 +39,6 @@ export const loadPlayerHistory = (playerId: string): PlayHistoryRecord[] => {
         isFiniteNumber(record.playedAt) &&
         typeof record.stageId === "string" &&
         (record.result === "clear" || record.result === "fail") &&
-        isFiniteNumber(record.score) &&
         isFiniteNumber(record.durationMs) &&
         record.durationMs >= 0 &&
         isFiniteNumber(record.mistakeCount) &&
@@ -85,9 +82,7 @@ export const loadLifetimeSummary = (
       !isFiniteNumber(parsed.totalPlays) ||
       parsed.totalPlays < 0 ||
       !isFiniteNumber(parsed.totalClears) ||
-      parsed.totalClears < 0 ||
-      !isFiniteNumber(parsed.totalScore) ||
-      parsed.totalScore < 0
+      parsed.totalClears < 0
     ) {
       return createDefaultLifetimeSummary(playerId);
     }
@@ -96,11 +91,6 @@ export const loadLifetimeSummary = (
       playerId,
       totalPlays: parsed.totalPlays,
       totalClears: parsed.totalClears,
-      totalScore: parsed.totalScore,
-      bestScore:
-        parsed.bestScore === null || isFiniteNumber(parsed.bestScore)
-          ? (parsed.bestScore ?? null)
-          : null,
       lastPlayedAt:
         parsed.lastPlayedAt === null || isFiniteNumber(parsed.lastPlayedAt)
           ? (parsed.lastPlayedAt ?? null)
@@ -145,9 +135,6 @@ export const loadStageSummaries = (
         summary.attempts >= 0 &&
         isFiniteNumber(summary.clears) &&
         summary.clears >= 0 &&
-        isFiniteNumber(summary.totalScore) &&
-        summary.totalScore >= 0 &&
-        (summary.bestScore === null || isFiniteNumber(summary.bestScore)) &&
         (summary.bestDurationMs === null ||
           isFiniteNumber(summary.bestDurationMs))
       );

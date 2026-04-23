@@ -56,20 +56,17 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
     (args: {
       playerId: string;
       stageId: string;
-      score: number;
       durationMs: number;
       playedAt: number;
       mistakeCount: number;
     }) => {
-      const { playerId, stageId, score, durationMs, playedAt, mistakeCount } =
-        args;
+      const { playerId, stageId, durationMs, playedAt, mistakeCount } = args;
       const historyRecord: PlayHistoryRecord = {
         id: createRecordId(),
         playerId,
         playedAt,
         stageId,
         result: "clear",
-        score,
         durationMs,
         mistakeCount,
         appVersion: APP_VERSION,
@@ -91,11 +88,7 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
       const currentLifetime = isActiveHistoryTarget
         ? (historySummary ?? createDefaultLifetimeSummary(playerId))
         : loadLifetimeSummary(playerId);
-      const nextLifetime = updateLifetimeSummary(
-        currentLifetime,
-        score,
-        playedAt,
-      );
+      const nextLifetime = updateLifetimeSummary(currentLifetime, playedAt);
       if (isActiveHistoryTarget) {
         setHistorySummary(nextLifetime);
       }
@@ -108,7 +101,6 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
         currentStageSummaries,
         playerId,
         stageId,
-        score,
         durationMs,
       ).sort((a, b) => a.stageId.localeCompare(b.stageId));
       if (isActiveHistoryTarget) {

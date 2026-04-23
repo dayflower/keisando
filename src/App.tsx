@@ -9,13 +9,18 @@ import { HistoryDetailScreen } from "./features/history/HistoryDetailScreen";
 import { useHistory } from "./features/history/useHistory";
 import { PlayerSelectScreen } from "./features/player/PlayerSelectScreen";
 import { usePlayers } from "./features/player/usePlayers";
+import { buildBestRecordByStageId } from "./features/ranking/logic";
 import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
 import { useGameSoundEffects } from "./features/sound/useGameSoundEffects";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
 import { STAGES } from "./shared/stages";
-import type { Screen, StageClearCondition } from "./shared/types";
+import type {
+  Screen,
+  StageClearCondition,
+  StageRunRecord,
+} from "./shared/types";
 import { clearAppStorage } from "./storage/repositories/debugRepo";
 import {
   loadStageClearConditionOverrides,
@@ -115,6 +120,17 @@ function App() {
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
     [game.playingPlayerId, players],
   );
+  const bestGlobalByStageId = useMemo(
+    () => buildBestRecordByStageId(records),
+    [records],
+  );
+  const bestMyByStageId = useMemo(() => {
+    if (!activePlayer) {
+      return new Map<string, StageRunRecord>();
+    }
+
+    return buildBestRecordByStageId(records, activePlayer.id);
+  }, [activePlayer, records]);
   const unlockedStageIds = useMemo(() => {
     if (STAGES.length === 0) {
       return new Set<string>();
@@ -299,7 +315,8 @@ function App() {
         canStartStage={canStartStage}
         unlockedStageIds={unlockedStageIds}
         playerNameById={playerNameById}
-        records={records}
+        bestGlobalByStageId={bestGlobalByStageId}
+        bestMyByStageId={bestMyByStageId}
         onStartStage={navigation.startStage}
         onOpenRankingScreen={navigation.openRanking}
         onOpenPlayHistory={navigation.openPlayHistory}
