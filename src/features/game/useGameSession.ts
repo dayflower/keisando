@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type MutableRefObject,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ROUND_COUNTDOWN_MS } from "../../shared/constants";
 import { createRecordId } from "../../shared/ids";
 import type {
@@ -30,6 +36,88 @@ type UseGameSessionInput = {
   records: StageRunRecord[];
   onStageClear: (payload: StageClearPayload) => void;
 };
+
+type RoundSessionState = {
+  question: Question;
+  answeredCount: number;
+  requiredCount: number;
+  currentCombo: number;
+  comboEffectTick: number;
+  comboMilestoneTick: number;
+  comboMilestoneValue: number;
+  comboEffectOrigin: EffectOrigin;
+  lastResult: "correct" | "wrong" | null;
+  stageStartMs: number;
+  countdownEndMs: number;
+  isRoundActive: boolean;
+  nowMs: number;
+  clearElapsedMs: number | null;
+};
+
+type StoppedSessionState = {
+  question: null;
+  playingPlayerId: null;
+  answeredCount: number;
+  requiredCount: number;
+  currentCombo: number;
+  comboEffectTick: number;
+  comboMilestoneTick: number;
+  comboMilestoneValue: number;
+  comboEffectOrigin: EffectOrigin;
+  lastResult: "correct" | "wrong" | null;
+  stageStartMs: number;
+  countdownEndMs: number;
+  isRoundActive: boolean;
+  nowMs: number;
+  clearElapsedMs: number | null;
+  bestTimeMs: number | null;
+};
+
+const createRoundSessionState = (
+  stage: StageDefinition,
+  startedAtMs: number,
+  usedExpressionsRef: MutableRefObject<Set<string>>,
+): RoundSessionState => {
+  usedExpressionsRef.current = new Set<string>();
+
+  return {
+    question: createQuestion(stage, usedExpressionsRef.current),
+    answeredCount: 0,
+    requiredCount: stage.baseQuestionCount,
+    currentCombo: 0,
+    comboEffectTick: 0,
+    comboMilestoneTick: 0,
+    comboMilestoneValue: 0,
+    comboEffectOrigin: { x: 0, y: 0 },
+    lastResult: null,
+    stageStartMs: startedAtMs,
+    countdownEndMs: startedAtMs + ROUND_COUNTDOWN_MS,
+    isRoundActive: false,
+    nowMs: startedAtMs,
+    clearElapsedMs: null,
+  };
+};
+
+const createStoppedSessionState = (
+  stoppedAtMs: number,
+): StoppedSessionState => ({
+  question: null,
+  playingPlayerId: null,
+  answeredCount: 0,
+  requiredCount: 0,
+  currentCombo: 0,
+  comboEffectTick: 0,
+  comboMilestoneTick: 0,
+  comboMilestoneValue: 0,
+  comboEffectOrigin: { x: 0, y: 0 },
+  lastResult: null,
+  stageStartMs: stoppedAtMs,
+  countdownEndMs: stoppedAtMs + ROUND_COUNTDOWN_MS,
+  isRoundActive: false,
+  nowMs: stoppedAtMs,
+  clearElapsedMs: null,
+  bestTimeMs: null,
+});
 
 export const useGameSession = ({
   activePlayer,
@@ -109,24 +197,28 @@ export const useGameSession = ({
     if (!activePlayer) return false;
 
     const startAtMs = Date.now();
-    usedExpressionsRef.current = new Set<string>();
+    const roundState = createRoundSessionState(
+      stage,
+      startAtMs,
+      usedExpressionsRef,
+    );
 
     setSelectedStage(stage);
-    setQuestion(createQuestion(stage, usedExpressionsRef.current));
+    setQuestion(roundState.question);
     setPlayingPlayerId(activePlayer.id);
-    setAnsweredCount(0);
-    setRequiredCount(stage.baseQuestionCount);
-    setCurrentCombo(0);
-    setComboEffectTick(0);
-    setComboMilestoneTick(0);
-    setComboMilestoneValue(0);
-    setComboEffectOrigin({ x: 0, y: 0 });
-    setLastResult(null);
-    setStageStartMs(startAtMs);
-    setCountdownEndMs(startAtMs + ROUND_COUNTDOWN_MS);
-    setIsRoundActive(false);
-    setNowMs(startAtMs);
-    setClearElapsedMs(null);
+    setAnsweredCount(roundState.answeredCount);
+    setRequiredCount(roundState.requiredCount);
+    setCurrentCombo(roundState.currentCombo);
+    setComboEffectTick(roundState.comboEffectTick);
+    setComboMilestoneTick(roundState.comboMilestoneTick);
+    setComboMilestoneValue(roundState.comboMilestoneValue);
+    setComboEffectOrigin(roundState.comboEffectOrigin);
+    setLastResult(roundState.lastResult);
+    setStageStartMs(roundState.stageStartMs);
+    setCountdownEndMs(roundState.countdownEndMs);
+    setIsRoundActive(roundState.isRoundActive);
+    setNowMs(roundState.nowMs);
+    setClearElapsedMs(roundState.clearElapsedMs);
     setBestTimeMs(getPlayerBestTime(records, stage.id, activePlayer.id));
 
     return true;
@@ -205,39 +297,48 @@ export const useGameSession = ({
 
   const resetStage = () => {
     if (!selectedStage) return;
-    const resetAtMs = Date.now();
+    const roundState = createRoundSessionState(
+      selectedStage,
+      Date.now(),
+      usedExpressionsRef,
+    );
 
-    usedExpressionsRef.current = new Set<string>();
-    setQuestion(createQuestion(selectedStage, usedExpressionsRef.current));
-    setAnsweredCount(0);
-    setRequiredCount(selectedStage.baseQuestionCount);
-    setCurrentCombo(0);
-    setComboEffectTick(0);
-    setComboMilestoneTick(0);
-    setComboMilestoneValue(0);
-    setComboEffectOrigin({ x: 0, y: 0 });
-    setLastResult(null);
-    setStageStartMs(resetAtMs);
-    setCountdownEndMs(resetAtMs + ROUND_COUNTDOWN_MS);
-    setIsRoundActive(false);
-    setNowMs(resetAtMs);
-    setClearElapsedMs(null);
+    setQuestion(roundState.question);
+    setAnsweredCount(roundState.answeredCount);
+    setRequiredCount(roundState.requiredCount);
+    setCurrentCombo(roundState.currentCombo);
+    setComboEffectTick(roundState.comboEffectTick);
+    setComboMilestoneTick(roundState.comboMilestoneTick);
+    setComboMilestoneValue(roundState.comboMilestoneValue);
+    setComboEffectOrigin(roundState.comboEffectOrigin);
+    setLastResult(roundState.lastResult);
+    setStageStartMs(roundState.stageStartMs);
+    setCountdownEndMs(roundState.countdownEndMs);
+    setIsRoundActive(roundState.isRoundActive);
+    setNowMs(roundState.nowMs);
+    setClearElapsedMs(roundState.clearElapsedMs);
   };
 
   const stopSession = () => {
+    const stoppedState = createStoppedSessionState(Date.now());
+
     setSelectedStage(null);
-    setQuestion(null);
-    setPlayingPlayerId(null);
-    setAnsweredCount(0);
-    setRequiredCount(0);
-    setCurrentCombo(0);
-    setComboEffectTick(0);
-    setComboMilestoneTick(0);
-    setComboMilestoneValue(0);
-    setComboEffectOrigin({ x: 0, y: 0 });
-    setLastResult(null);
-    setIsRoundActive(false);
-    setClearElapsedMs(null);
+    setQuestion(stoppedState.question);
+    setPlayingPlayerId(stoppedState.playingPlayerId);
+    setAnsweredCount(stoppedState.answeredCount);
+    setRequiredCount(stoppedState.requiredCount);
+    setCurrentCombo(stoppedState.currentCombo);
+    setComboEffectTick(stoppedState.comboEffectTick);
+    setComboMilestoneTick(stoppedState.comboMilestoneTick);
+    setComboMilestoneValue(stoppedState.comboMilestoneValue);
+    setComboEffectOrigin(stoppedState.comboEffectOrigin);
+    setLastResult(stoppedState.lastResult);
+    setStageStartMs(stoppedState.stageStartMs);
+    setCountdownEndMs(stoppedState.countdownEndMs);
+    setIsRoundActive(stoppedState.isRoundActive);
+    setNowMs(stoppedState.nowMs);
+    setClearElapsedMs(stoppedState.clearElapsedMs);
+    setBestTimeMs(stoppedState.bestTimeMs);
   };
 
   return {
