@@ -162,9 +162,6 @@ export const StageSelectScreen = ({
           </div>
         </div>
         <h1 className="title">Keisando</h1>
-        <p className="stage-select-description">
-          Choose a stage to start Time Attack.
-        </p>
         {!canStartStage && (
           <p className="stage-select-hint">
             Select a player before starting a stage.
