@@ -1,180 +1,218 @@
-# Keisando - Technical Specification (Draft)
+# Keisando - Technical Specification
 
 ## 1. Goal
-Build a browser-based arithmetic practice game for children who struggle with calculation.
+Keisando is a browser-based arithmetic practice game for children who need repetition with basic calculation.
 
-Primary gameplay mode for Phase 1 is **Time Attack**:
-- Clear each stage as fast as possible.
-- Mistakes apply a time-related penalty indirectly by increasing total questions.
-- Rankings are based on clear time records.
+Current product goals:
+- Work in modern desktop and tablet browsers.
+- Keep the main play loop short and tap-first.
+- Support multiple local players without authentication.
+- Persist local progress, ranking records, and play history per player.
+- Provide Japanese and English UI text.
 
-Core constraints:
-- Works in modern browsers.
-- Usable on tablets (tap-first) and desktop (click + keyboard).
-- Supports multiple local users without password authentication.
-- Tracks per-user progress and ranking metrics.
-
-## 2. Selected Tech Stack
+## 2. Current Tech Stack
 
 ### Frontend
-- React
+- React 19
 - TypeScript
 - Vite
 
-### UI
-- Tailwind CSS
-
-### State Management
-- Jotai
+### Styling
+- Hand-authored CSS in `src/index.css`
 
 ### Persistence
-- localStorage
+- `localStorage`
 
-Reasoning:
-- React + TypeScript provides maintainable UI and domain logic boundaries.
-- Tailwind enables fast iteration for responsive layouts.
-- Jotai is lightweight and suitable for composable game/user state.
-- localStorage is sufficient for local, no-auth, per-device persistence in the initial phase.
+### Tooling
+- Vitest
+- Biome
 
-## 3. Product Scope (Phase 1)
+See [package.json](../package.json) for exact scripts and versions.
 
-### Game Flow
-- Show one expression at the top.
-- Show 4 answer options arranged in a diamond layout (A/B/X/Y-like positions).
-- Player selects one option:
-  - Correct: move to next question.
-  - Incorrect: add one extra question to the stage total.
-- Stage clears when required question count is completed.
-- Elapsed time is measured from stage start to clear and used as the main result metric.
+## 3. Product Scope
 
-### Stage Rules
-- Stage-specific arithmetic types (addition/subtraction first).
-- Questions are generated randomly per run.
-- Avoid duplicates within a stage as much as possible.
-- Time Attack semantics for Phase 1:
-  - No fixed countdown timer.
-  - Faster clear time is better.
-  - Wrong answers increase effective completion time by increasing the number of questions to clear.
+### Core Flow
+- The app starts on the stage-select screen.
+- A player must be selected before a stage can start.
+- During play, one arithmetic expression is shown with four answer options.
+- A correct answer advances to the next question.
+- A wrong answer increments the wrong-answer count and adds one extra required question.
+- A stage clears after the current required question count is answered correctly.
+- Clear results are recorded as elapsed time records for ranking.
 
-### Users
-- No password/authentication.
-- Create/switch users from the top screen.
-- Keep user-specific data isolated:
-  - Progress
-  - Best clear times
-  - Basic ranking/score records
+### Supported Screens
+- `stageSelect`
+- `playerSelect`
+- `playing`
+- `ranking`
+- `historyDetail`
+- `debug`
 
-## 4. Architecture Overview
+### Players
+- Players are local-only and do not require passwords.
+- Each player has:
+  - `id`
+  - `name`
+  - `createdAt`
+- Player names are trimmed and validated against shared length constraints.
+- The current active player is persisted separately from the player list.
 
-## 4.1 Layering
-- `domain`: pure logic (question generation, validation, scoring, stage constraints)
-- `state`: Jotai atoms and derived atoms
-- `ui`: React components/pages
-- `storage`: localStorage serialization/deserialization and versioning
+### Localization
+- Supported locales are `ja` and `en`.
+- The default locale is detected from `navigator.languages` or `navigator.language`.
+- Non-Japanese locales fall back to English.
+- The debug screen can override the effective locale to:
+  - System
+  - Japanese
+  - English
+- Stage names, stage tags, status labels, history labels, ranking labels, and debug labels are localized through `src/shared/i18n.tsx`.
 
-### 4.2 Recommended Directory Shape
-```txt
-src/
-  domain/
-    stageRules.ts
-    questionGenerator.ts
-    scoring.ts
-    types.ts
-  state/
-    atoms/
-      gameAtoms.ts
-      userAtoms.ts
-      progressAtoms.ts
-    selectors/
-  storage/
-    schema.ts
-    keys.ts
-    migrations.ts
-  ui/
-    pages/
-      TopPage.tsx
-      StagePage.tsx
-      ResultPage.tsx
-    components/
-      DiamondChoices.tsx
-      ExpressionPanel.tsx
-      Timer.tsx
-```
+## 4. Gameplay Rules
 
-## 5. State Design (Jotai)
+### Time Attack Semantics
+- There is no fixed countdown timer that ends the round.
+- Faster clear time is better.
+- Mistakes act as an indirect time penalty by increasing the number of questions required to clear.
 
-## 5.1 Core Atoms
-- `usersAtom`
-  - List of local users and profile metadata.
-- `currentUserIdAtom`
-  - Active user id.
-- `gameSessionAtom`
-  - Current stage session state:
-  - stage id, current question, remaining question count, mistake count, elapsed time.
-- `progressAtomFamily(userId)`
-  - Per-user progress and records by stage.
+### Stage Catalog
+- `stage1`
+  - Theme: addition
+  - Expression range: single-digit addition, `0-9 + 0-9`
+  - Answer range: `0-18`
+- `stage2`
+  - Theme: subtraction
+  - Expression range: single-digit subtraction, `0-9 - 0-9`
+  - Answer range: `0-9`
+  - Zero-valued operands/results remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage3`
+  - Theme: subtraction+
+  - Expression range: `1-2` digit minus `1` digit, result constrained to `0-9`
+  - Answer range: `0-9`
 
-## 5.2 Persistence Strategy
-Use `atomWithStorage` for persisted atoms where practical.
+### Default Stage Parameters
+- All current stages use:
+  - `baseQuestionCount = 10`
+  - `maxElapsedMs = 15000`
+  - `requireNoMistake = true`
 
-Persistence boundaries:
-- Persist:
-  - users
-  - current user id
-  - per-user progress/records
-- Do not persist transient runtime-only session details unless required.
+### Unlock Rules
+- The first stage is always available.
+- Later stages unlock per player through the stage-clear flow.
+- Unlock progress can be reset for the active player from the debug screen.
 
-## 6. localStorage Data Model
+## 5. Records and History
 
-## 6.1 Key Naming
-Use explicit namespaced keys:
+### Ranking Records
+- A clear writes a `StageRunRecord` with:
+  - `id`
+  - `stageId`
+  - `playerId`
+  - `elapsedMs`
+  - `requiredCount`
+  - `wrongCount`
+  - `recordedAt`
+- Rankings support:
+  - Global Top 10
+  - Active-player Top 10
+
+### Play History
+- Per-player history stores `PlayHistoryRecord` entries with:
+  - `id`
+  - `playerId`
+  - `playedAt`
+  - `stageId`
+  - `result`
+  - `durationMs`
+  - `mistakeCount`
+  - `appVersion`
+- The history screen also shows:
+  - Lifetime summary
+  - Recent history for the last 10 days
+  - Per-stage lifetime aggregates
+
+### Stage Clear Conditions
+- Each stage has a default clear condition.
+- The debug screen can override clear conditions per stage:
+  - Maximum elapsed time
+  - No-mistake requirement
+- Overrides are persisted locally.
+
+## 6. Architecture Overview
+
+### Top-Level Structure
+- `src/App.tsx`
+  - App orchestration, screen switching, top-level wiring
+- `src/features/*`
+  - Screen components, hooks, and feature-specific logic
+- `src/shared/*`
+  - Shared types, constants, formatters, i18n helpers, stage definitions
+- `src/storage/repositories/*`
+  - `localStorage` read/write helpers and validation
+
+### Design Direction
+- Keep UI composition in components and hooks.
+- Prefer pure helpers for branching rules that need tests.
+- Keep persistence concerns inside storage repositories instead of UI components.
+
+## 7. Persistence Model
+
+### Storage Keys
 - `keisando:users`
 - `keisando:current-user-id`
-- `keisando:user:<USER_ID>:progress`
+- `keisando:records:v1`
+- `keisando:sound-muted`
+- `keisando:stage-clear-conditions:v1`
+- `keisando:unlocked-stage-ids-by-player:v1`
+- `keisando:user:<PLAYER_ID>:history`
+- `keisando:user:<PLAYER_ID>:lifetime-summary`
+- `keisando:user:<PLAYER_ID>:stage-lifetime-summary`
 
-## 6.2 Versioning
-Persisted payloads should include a version field:
+### Persistence Boundaries
+- Persisted:
+  - Players
+  - Active player id
+  - Ranking records
+  - Per-player history and summary data
+  - Per-player unlock progress
+  - Stage clear condition overrides
+  - Sound mute preference
+- Not persisted:
+  - Active in-progress stage session state
+  - Temporary animation/effect state
+  - Current screen selection after reload
 
-```ts
-{
-  version: 1,
-  data: ...
-}
-```
-
-Add migration handlers in `storage/migrations.ts` when schema changes.
-
-## 7. Input and Interaction
+## 8. Input and Interaction
 
 ### Tablet
-- Tap on choices.
+- Tap answer options and navigation controls.
 
 ### Desktop
-- Click on choices.
-- Keyboard mapping for 4 options (to be finalized, e.g. arrow keys + confirm or direct keys).
+- Click answer options and navigation controls.
+- Keyboard shortcuts are supported for gameplay and navigation flows.
 
-Accessibility baseline:
-- Focus-visible styles for keyboard users.
-- Sufficient contrast for text and buttons.
+### Accessibility Baseline
+- Visible focus states for keyboard use.
+- Text and controls must remain readable at tablet sizes.
+- Localization must not break core navigation or status visibility.
 
-## 8. Non-Functional Requirements (Initial)
-- Responsive layout for tablet and desktop.
-- Fast stage restart and low input latency.
-- Deterministic scoring behavior.
-- No backend dependency for Phase 1.
+## 9. Debug Capabilities
+- Change effective language.
+- Reset unlock progress for the active player.
+- Clear all local data.
+- Override per-stage clear conditions.
+- Trigger visual effect previews.
+- Trigger sound effect previews.
 
-## 9. Risks and Tradeoffs
-- localStorage limitations:
-  - Per-origin size limits.
-  - No cross-device sync.
-  - Synchronous API (avoid excessive write frequency).
-- Mitigation:
-  - Save on meaningful events (answer/clear), not every frame.
-  - Keep payload small and normalized.
-  - Consider IndexedDB migration if data grows.
+These tools are development-facing and not part of the main player flow.
 
-## 10. Future Extensions
-- More stage patterns and difficulty curves.
-- Better ranking metrics.
-- Optional cloud sync/account system.
-- PWA install support.
+## 10. Non-Functional Requirements
+- Responsive layout for desktop and tablet play.
+- Fast stage restarts and low-latency answer input.
+- Deterministic validation and ranking behavior.
+- No backend dependency in the current version.
+
+## 11. Future Extensions
+- Additional stage patterns and difficulty curves.
+- Broader localization coverage beyond `ja` and `en`.
+- Export/import or sync for local player data.
+- PWA packaging and install support.
