@@ -86,6 +86,9 @@ export const DebugScreen = ({
             : 0,
     lastResult: comboTier === "none" ? null : "correct",
     comboMilestoneValue,
+    comboMilestoneLabel: t("playing.comboMilestone", {
+      count: comboMilestoneValue,
+    }),
   });
   const clearEffect = buildClearEffectViewModel({
     clearCelebrationTier,
@@ -105,12 +108,6 @@ export const DebugScreen = ({
       : clearBestBadge === "my"
         ? t("debug.clearBadgeMyBest")
         : "";
-  const comboMilestoneLabel =
-    comboMilestoneValue > 0
-      ? locale === "ja"
-        ? `${comboMilestoneValue}コンボ!`
-        : `${comboMilestoneValue} COMBO!`
-      : "";
   const localeOptions: Array<{
     key: "system" | "ja" | "en";
     label: string;
@@ -322,7 +319,7 @@ export const DebugScreen = ({
                       className="combo-progress-overlay"
                       aria-hidden="true"
                     >
-                      {comboMilestoneLabel}
+                      {comboEffect.milestoneLabel}
                     </span>
                   )}
                 </div>

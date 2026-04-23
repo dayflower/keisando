@@ -91,6 +91,9 @@ export const PlayingScreen = ({
     currentCombo,
     lastResult,
     comboMilestoneValue,
+    comboMilestoneLabel: t("playing.comboMilestone", {
+      count: comboMilestoneValue,
+    }),
   });
   const clearEffect = buildClearEffectViewModel({
     clearCelebrationTier,

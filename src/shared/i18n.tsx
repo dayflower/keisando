@@ -65,6 +65,7 @@ const enMessages = {
   "playing.answered": "Answered",
   "playing.remaining": "Remaining",
   "playing.progress": "Question progress",
+  "playing.comboMilestone": "{count} COMBO!",
   "playing.time": "Time",
   "playing.best": "Best",
   "playing.resultCorrect": "Correct!",
@@ -189,6 +190,7 @@ const jaMessages: Record<MessageKey, string> = {
   "playing.answered": "回答数",
   "playing.remaining": "残り",
   "playing.progress": "問題進捗",
+  "playing.comboMilestone": "{count} COMBO!",
   "playing.time": "タイム",
   "playing.best": "ベスト",
   "playing.resultCorrect": "正解!",
@@ -296,7 +298,7 @@ type I18nContextValue = {
   effectiveLocale: Locale;
   localeOverride: LocaleOverride;
   setLocaleOverride: Dispatch<SetStateAction<LocaleOverride>>;
-  t: (key: MessageKey) => string;
+  t: (key: MessageKey, values?: Record<string, string | number>) => string;
 };
 
 const defaultContextValue: I18nContextValue = {
@@ -304,7 +306,7 @@ const defaultContextValue: I18nContextValue = {
   effectiveLocale: "en",
   localeOverride: null,
   setLocaleOverride: () => null,
-  t: (key) => translate("en", key),
+  t: (key, values) => translate("en", key, values),
 };
 
 const I18nContext = createContext<I18nContextValue>(defaultContextValue);
@@ -335,8 +337,25 @@ export const detectLocale = (): Locale => {
   return detectLocaleFromNavigator(navigator.languages, navigator.language);
 };
 
-export const translate = (locale: Locale, key: MessageKey): string =>
-  messages[locale][key];
+const interpolateMessage = (
+  template: string,
+  values?: Record<string, string | number>,
+): string => {
+  if (!values) {
+    return template;
+  }
+
+  return template.replaceAll(/\{(\w+)\}/g, (match, key: string) => {
+    const value = values[key];
+    return value === undefined ? match : String(value);
+  });
+};
+
+export const translate = (
+  locale: Locale,
+  key: MessageKey,
+  values?: Record<string, string | number>,
+): string => interpolateMessage(messages[locale][key], values);
 
 const getStageMessageKey = (
   stageId: string,
@@ -386,7 +405,7 @@ export const I18nProvider = ({
       effectiveLocale: locale,
       localeOverride,
       setLocaleOverride,
-      t: (key) => translate(locale, key),
+      t: (key, values) => translate(locale, key, values),
     }),
     [locale, localeOverride, setLocaleOverride],
   );

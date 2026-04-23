@@ -12,6 +12,7 @@ describe("buildComboEffectViewModel", () => {
         currentCombo: 0,
         lastResult: null,
         comboMilestoneValue: 0,
+        comboMilestoneLabel: "0 COMBO!",
       }),
     ).toEqual({
       comboTier: "none",
@@ -27,6 +28,7 @@ describe("buildComboEffectViewModel", () => {
         currentCombo: 3,
         lastResult: "correct",
         comboMilestoneValue: 3,
+        comboMilestoneLabel: "3 COMBO!",
       }),
     ).toEqual({
       comboTier: "low",
@@ -41,6 +43,7 @@ describe("buildComboEffectViewModel", () => {
       currentCombo: 5,
       lastResult: "correct",
       comboMilestoneValue: 5,
+      comboMilestoneLabel: "5 COMBO!",
     });
 
     expect(result.comboTier).toBe("mid");
@@ -54,6 +57,7 @@ describe("buildComboEffectViewModel", () => {
       currentCombo: 10,
       lastResult: "correct",
       comboMilestoneValue: 10,
+      comboMilestoneLabel: "10 COMBO!",
     });
 
     expect(result.comboTier).toBe("high");
@@ -68,6 +72,7 @@ describe("buildComboEffectViewModel", () => {
         currentCombo: 10,
         lastResult: "wrong",
         comboMilestoneValue: 0,
+        comboMilestoneLabel: "0 COMBO!",
       }).showBurst,
     ).toBe(false);
   });

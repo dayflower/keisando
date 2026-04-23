@@ -11,6 +11,7 @@ type BuildComboEffectViewModelInput = {
   currentCombo: number;
   lastResult: "correct" | "wrong" | null;
   comboMilestoneValue: number;
+  comboMilestoneLabel: string;
 };
 
 type BuildClearEffectViewModelInput = {
@@ -55,6 +56,7 @@ export const buildComboEffectViewModel = ({
   currentCombo,
   lastResult,
   comboMilestoneValue,
+  comboMilestoneLabel,
 }: BuildComboEffectViewModelInput) => {
   const comboTier = getComboEffectTier(currentCombo);
   const particleCount = getComboParticleCount(comboTier);
@@ -63,8 +65,7 @@ export const buildComboEffectViewModel = ({
     comboTier,
     particleIndexes: Array.from({ length: particleCount }, (_, index) => index),
     showBurst: lastResult === "correct" && comboTier !== "none",
-    milestoneLabel:
-      comboMilestoneValue > 0 ? `${comboMilestoneValue} COMBO!` : "",
+    milestoneLabel: comboMilestoneValue > 0 ? comboMilestoneLabel : "",
   };
 };
 
