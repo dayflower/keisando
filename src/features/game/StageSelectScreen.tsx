@@ -1,4 +1,4 @@
-import { CircleUserRound, History } from "lucide-react";
+import { CircleUserRound, History, Trophy } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import { STAGES } from "../../shared/stages";
@@ -238,7 +238,8 @@ export const StageSelectScreen = ({
                     onOpenRankingScreen(stage.id);
                   }}
                 >
-                  Ranking
+                  <Trophy size={14} aria-hidden="true" />
+                  <span>Ranking</span>
                 </button>
               </article>
             );
