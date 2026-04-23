@@ -7,6 +7,7 @@ import { useGameSession } from "./features/game/useGameSession";
 import { useStageClearFlow } from "./features/game/useStageClearFlow";
 import { HistoryDetailScreen } from "./features/history/HistoryDetailScreen";
 import { useHistory } from "./features/history/useHistory";
+import { useBackNavigationShortcut } from "./features/navigation/useBackNavigationShortcut";
 import { PlayerSelectScreen } from "./features/player/PlayerSelectScreen";
 import { usePlayers } from "./features/player/usePlayers";
 import { buildBestRecordByStageId } from "./features/ranking/logic";
@@ -307,6 +308,12 @@ function App() {
 
   const rankingRows =
     rankingTab === "global" ? rankingGlobalTop10 : rankingPlayerTop10;
+
+  useBackNavigationShortcut({
+    screen,
+    onBack: navigation.backToStageSelect,
+    onUiTap: playUiTap,
+  });
 
   if (screen === "stageSelect") {
     return (

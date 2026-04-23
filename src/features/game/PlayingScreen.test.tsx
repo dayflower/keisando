@@ -163,6 +163,7 @@ describe("getAnswerByArrowKey", () => {
 describe("getPlayingShortcutAction", () => {
   it("supports stage-play shortcuts before clear", () => {
     expect(getPlayingShortcutAction("Escape", false)).toBe("back");
+    expect(getPlayingShortcutAction("Backspace", false)).toBe("back");
     expect(getPlayingShortcutAction("ArrowUp", false)).toBe("answerTop");
     expect(getPlayingShortcutAction("ArrowLeft", false)).toBe("answerLeft");
     expect(getPlayingShortcutAction("ArrowRight", false)).toBe("answerRight");
@@ -172,6 +173,7 @@ describe("getPlayingShortcutAction", () => {
 
   it("supports clear-screen shortcuts", () => {
     expect(getPlayingShortcutAction("Escape", true)).toBe("back");
+    expect(getPlayingShortcutAction("Backspace", true)).toBe("back");
     expect(getPlayingShortcutAction("ArrowLeft", true)).toBe("back");
     expect(getPlayingShortcutAction("Enter", true)).toBe("retry");
     expect(getPlayingShortcutAction(" ", true)).toBe("retry");

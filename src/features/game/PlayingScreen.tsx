@@ -78,7 +78,12 @@ export const getPlayingShortcutAction = (
   isCleared: boolean,
 ): PlayingShortcutAction | null => {
   if (isCleared) {
-    if (key === "Escape" || key === "Esc" || key === "ArrowLeft") {
+    if (
+      key === "Escape" ||
+      key === "Esc" ||
+      key === "Backspace" ||
+      key === "ArrowLeft"
+    ) {
       return "back";
     }
     if (key === "Enter" || key === " " || key === "Spacebar") {
@@ -87,7 +92,7 @@ export const getPlayingShortcutAction = (
     return null;
   }
 
-  if (key === "Escape" || key === "Esc") {
+  if (key === "Escape" || key === "Esc" || key === "Backspace") {
     return "back";
   }
   if (key === "ArrowUp") {
