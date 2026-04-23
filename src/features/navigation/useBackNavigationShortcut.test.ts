@@ -31,26 +31,34 @@ describe("isBackNavigationShortcutKey", () => {
 
 describe("isEditableBackspaceTarget", () => {
   it("returns true for editable form controls", () => {
-    expect(isEditableBackspaceTarget({ tagName: "input" } as EventTarget)).toBe(
-      true,
-    );
     expect(
-      isEditableBackspaceTarget({ tagName: "textarea" } as EventTarget),
+      isEditableBackspaceTarget({ tagName: "input" } as unknown as EventTarget),
     ).toBe(true);
     expect(
-      isEditableBackspaceTarget({ tagName: "select" } as EventTarget),
+      isEditableBackspaceTarget({
+        tagName: "textarea",
+      } as unknown as EventTarget),
+    ).toBe(true);
+    expect(
+      isEditableBackspaceTarget({
+        tagName: "select",
+      } as unknown as EventTarget),
     ).toBe(true);
   });
 
   it("returns true for contenteditable elements", () => {
     expect(
-      isEditableBackspaceTarget({ isContentEditable: true } as EventTarget),
+      isEditableBackspaceTarget({
+        isContentEditable: true,
+      } as unknown as EventTarget),
     ).toBe(true);
   });
 
   it("returns false for non-editable targets", () => {
     expect(
-      isEditableBackspaceTarget({ tagName: "button" } as EventTarget),
+      isEditableBackspaceTarget({
+        tagName: "button",
+      } as unknown as EventTarget),
     ).toBe(false);
     expect(isEditableBackspaceTarget(null)).toBe(false);
   });

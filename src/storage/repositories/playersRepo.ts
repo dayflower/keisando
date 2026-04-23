@@ -4,6 +4,13 @@ import {
 } from "../../shared/constants";
 import type { Player } from "../../shared/types";
 import { CURRENT_USER_ID_STORAGE_KEY, USERS_STORAGE_KEY } from "../keys";
+import {
+  loadStoredJson,
+  loadStoredValue,
+  removeStoredValue,
+  saveJson,
+  saveStoredValue,
+} from "./storageHelpers";
 
 const normalizePlayerName = (value: string): string => value.trim();
 
@@ -15,63 +22,44 @@ const isFiniteNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
 export const loadPlayers = (): Player[] => {
-  try {
-    const raw = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!raw) return [];
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed
-      .filter((candidate): candidate is Player => {
-        if (!candidate || typeof candidate !== "object") return false;
-        const player = candidate as Partial<Player>;
-        return (
-          typeof player.id === "string" &&
-          typeof player.name === "string" &&
-          isValidPlayerName(normalizePlayerName(player.name)) &&
-          isFiniteNumber(player.createdAt)
-        );
-      })
-      .map((player) => ({
-        id: player.id,
-        name: normalizePlayerName(player.name),
-        createdAt: player.createdAt,
-      }));
-  } catch {
+  const parsed = loadStoredJson<unknown[]>(USERS_STORAGE_KEY, []);
+  if (!Array.isArray(parsed)) {
     return [];
   }
+
+  return parsed
+    .filter((candidate): candidate is Player => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const player = candidate as Partial<Player>;
+      return (
+        typeof player.id === "string" &&
+        typeof player.name === "string" &&
+        isValidPlayerName(normalizePlayerName(player.name)) &&
+        isFiniteNumber(player.createdAt)
+      );
+    })
+    .map((player) => ({
+      id: player.id,
+      name: normalizePlayerName(player.name),
+      createdAt: player.createdAt,
+    }));
 };
 
 export const savePlayers = (players: Player[]) => {
-  try {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(players));
-  } catch {
-    // Ignore storage write errors to keep gameplay uninterrupted.
-  }
+  saveJson(USERS_STORAGE_KEY, players);
 };
 
 export const loadActivePlayerId = (): string | null => {
-  try {
-    const raw = localStorage.getItem(CURRENT_USER_ID_STORAGE_KEY);
-    if (!raw) return null;
-    return raw;
-  } catch {
-    return null;
-  }
+  return loadStoredValue(CURRENT_USER_ID_STORAGE_KEY);
 };
 
 export const saveActivePlayerId = (activePlayerId: string | null) => {
-  try {
-    if (activePlayerId === null) {
-      localStorage.removeItem(CURRENT_USER_ID_STORAGE_KEY);
-      return;
-    }
-
-    localStorage.setItem(CURRENT_USER_ID_STORAGE_KEY, activePlayerId);
-  } catch {
-    // Ignore storage write errors to keep gameplay uninterrupted.
+  if (activePlayerId === null) {
+    removeStoredValue(CURRENT_USER_ID_STORAGE_KEY);
+    return;
   }
+
+  saveStoredValue(CURRENT_USER_ID_STORAGE_KEY, activePlayerId);
 };
 
 export const normalizeAndValidatePlayerName = (
