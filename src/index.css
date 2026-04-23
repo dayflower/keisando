@@ -535,6 +535,11 @@ textarea {
   padding: 0.2rem;
 }
 
+.ranking-empty-message {
+  margin: 0;
+  padding: 1rem 0.9rem;
+}
+
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
@@ -1191,6 +1196,10 @@ textarea {
 .debug-list {
   display: grid;
   gap: 0.55rem;
+}
+
+.debug-language-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .debug-button {

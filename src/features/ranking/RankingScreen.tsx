@@ -109,9 +109,13 @@ export const RankingScreen = ({
 
         <div className="ranking-table-wrap">
           {rankingTab === "player" && activePlayer === null ? (
-            <p className="stage-select-hint">{t("ranking.personalHint")}</p>
+            <p className="stage-select-hint ranking-empty-message">
+              {t("ranking.personalHint")}
+            </p>
           ) : rows.length === 0 ? (
-            <p className="stage-select-hint">{t("ranking.empty")}</p>
+            <p className="stage-select-hint ranking-empty-message">
+              {t("ranking.empty")}
+            </p>
           ) : (
             <table className="ranking-table">
               <thead>

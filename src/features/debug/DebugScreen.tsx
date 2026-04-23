@@ -180,7 +180,7 @@ export const DebugScreen = ({
           <h2 id="debug-language-heading" className="debug-section-title">
             {t("debug.language")}
           </h2>
-          <div className="debug-list">
+          <div className="debug-list debug-language-list">
             {localeOptions.map((option) => (
               <button
                 key={option.key}
