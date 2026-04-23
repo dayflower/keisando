@@ -1,11 +1,23 @@
-const RECORD_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
+import type { Locale } from "./i18n";
+
+const recordDateFormatterByLocale: Record<Locale, Intl.DateTimeFormat> = {
+  en: new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }),
+  ja: new Intl.DateTimeFormat("ja", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }),
+};
 
 export const formatElapsedTime = (elapsedMs: number): string => {
   const centiseconds = Math.floor(elapsedMs / 10) % 100;
@@ -15,8 +27,8 @@ export const formatElapsedTime = (elapsedMs: number): string => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
 };
 
-export const formatRecordedAt = (recordedAt: number): string =>
-  RECORD_DATE_FORMATTER.format(recordedAt);
+export const formatRecordedAt = (recordedAt: number, locale: Locale): string =>
+  recordDateFormatterByLocale[locale].format(recordedAt);
 
 export const formatRate = (numerator: number, denominator: number): string => {
   if (denominator <= 0) return "0.0%";

@@ -5,6 +5,7 @@ import {
   useRef,
 } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
+import { useI18n } from "../../shared/i18n";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 import type { ClearBestBadge, ClearCelebrationTier } from "./clearCelebration";
@@ -77,6 +78,7 @@ export const PlayingScreen = ({
   onToggleMute,
   onUiTap,
 }: PlayingScreenProps) => {
+  const { t } = useI18n();
   const correctCount = Math.max(answeredCount - wrongAnswerCount, 0);
   const progressMax = selectedStage.baseQuestionCount;
   const progressPercent =
@@ -165,7 +167,7 @@ export const PlayingScreen = ({
                   onUiTap?.();
                   onBackToStageSelect();
                 }}
-                aria-label="Back to stage select"
+                aria-label={t("common.backToStageSelect")}
               >
                 <ArrowLeft size={16} aria-hidden="true" />
               </button>
@@ -181,15 +183,17 @@ export const PlayingScreen = ({
         <h1 className="title">Keisando</h1>
         <div className="progress-row">
           <p>
-            Answered: {answeredCount} / {requiredCount}
+            {t("playing.answered")}: {answeredCount} / {requiredCount}
           </p>
-          <p>Remaining: {remainingCount}</p>
+          <p>
+            {t("playing.remaining")}: {remainingCount}
+          </p>
         </div>
         <div className="progress-bar-block">
           <div
             className="progress-bar-track"
             role="progressbar"
-            aria-label="Question progress"
+            aria-label={t("playing.progress")}
             aria-valuemin={0}
             aria-valuemax={progressMax}
             aria-valuenow={Math.min(correctCount, progressMax)}
@@ -210,9 +214,11 @@ export const PlayingScreen = ({
           </div>
         </div>
         <div className="timer-row">
-          <p className="timer-pill">Time: {formatElapsedTime(elapsedMs)}</p>
           <p className="timer-pill">
-            Best:{" "}
+            {t("playing.time")}: {formatElapsedTime(elapsedMs)}
+          </p>
+          <p className="timer-pill">
+            {t("playing.best")}:{" "}
             {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
           </p>
         </div>
@@ -281,14 +287,14 @@ export const PlayingScreen = ({
                     lastResult === "correct" ? "result-correct" : "result-wrong"
                   }`}
                 >
-                  {lastResult === "correct" && "Correct!"}
-                  {lastResult === "wrong" && "Wrong! +1 question"}
-                  {lastResult === null && "Choose the correct answer."}
+                  {lastResult === "correct" && t("playing.resultCorrect")}
+                  {lastResult === "wrong" && t("playing.resultWrong")}
+                  {lastResult === null && t("playing.resultIdle")}
                 </p>
               </>
             ) : (
               <div className="countdown-status" role="status">
-                <p className="countdown-label">Round starts in</p>
+                <p className="countdown-label">{t("playing.roundStartsIn")}</p>
                 <p key={countdownDisplay} className="countdown-number">
                   {countdownDisplay}
                 </p>
@@ -322,16 +328,20 @@ export const PlayingScreen = ({
               {clearEffect.badgeLabel && (
                 <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
               )}
-              <p className="clear-title">Stage Clear!</p>
+              <p className="clear-title">{t("playing.clearTitle")}</p>
               {didUnlockNextStageOnClear && (
-                <p className="clear-meta">Next stage unlocked!</p>
+                <p className="clear-meta">{t("playing.nextStageUnlocked")}</p>
               )}
               <p className="clear-primary-time">
                 {formatElapsedTime(elapsedMs)}
               </p>
-              <p className="clear-primary-label">Clear time</p>
-              <p className="clear-meta">Final questions: {requiredCount}</p>
-              <p className="clear-meta">Wrong answers: {wrongAnswerCount}</p>
+              <p className="clear-primary-label">{t("playing.clearTime")}</p>
+              <p className="clear-meta">
+                {t("playing.finalQuestions")}: {requiredCount}
+              </p>
+              <p className="clear-meta">
+                {t("playing.wrongAnswers")}: {wrongAnswerCount}
+              </p>
             </div>
           )}
         </div>
@@ -346,7 +356,7 @@ export const PlayingScreen = ({
               }}
             >
               <ArrowLeft size={16} aria-hidden="true" />
-              <span>Back</span>
+              <span>{t("playing.back")}</span>
             </button>
             <button
               className="clear-retry-button"
@@ -356,7 +366,7 @@ export const PlayingScreen = ({
                 onResetStage();
               }}
             >
-              Retry
+              {t("playing.retry")}
             </button>
           </div>
         )}

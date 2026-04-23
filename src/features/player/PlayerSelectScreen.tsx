@@ -47,7 +47,7 @@ export const PlayerSelectScreen = ({
                 onUiTap?.();
                 onBackToStageSelect();
               }}
-              aria-label="Back to stage select"
+              aria-label={t("common.backToStageSelect")}
             >
               <ArrowLeft size={16} aria-hidden="true" />
             </button>

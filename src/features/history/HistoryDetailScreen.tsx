@@ -4,6 +4,7 @@ import {
   formatRate,
   formatRecordedAt,
 } from "../../shared/formatters";
+import { useI18n } from "../../shared/i18n";
 import type {
   Player,
   PlayerLifetimeSummary,
@@ -12,7 +13,7 @@ import type {
 } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 
-type HistoryDetailScreenProps = {
+export type HistoryDetailScreenProps = {
   activePlayer: Player;
   historySummary: PlayerLifetimeSummary;
   historyRecords: PlayHistoryRecord[];
@@ -33,11 +34,13 @@ export const HistoryDetailScreen = ({
   onToggleMute,
   onUiTap,
 }: HistoryDetailScreenProps) => {
+  const { locale, t } = useI18n();
+
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
-          <p className="stage-tag">Play History</p>
+          <p className="stage-tag">{t("history.screenTag")}</p>
           <div className="stage-head-actions">
             <button
               className="back-icon-button"
@@ -46,7 +49,7 @@ export const HistoryDetailScreen = ({
                 onUiTap?.();
                 onBackToStageSelect();
               }}
-              aria-label="Back to stage select"
+              aria-label={t("common.backToStageSelect")}
             >
               <ArrowLeft size={16} aria-hidden="true" />
             </button>
@@ -60,54 +63,59 @@ export const HistoryDetailScreen = ({
         <h1 className="title">Keisando</h1>
 
         <div className="history-section">
-          <h2 className="history-section-title">Profile</h2>
+          <h2 className="history-section-title">{t("history.profile")}</h2>
           <p className="history-item">
-            Joined at: {formatRecordedAt(activePlayer.createdAt)}
+            {t("history.joinedAt")}:{" "}
+            {formatRecordedAt(activePlayer.createdAt, locale)}
           </p>
           <p className="history-item">
-            Last played at:{" "}
+            {t("history.lastPlayedAt")}:{" "}
             {historySummary.lastPlayedAt
-              ? formatRecordedAt(historySummary.lastPlayedAt)
+              ? formatRecordedAt(historySummary.lastPlayedAt, locale)
               : "-"}
           </p>
         </div>
 
         <div className="history-section">
-          <h2 className="history-section-title">Lifetime Summary</h2>
+          <h2 className="history-section-title">
+            {t("history.lifetimeSummary")}
+          </h2>
           <p className="history-item">
-            Total plays: {historySummary.totalPlays}
+            {t("history.totalPlays")}: {historySummary.totalPlays}
           </p>
           <p className="history-item">
-            Total clears: {historySummary.totalClears}
+            {t("history.totalClears")}: {historySummary.totalClears}
           </p>
           <p className="history-item">
-            Lifetime clear rate:{" "}
+            {t("history.lifetimeClearRate")}:{" "}
             {formatRate(historySummary.totalClears, historySummary.totalPlays)}
           </p>
         </div>
 
         <div className="history-section">
           <h2 className="history-section-title">
-            Recent History (Last 10 Days)
+            {t("history.recentHistory")}
           </h2>
           <div className="history-table-wrap">
             {historyRecords.length === 0 ? (
-              <p className="stage-select-hint">No recent records.</p>
+              <p className="stage-select-hint">
+                {t("history.noRecentRecords")}
+              </p>
             ) : (
               <table className="ranking-table">
                 <thead>
                   <tr>
-                    <th scope="col">Played at</th>
-                    <th scope="col">Stage</th>
-                    <th scope="col">Result</th>
-                    <th scope="col">Duration</th>
-                    <th scope="col">Mistakes</th>
+                    <th scope="col">{t("history.columnPlayedAt")}</th>
+                    <th scope="col">{t("history.columnStage")}</th>
+                    <th scope="col">{t("history.columnResult")}</th>
+                    <th scope="col">{t("history.columnDuration")}</th>
+                    <th scope="col">{t("history.columnMistakes")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historyRecords.map((record) => (
                     <tr key={record.id}>
-                      <td>{formatRecordedAt(record.playedAt)}</td>
+                      <td>{formatRecordedAt(record.playedAt, locale)}</td>
                       <td>{record.stageId}</td>
                       <td>{record.result}</td>
                       <td>{formatElapsedTime(record.durationMs)}</td>
@@ -121,18 +129,22 @@ export const HistoryDetailScreen = ({
         </div>
 
         <div className="history-section">
-          <h2 className="history-section-title">Stage Aggregates</h2>
+          <h2 className="history-section-title">
+            {t("history.stageAggregates")}
+          </h2>
           <div className="history-table-wrap">
             {stageSummaries.length === 0 ? (
-              <p className="stage-select-hint">No stage aggregates yet.</p>
+              <p className="stage-select-hint">
+                {t("history.noStageAggregates")}
+              </p>
             ) : (
               <table className="ranking-table">
                 <thead>
                   <tr>
-                    <th scope="col">Stage</th>
-                    <th scope="col">Attempts</th>
-                    <th scope="col">Clears</th>
-                    <th scope="col">Best clear time</th>
+                    <th scope="col">{t("history.columnStage")}</th>
+                    <th scope="col">{t("history.columnAttempts")}</th>
+                    <th scope="col">{t("history.columnClears")}</th>
+                    <th scope="col">{t("history.columnBestClearTime")}</th>
                   </tr>
                 </thead>
                 <tbody>

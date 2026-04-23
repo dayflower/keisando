@@ -76,7 +76,7 @@ export const StageSelectScreen = ({
                 onUiTap?.();
                 onOpenPlayHistory();
               }}
-              aria-label="Open play history"
+              aria-label={t("common.openPlayHistory")}
               disabled={!activePlayer}
             >
               <History size={16} aria-hidden="true" />
@@ -88,7 +88,7 @@ export const StageSelectScreen = ({
                 onUiTap?.();
                 onOpenPlayerSelect();
               }}
-              aria-label="Open player selection"
+              aria-label={t("common.openPlayerSelect")}
             >
               <CircleUserRound size={18} aria-hidden="true" />
               <span>{activePlayer?.name ?? t("stageSelect.noPlayer")}</span>

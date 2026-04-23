@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { formatElapsedTime, formatRecordedAt } from "../../shared/formatters";
+import { useI18n } from "../../shared/i18n";
 import type {
   Player,
   RankingTab,
@@ -8,7 +9,7 @@ import type {
 } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 
-type RankingScreenProps = {
+export type RankingScreenProps = {
   rankingStage: StageDefinition;
   rankingTab: RankingTab;
   activePlayer: Player | null;
@@ -33,11 +34,15 @@ export const RankingScreen = ({
   onToggleMute,
   onUiTap,
 }: RankingScreenProps) => {
+  const { locale, t } = useI18n();
+
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
-          <p className="stage-tag">{rankingStage.name} Rankings</p>
+          <p className="stage-tag">
+            {rankingStage.name} {t("ranking.screenTagSuffix")}
+          </p>
           <div className="stage-head-actions">
             <button
               className="back-icon-button"
@@ -46,7 +51,7 @@ export const RankingScreen = ({
                 onUiTap?.();
                 onBackToStageSelect();
               }}
-              aria-label="Back to stage select"
+              aria-label={t("common.backToStageSelect")}
             >
               <ArrowLeft size={16} aria-hidden="true" />
             </button>
@@ -62,7 +67,11 @@ export const RankingScreen = ({
           {rankingStage.tag} / {rankingStage.description}
         </p>
 
-        <div className="ranking-tabs" role="tablist" aria-label="Ranking views">
+        <div
+          className="ranking-tabs"
+          role="tablist"
+          aria-label={t("ranking.tabList")}
+        >
           <button
             className={`ranking-tab ${rankingTab === "global" ? "ranking-tab-active" : ""}`}
             type="button"
@@ -73,7 +82,7 @@ export const RankingScreen = ({
               onSetRankingTab("global");
             }}
           >
-            Global Top10
+            {t("ranking.globalTop10")}
           </button>
           <button
             className={`ranking-tab ${rankingTab === "player" ? "ranking-tab-active" : ""}`}
@@ -86,25 +95,25 @@ export const RankingScreen = ({
             }}
             disabled={activePlayer === null}
           >
-            My Top10
+            {t("ranking.myTop10")}
           </button>
         </div>
 
         <div className="ranking-table-wrap">
           {rankingTab === "player" && activePlayer === null ? (
-            <p className="stage-select-hint">
-              Select a player to view personal rankings.
-            </p>
+            <p className="stage-select-hint">{t("ranking.personalHint")}</p>
           ) : rows.length === 0 ? (
-            <p className="stage-select-hint">No records yet.</p>
+            <p className="stage-select-hint">{t("ranking.empty")}</p>
           ) : (
             <table className="ranking-table">
               <thead>
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Time</th>
-                  {rankingTab === "global" && <th scope="col">Player</th>}
-                  <th scope="col">Date</th>
+                  <th scope="col">{t("ranking.columnRank")}</th>
+                  <th scope="col">{t("ranking.columnTime")}</th>
+                  {rankingTab === "global" && (
+                    <th scope="col">{t("ranking.columnPlayer")}</th>
+                  )}
+                  <th scope="col">{t("ranking.columnDate")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -114,10 +123,11 @@ export const RankingScreen = ({
                     <td>{formatElapsedTime(record.elapsedMs)}</td>
                     {rankingTab === "global" && (
                       <td>
-                        {playerNameById.get(record.playerId) ?? "Unknown"}
+                        {playerNameById.get(record.playerId) ??
+                          t("common.unknownPlayer")}
                       </td>
                     )}
-                    <td>{formatRecordedAt(record.recordedAt)}</td>
+                    <td>{formatRecordedAt(record.recordedAt, locale)}</td>
                   </tr>
                 ))}
               </tbody>

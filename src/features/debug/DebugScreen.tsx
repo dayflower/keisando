@@ -165,7 +165,7 @@ export const DebugScreen = ({
               className="back-icon-button"
               type="button"
               onClick={onBackToStageSelect}
-              aria-label="Back to stage select"
+              aria-label={t("common.backToStageSelect")}
             >
               <ArrowLeft size={16} aria-hidden="true" />
             </button>
