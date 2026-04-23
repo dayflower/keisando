@@ -2,7 +2,6 @@ import { ArrowLeft } from "lucide-react";
 import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
-  useEffect,
   useRef,
 } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
@@ -15,6 +14,7 @@ import {
   buildPerformanceEffectStyleViewModel,
 } from "./effectViewModel";
 import type { EffectOrigin } from "./useGameSession";
+import { usePlayingKeyboardShortcuts } from "./usePlayingKeyboardShortcuts";
 
 export type PlayingScreenProps = {
   selectedStage: StageDefinition;
@@ -45,69 +45,6 @@ export type PlayingScreenProps = {
   isMuted: boolean;
   onToggleMute: () => void;
   onUiTap?: () => void;
-};
-
-export type PlayingShortcutAction =
-  | "answerTop"
-  | "answerLeft"
-  | "answerRight"
-  | "answerBottom"
-  | "back"
-  | "retry";
-
-export const getAnswerByArrowKey = (
-  key: string,
-  options: number[],
-): number | null => {
-  switch (key) {
-    case "ArrowUp":
-      return options[0] ?? null;
-    case "ArrowLeft":
-      return options[1] ?? null;
-    case "ArrowRight":
-      return options[2] ?? null;
-    case "ArrowDown":
-      return options[3] ?? null;
-    default:
-      return null;
-  }
-};
-
-export const getPlayingShortcutAction = (
-  key: string,
-  isCleared: boolean,
-): PlayingShortcutAction | null => {
-  if (isCleared) {
-    if (
-      key === "Escape" ||
-      key === "Esc" ||
-      key === "Backspace" ||
-      key === "ArrowLeft"
-    ) {
-      return "back";
-    }
-    if (key === "Enter" || key === " " || key === "Spacebar") {
-      return "retry";
-    }
-    return null;
-  }
-
-  if (key === "Escape" || key === "Esc" || key === "Backspace") {
-    return "back";
-  }
-  if (key === "ArrowUp") {
-    return "answerTop";
-  }
-  if (key === "ArrowLeft") {
-    return "answerLeft";
-  }
-  if (key === "ArrowRight") {
-    return "answerRight";
-  }
-  if (key === "ArrowDown") {
-    return "answerBottom";
-  }
-  return null;
 };
 
 export const PlayingScreen = ({
@@ -178,72 +115,16 @@ export const PlayingScreen = ({
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   };
   const choiceButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  useEffect(() => {
-    const resolveEffectOriginByChoiceIndex = (
-      choiceIndex: number,
-    ): EffectOrigin => {
-      const button = choiceButtonRefs.current[choiceIndex];
-      if (!button) {
-        return { x: 0, y: 0 };
-      }
-
-      const rect = button.getBoundingClientRect();
-      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    };
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat) {
-        return;
-      }
-
-      const action = getPlayingShortcutAction(event.key, isCleared);
-      if (action === null) {
-        return;
-      }
-
-      event.preventDefault();
-      if (action === "back") {
-        onUiTap?.();
-        onBackToStageSelect();
-        return;
-      }
-      if (action === "retry") {
-        onUiTap?.();
-        onResetStage();
-        return;
-      }
-      if (!isRoundActive) {
-        return;
-      }
-
-      if (action === "answerTop") {
-        onAnswer(question.options[0], resolveEffectOriginByChoiceIndex(0));
-        return;
-      }
-      if (action === "answerLeft") {
-        onAnswer(question.options[1], resolveEffectOriginByChoiceIndex(1));
-        return;
-      }
-      if (action === "answerRight") {
-        onAnswer(question.options[2], resolveEffectOriginByChoiceIndex(2));
-        return;
-      }
-      onAnswer(question.options[3], resolveEffectOriginByChoiceIndex(3));
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [
+  usePlayingKeyboardShortcuts({
     isCleared,
     isRoundActive,
+    options: question.options,
+    choiceButtonRefs,
     onAnswer,
     onBackToStageSelect,
     onResetStage,
     onUiTap,
-    question.options,
-  ]);
+  });
 
   return (
     <main className="app app-playing" style={effectStyle}>

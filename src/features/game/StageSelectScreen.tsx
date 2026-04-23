@@ -1,5 +1,5 @@
 import { CircleUserRound, History, Trophy } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import { STAGES } from "../../shared/stages";
 import type {
@@ -8,6 +8,7 @@ import type {
   StageRunRecord,
 } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
+import { useStageSelectKeyboardNavigation } from "./useStageSelectKeyboardNavigation";
 
 type StageSelectScreenProps = {
   activePlayer: Player | null;
@@ -32,30 +33,6 @@ const stageOperatorById: Record<string, string> = {
   stage3: "--",
 };
 
-export const getStageFocusMoveTarget = (
-  currentIndex: number,
-  key: string,
-  totalCount: number,
-): number | null => {
-  if (totalCount <= 0) {
-    return null;
-  }
-
-  const lastIndex = totalCount - 1;
-
-  if (key === "ArrowUp" || key === "ArrowLeft") {
-    return currentIndex <= 0 ? lastIndex : currentIndex - 1;
-  }
-
-  if (key === "ArrowDown" || key === "ArrowRight") {
-    return currentIndex >= lastIndex ? 0 : currentIndex + 1;
-  }
-
-  return null;
-};
-
-export const isStageSelectBlurKey = (key: string): boolean => key === "Escape";
-
 export const StageSelectScreen = ({
   activePlayer,
   canStartStage,
@@ -77,52 +54,7 @@ export const StageSelectScreen = ({
     () => new Map(STAGES.map((stage, index) => [stage.id, index])),
     [],
   );
-
-  useEffect(() => {
-    if (!canStartStage) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (isStageSelectBlurKey(event.key)) {
-        const activeElement = document.activeElement;
-        if (
-          activeElement instanceof HTMLElement &&
-          activeElement !== document.body
-        ) {
-          event.preventDefault();
-          activeElement.blur();
-        }
-        return;
-      }
-
-      const stageButtons = stageButtonRefs.current.filter(
-        (button): button is HTMLButtonElement => button !== null,
-      );
-      const focusedIndex = stageButtons.indexOf(
-        document.activeElement as HTMLButtonElement,
-      );
-      const fromIndex = focusedIndex === -1 ? 0 : focusedIndex;
-      const targetIndex = getStageFocusMoveTarget(
-        fromIndex,
-        event.key,
-        stageButtons.length,
-      );
-
-      if (targetIndex === null) {
-        return;
-      }
-
-      event.preventDefault();
-      stageButtons[targetIndex]?.focus();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [canStartStage]);
+  useStageSelectKeyboardNavigation({ canStartStage, stageButtonRefs });
 
   return (
     <main className="app">
