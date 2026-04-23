@@ -30,6 +30,7 @@ import {
 } from "./shared/i18n";
 import { STAGES } from "./shared/stages";
 import type {
+  PlayerRegisterErrorCode,
   Screen,
   StageClearCondition,
   StageRunRecord,
@@ -49,7 +50,8 @@ function App() {
   const [localeOverride, setLocaleOverride] = useState<LocaleOverride>(null);
   const [screen, setScreen] = useState<Screen>("stageSelect");
   const [newPlayerName, setNewPlayerName] = useState("");
-  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registerErrorCode, setRegisterErrorCode] =
+    useState<PlayerRegisterErrorCode | null>(null);
   const {
     isMuted,
     toggleMute,
@@ -269,7 +271,7 @@ function App() {
       setScreen("historyDetail");
     },
     openPlayerSelect: () => {
-      setRegisterError(null);
+      setRegisterErrorCode(null);
       setNewPlayerName("");
       setScreen("playerSelect");
     },
@@ -299,7 +301,7 @@ function App() {
     clearFlow.resetClearFlow();
     setStageClearConditionOverrides({});
     setUnlockedStageIdsByPlayer({});
-    setRegisterError(null);
+    setRegisterErrorCode(null);
     setNewPlayerName("");
     closeRankingScreen();
     setMuted(false);
@@ -311,12 +313,12 @@ function App() {
 
     const result = registerPlayer(newPlayerName);
     if (!result.ok) {
-      setRegisterError(result.error);
+      setRegisterErrorCode(result.errorCode);
       return;
     }
 
     initializePlayerHistory(result.player.id);
-    setRegisterError(null);
+    setRegisterErrorCode(null);
     setNewPlayerName("");
     setScreen("stageSelect");
   };
@@ -427,11 +429,11 @@ function App() {
         players={players}
         activePlayerId={activePlayerId}
         newPlayerName={newPlayerName}
-        registerError={registerError}
+        registerErrorCode={registerErrorCode}
         onSetNewPlayerName={(name) => {
           setNewPlayerName(name);
-          if (registerError) {
-            setRegisterError(null);
+          if (registerErrorCode) {
+            setRegisterErrorCode(null);
           }
         }}
         onSelectPlayer={navigation.selectPlayer}

@@ -71,6 +71,7 @@ describe("HistoryDetailScreen", () => {
     expect(html).toContain("プレイ日時");
     expect(html).toContain("ステージ集計");
     expect(html).toContain("最速クリアタイム");
+    expect(html).toContain("<td>Stage 1</td>");
   });
 
   it("renders translated empty states", () => {

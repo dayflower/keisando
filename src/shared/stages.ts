@@ -6,9 +6,6 @@ const STAGE2_MAX_RETRIES = 3;
 export const STAGES: StageDefinition[] = [
   {
     id: "stage1",
-    name: "Stage 1",
-    tag: "Addition",
-    description: "Single-digit addition (0-9 + 0-9)",
     baseQuestionCount: 10,
     answerMin: 0,
     answerMax: 18,
@@ -29,9 +26,6 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage2",
-    name: "Stage 2",
-    tag: "Subtraction",
-    description: "Single-digit subtraction (0-9 - 0-9)",
     baseQuestionCount: 10,
     answerMin: 0,
     answerMax: 9,
@@ -65,9 +59,6 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage3",
-    name: "Stage 3",
-    tag: "Subtraction+",
-    description: "1-2 digits minus 1 digit (result 0-9)",
     baseQuestionCount: 10,
     answerMin: 0,
     answerMax: 9,

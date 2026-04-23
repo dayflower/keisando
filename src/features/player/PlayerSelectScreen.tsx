@@ -2,14 +2,14 @@ import { ArrowLeft } from "lucide-react";
 import type { FormEvent } from "react";
 import { PLAYER_NAME_MAX_LENGTH } from "../../shared/constants";
 import { useI18n } from "../../shared/i18n";
-import type { Player } from "../../shared/types";
+import type { Player, PlayerRegisterErrorCode } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type PlayerSelectScreenProps = {
   players: Player[];
   activePlayerId: string | null;
   newPlayerName: string;
-  registerError: string | null;
+  registerErrorCode: PlayerRegisterErrorCode | null;
   onSetNewPlayerName: (name: string) => void;
   onSelectPlayer: (playerId: string) => void;
   onRegisterPlayer: (event: FormEvent<HTMLFormElement>) => void;
@@ -23,7 +23,7 @@ export const PlayerSelectScreen = ({
   players,
   activePlayerId,
   newPlayerName,
-  registerError,
+  registerErrorCode,
   onSetNewPlayerName,
   onSelectPlayer,
   onRegisterPlayer,
@@ -33,6 +33,12 @@ export const PlayerSelectScreen = ({
   onUiTap,
 }: PlayerSelectScreenProps) => {
   const { t } = useI18n();
+  const registerErrorMessage =
+    registerErrorCode === "playerNameInvalid"
+      ? t("playerSelect.errorNameInvalid")
+      : registerErrorCode === "playerNameDuplicate"
+        ? t("playerSelect.errorNameDuplicate")
+        : null;
 
   return (
     <main className="app">
@@ -112,8 +118,8 @@ export const PlayerSelectScreen = ({
               onSetNewPlayerName(event.target.value);
             }}
           />
-          {registerError && (
-            <p className="player-register-error">{registerError}</p>
+          {registerErrorMessage && (
+            <p className="player-register-error">{registerErrorMessage}</p>
           )}
           <div className="player-register-actions">
             <button className="primary-action-button" type="submit">

@@ -7,15 +7,16 @@ export type StageExpression = {
 
 export type StageDefinition = {
   id: string;
-  name: string;
-  tag: string;
-  description: string;
   baseQuestionCount: number;
   answerMin: number;
   answerMax: number;
   defaultClearCondition: StageClearCondition;
   createExpression: () => StageExpression;
 };
+
+export type PlayerRegisterErrorCode =
+  | "playerNameInvalid"
+  | "playerNameDuplicate";
 
 export type StageClearCondition = {
   maxElapsedMs: number;

@@ -4,7 +4,7 @@ import {
   formatRate,
   formatRecordedAt,
 } from "../../shared/formatters";
-import { useI18n } from "../../shared/i18n";
+import { getStageLabel, useI18n } from "../../shared/i18n";
 import type {
   Player,
   PlayerLifetimeSummary,
@@ -116,7 +116,7 @@ export const HistoryDetailScreen = ({
                   {historyRecords.map((record) => (
                     <tr key={record.id}>
                       <td>{formatRecordedAt(record.playedAt, locale)}</td>
-                      <td>{record.stageId}</td>
+                      <td>{getStageLabel(locale, record.stageId)}</td>
                       <td>{record.result}</td>
                       <td>{formatElapsedTime(record.durationMs)}</td>
                       <td>{record.mistakeCount}</td>
@@ -150,7 +150,7 @@ export const HistoryDetailScreen = ({
                 <tbody>
                   {stageSummaries.map((summary) => (
                     <tr key={summary.stageId}>
-                      <td>{summary.stageId}</td>
+                      <td>{getStageLabel(locale, summary.stageId)}</td>
                       <td>{summary.attempts}</td>
                       <td>{summary.clears}</td>
                       <td>

@@ -9,9 +9,6 @@ const buildProps = (
 ): RankingScreenProps => ({
   rankingStage: {
     id: "stage1",
-    name: "Stage 1",
-    tag: "Addition",
-    description: "Single-digit addition",
     baseQuestionCount: 10,
     answerMin: 1,
     answerMax: 20,
@@ -61,6 +58,7 @@ describe("RankingScreen", () => {
     const html = renderScreen({}, "ja");
 
     expect(html).toContain("Stage 1 ランキング");
+    expect(html).toContain("足し算 / 1桁どうしの足し算 (0-9 + 0-9)");
     expect(html).toContain("全体 Top10");
     expect(html).toContain("タイム");
     expect(html).toContain("プレイヤー");

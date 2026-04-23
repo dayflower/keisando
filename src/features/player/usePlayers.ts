@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { PLAYER_NAME_MAX_LENGTH } from "../../shared/constants";
 import { createPlayerId } from "../../shared/ids";
-import type { Player } from "../../shared/types";
+import type { Player, PlayerRegisterErrorCode } from "../../shared/types";
 import {
   loadActivePlayerId,
   loadPlayers,
@@ -12,7 +11,7 @@ import {
 
 type RegisterPlayerResult =
   | { ok: true; player: Player }
-  | { ok: false; error: string };
+  | { ok: false; errorCode: PlayerRegisterErrorCode };
 
 export const usePlayers = () => {
   const [players, setPlayers] = useState<Player[]>(() => loadPlayers());
@@ -63,7 +62,7 @@ export const usePlayers = () => {
     if (!normalizedName) {
       return {
         ok: false,
-        error: `Name must be 1-${PLAYER_NAME_MAX_LENGTH} characters.`,
+        errorCode: "playerNameInvalid",
       };
     }
 
@@ -73,7 +72,7 @@ export const usePlayers = () => {
     if (isDuplicate) {
       return {
         ok: false,
-        error: "This player name already exists.",
+        errorCode: "playerNameDuplicate",
       };
     }
 

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { detectLocaleFromNavigator, normalizeLocale, translate } from "./i18n";
+import {
+  detectLocaleFromNavigator,
+  getStageDescription,
+  getStageLabel,
+  getStageName,
+  getStageTag,
+  normalizeLocale,
+  translate,
+} from "./i18n";
 
 describe("normalizeLocale", () => {
   it("normalizes Japanese locales to ja", () => {
@@ -42,5 +50,24 @@ describe("translate", () => {
     );
     expect(translate("ja", "playing.clearTitle")).toBe("ステージクリア!");
     expect(translate("en", "playing.clearTitle")).toBe("Stage Clear!");
+  });
+});
+
+describe("stage helpers", () => {
+  it("returns locale-specific stage text", () => {
+    expect(getStageName("ja", "stage1")).toBe("Stage 1");
+    expect(getStageTag("ja", "stage1")).toBe("足し算");
+    expect(getStageDescription("ja", "stage2")).toBe(
+      "1桁どうしの引き算 (0-9 - 0-9)",
+    );
+    expect(getStageTag("en", "stage3")).toBe("Subtraction+");
+    expect(getStageLabel("en", "stage2")).toBe("Stage 2");
+  });
+
+  it("falls back to the raw stage id for unknown stages", () => {
+    expect(getStageName("ja", "stageX")).toBe("stageX");
+    expect(getStageTag("en", "stageX")).toBe("stageX");
+    expect(getStageDescription("ja", "stageX")).toBe("stageX");
+    expect(getStageLabel("en", "stageX")).toBe("stageX");
   });
 });

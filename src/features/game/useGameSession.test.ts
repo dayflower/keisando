@@ -189,9 +189,6 @@ const createTestStage = () => {
 
   const stage: StageDefinition = {
     id: "test-stage",
-    name: "Test Stage",
-    tag: "Test",
-    description: "Test stage for useGameSession",
     baseQuestionCount: 1,
     answerMin: 10,
     answerMax: 99,

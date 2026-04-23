@@ -6,6 +6,7 @@ import {
   useContext,
   useMemo,
 } from "react";
+import { PLAYER_NAME_MAX_LENGTH } from "./constants";
 
 export type Locale = "ja" | "en";
 export type LocaleOverride = Locale | null;
@@ -29,6 +30,8 @@ const enMessages = {
   "playerSelect.empty": "No player yet. Register one below.",
   "playerSelect.newPlayerName": "New Player Name",
   "playerSelect.register": "Register",
+  "playerSelect.errorNameInvalid": `Name must be 1-${PLAYER_NAME_MAX_LENGTH} characters.`,
+  "playerSelect.errorNameDuplicate": "This player name already exists.",
   "ranking.screenTagSuffix": "Rankings",
   "ranking.tabList": "Ranking views",
   "ranking.globalTop10": "Global Top10",
@@ -117,6 +120,15 @@ const enMessages = {
     "Delete all local Keisando data? This cannot be undone.",
   "sound.mute": "Mute sound effects",
   "sound.unmute": "Unmute sound effects",
+  "stage.stage1.name": "Stage 1",
+  "stage.stage1.tag": "Addition",
+  "stage.stage1.description": "Single-digit addition (0-9 + 0-9)",
+  "stage.stage2.name": "Stage 2",
+  "stage.stage2.tag": "Subtraction",
+  "stage.stage2.description": "Single-digit subtraction (0-9 - 0-9)",
+  "stage.stage3.name": "Stage 3",
+  "stage.stage3.tag": "Subtraction+",
+  "stage.stage3.description": "1-2 digits minus 1 digit (result 0-9)",
 } as const;
 
 export type MessageKey = keyof typeof enMessages;
@@ -141,6 +153,8 @@ const jaMessages: Record<MessageKey, string> = {
   "playerSelect.empty": "プレイヤーはまだいません。下から登録してください。",
   "playerSelect.newPlayerName": "新しいプレイヤー名",
   "playerSelect.register": "登録",
+  "playerSelect.errorNameInvalid": `名前は 1-${PLAYER_NAME_MAX_LENGTH} 文字で入力してください。`,
+  "playerSelect.errorNameDuplicate": "このプレイヤー名は既に存在します。",
   "ranking.screenTagSuffix": "ランキング",
   "ranking.tabList": "ランキング表示",
   "ranking.globalTop10": "全体 Top10",
@@ -231,12 +245,51 @@ const jaMessages: Record<MessageKey, string> = {
     "Keisando のローカルデータをすべて削除します。元に戻せません。",
   "sound.mute": "効果音をミュート",
   "sound.unmute": "効果音のミュートを解除",
+  "stage.stage1.name": "Stage 1",
+  "stage.stage1.tag": "足し算",
+  "stage.stage1.description": "1桁どうしの足し算 (0-9 + 0-9)",
+  "stage.stage2.name": "Stage 2",
+  "stage.stage2.tag": "引き算",
+  "stage.stage2.description": "1桁どうしの引き算 (0-9 - 0-9)",
+  "stage.stage3.name": "Stage 3",
+  "stage.stage3.tag": "引き算+",
+  "stage.stage3.description": "1-2桁から1桁を引く (答えは0-9)",
 };
 
 const messages: Record<Locale, Record<MessageKey, string>> = {
   en: enMessages,
   ja: jaMessages,
 };
+
+type StageMessagePart = "name" | "tag" | "description";
+type StageMessageKey =
+  | "stage.stage1.name"
+  | "stage.stage1.tag"
+  | "stage.stage1.description"
+  | "stage.stage2.name"
+  | "stage.stage2.tag"
+  | "stage.stage2.description"
+  | "stage.stage3.name"
+  | "stage.stage3.tag"
+  | "stage.stage3.description";
+
+const stageMessageKeys = {
+  stage1: {
+    name: "stage.stage1.name",
+    tag: "stage.stage1.tag",
+    description: "stage.stage1.description",
+  },
+  stage2: {
+    name: "stage.stage2.name",
+    tag: "stage.stage2.tag",
+    description: "stage.stage2.description",
+  },
+  stage3: {
+    name: "stage.stage3.name",
+    tag: "stage.stage3.tag",
+    description: "stage.stage3.description",
+  },
+} as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 
 type I18nContextValue = {
   locale: Locale;
@@ -284,6 +337,35 @@ export const detectLocale = (): Locale => {
 
 export const translate = (locale: Locale, key: MessageKey): string =>
   messages[locale][key];
+
+const getStageMessageKey = (
+  stageId: string,
+  part: StageMessagePart,
+): StageMessageKey | null => {
+  const stageKeys = stageMessageKeys[stageId as keyof typeof stageMessageKeys];
+  return stageKeys?.[part] ?? null;
+};
+
+const getStageMessage = (
+  locale: Locale,
+  stageId: string,
+  part: StageMessagePart,
+): string => {
+  const key = getStageMessageKey(stageId, part);
+  return key ? translate(locale, key) : stageId;
+};
+
+export const getStageName = (locale: Locale, stageId: string): string =>
+  getStageMessage(locale, stageId, "name");
+
+export const getStageTag = (locale: Locale, stageId: string): string =>
+  getStageMessage(locale, stageId, "tag");
+
+export const getStageDescription = (locale: Locale, stageId: string): string =>
+  getStageMessage(locale, stageId, "description");
+
+export const getStageLabel = (locale: Locale, stageId: string): string =>
+  getStageName(locale, stageId);
 
 type I18nProviderProps = {
   locale: Locale;

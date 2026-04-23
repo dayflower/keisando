@@ -1,7 +1,7 @@
 import { CircleUserRound, History, Trophy } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
-import { useI18n } from "../../shared/i18n";
+import { getStageName, getStageTag, useI18n } from "../../shared/i18n";
 import { STAGES } from "../../shared/stages";
 import type {
   Player,
@@ -50,7 +50,7 @@ export const StageSelectScreen = ({
   onToggleMute,
   onUiTap,
 }: StageSelectScreenProps) => {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const stageButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const stageIndexById = useMemo(
     () => new Map(STAGES.map((stage, index) => [stage.id, index])),
@@ -111,10 +111,16 @@ export const StageSelectScreen = ({
                 : (bestMyByStageId.get(stage.id) ?? null);
             const isUnlocked = unlockedStageIds.has(stage.id);
             const stageOrder = stageIndexById.get(stage.id);
+            const stageName = getStageName(locale, stage.id);
+            const stageTag = getStageTag(locale, stage.id);
             const stageAriaLabel =
               typeof stageOrder === "number"
-                ? `Start ${stage.name}, stage ${stageOrder + 1}`
-                : `Start ${stage.name}`;
+                ? locale === "ja"
+                  ? `${stageName} を開始, ステージ ${stageOrder + 1}`
+                  : `Start ${stageName}, stage ${stageOrder + 1}`
+                : locale === "ja"
+                  ? `${stageName} を開始`
+                  : `Start ${stageName}`;
 
             return (
               <article className="stage-item-shell" key={stage.id}>
@@ -134,8 +140,8 @@ export const StageSelectScreen = ({
                   aria-label={stageAriaLabel}
                 >
                   <span className="stage-item-header">
-                    <strong>{stage.name}</strong>
-                    <span className="stage-item-tag">{stage.tag}</span>
+                    <strong>{stageName}</strong>
+                    <span className="stage-item-tag">{stageTag}</span>
                   </span>
                   <span className="stage-item-record">
                     {t("stageSelect.globalBest")}:{" "}

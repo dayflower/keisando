@@ -5,7 +5,7 @@ import {
   useRef,
 } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
-import { useI18n } from "../../shared/i18n";
+import { getStageName, getStageTag, useI18n } from "../../shared/i18n";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 import type { ClearBestBadge, ClearCelebrationTier } from "./clearCelebration";
@@ -78,8 +78,10 @@ export const PlayingScreen = ({
   onToggleMute,
   onUiTap,
 }: PlayingScreenProps) => {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const correctCount = Math.max(answeredCount - wrongAnswerCount, 0);
+  const stageName = getStageName(locale, selectedStage.id);
+  const stageTag = getStageTag(locale, selectedStage.id);
   const progressMax = selectedStage.baseQuestionCount;
   const progressPercent =
     progressMax > 0 ? Math.min((correctCount / progressMax) * 100, 100) : 0;
@@ -155,7 +157,7 @@ export const PlayingScreen = ({
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
-            {selectedStage.name} / {selectedStage.tag}
+            {stageName} / {stageTag}
             {playingPlayer && ` / ${playingPlayer.name}`}
           </p>
           <div className="stage-head-actions">

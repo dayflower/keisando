@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { type CSSProperties, useMemo, useState } from "react";
-import { type LocaleOverride, useI18n } from "../../shared/i18n";
+import { getStageLabel, type LocaleOverride, useI18n } from "../../shared/i18n";
 import type { StageClearCondition, StageDefinition } from "../../shared/types";
 import type {
   ClearBestBadge,
@@ -242,7 +242,9 @@ export const DebugScreen = ({
 
               return (
                 <div key={stage.id} className="debug-condition-item">
-                  <p className="debug-condition-title">{stage.name}</p>
+                  <p className="debug-condition-title">
+                    {getStageLabel(locale, stage.id)}
+                  </p>
                   <label
                     className="debug-condition-label"
                     htmlFor={`${stage.id}-seconds`}

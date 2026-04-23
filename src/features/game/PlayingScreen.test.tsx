@@ -9,9 +9,6 @@ const buildProps = (
 ): PlayingScreenProps => ({
   selectedStage: {
     id: "stage1",
-    name: "Stage 1",
-    tag: "Addition",
-    description: "test",
     baseQuestionCount: 10,
     answerMin: 1,
     answerMax: 20,
@@ -166,6 +163,7 @@ describe("PlayingScreen clear celebration", () => {
       "ja",
     );
 
+    expect(html).toContain("Stage 1 / 足し算 / Alice");
     expect(html).toContain("回答数: 3 / 10");
     expect(html).toContain("残り: 7");
     expect(html).toContain("問題進捗");

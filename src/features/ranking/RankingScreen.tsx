@@ -1,6 +1,11 @@
 import { ArrowLeft } from "lucide-react";
 import { formatElapsedTime, formatRecordedAt } from "../../shared/formatters";
-import { useI18n } from "../../shared/i18n";
+import {
+  getStageDescription,
+  getStageName,
+  getStageTag,
+  useI18n,
+} from "../../shared/i18n";
 import type {
   Player,
   RankingTab,
@@ -35,13 +40,16 @@ export const RankingScreen = ({
   onUiTap,
 }: RankingScreenProps) => {
   const { locale, t } = useI18n();
+  const stageName = getStageName(locale, rankingStage.id);
+  const stageTag = getStageTag(locale, rankingStage.id);
+  const stageDescription = getStageDescription(locale, rankingStage.id);
 
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
-            {rankingStage.name} {t("ranking.screenTagSuffix")}
+            {stageName} {t("ranking.screenTagSuffix")}
           </p>
           <div className="stage-head-actions">
             <button
@@ -64,7 +72,7 @@ export const RankingScreen = ({
         </div>
         <h1 className="title">Keisando</h1>
         <p className="stage-select-description">
-          {rankingStage.tag} / {rankingStage.description}
+          {stageTag} / {stageDescription}
         </p>
 
         <div
