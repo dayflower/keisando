@@ -1,4 +1,5 @@
 import { Volume2, VolumeX } from "lucide-react";
+import { useI18n } from "../../shared/i18n";
 
 type SoundToggleButtonProps = {
   isMuted: boolean;
@@ -11,6 +12,8 @@ export const SoundToggleButton = ({
   onToggleMute,
   onUiTap,
 }: SoundToggleButtonProps) => {
+  const { t } = useI18n();
+
   return (
     <button
       className="sound-icon-button"
@@ -19,7 +22,7 @@ export const SoundToggleButton = ({
         onUiTap?.();
         onToggleMute();
       }}
-      aria-label={isMuted ? "Unmute sound effects" : "Mute sound effects"}
+      aria-label={isMuted ? t("sound.unmute") : t("sound.mute")}
     >
       {isMuted ? (
         <VolumeX size={16} aria-hidden="true" />

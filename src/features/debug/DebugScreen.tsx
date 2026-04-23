@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { type CSSProperties, useMemo, useState } from "react";
+import { type LocaleOverride, useI18n } from "../../shared/i18n";
 import type { StageClearCondition, StageDefinition } from "../../shared/types";
 import type {
   ClearBestBadge,
@@ -61,6 +62,7 @@ export const DebugScreen = ({
   onResetUnlockProgress,
   onClearAllData,
 }: DebugScreenProps) => {
+  const { locale, localeOverride, setLocaleOverride, t } = useI18n();
   const [comboEffectTick, setComboEffectTick] = useState(0);
   const [comboMilestoneTick, setComboMilestoneTick] = useState(0);
   const [comboMilestoneValue, setComboMilestoneValue] = useState(0);
@@ -97,6 +99,39 @@ export const DebugScreen = ({
       }) as CSSProperties,
     [],
   );
+  const clearBestBadgeLabel =
+    clearBestBadge === "global"
+      ? t("debug.clearBadgeGlobalBest")
+      : clearBestBadge === "my"
+        ? t("debug.clearBadgeMyBest")
+        : "";
+  const comboMilestoneLabel =
+    comboMilestoneValue > 0
+      ? locale === "ja"
+        ? `${comboMilestoneValue}コンボ!`
+        : `${comboMilestoneValue} COMBO!`
+      : "";
+  const localeOptions: Array<{
+    key: "system" | "ja" | "en";
+    label: string;
+    value: LocaleOverride;
+  }> = [
+    {
+      key: "system",
+      label: t("debug.languageSystem"),
+      value: null,
+    },
+    {
+      key: "ja",
+      label: t("debug.languageJapanese"),
+      value: "ja",
+    },
+    {
+      key: "en",
+      label: t("debug.languageEnglish"),
+      value: "en",
+    },
+  ];
 
   const triggerCombo = (
     nextTier: "low" | "mid" | "high",
@@ -124,7 +159,7 @@ export const DebugScreen = ({
     <main className="app">
       <section className="stage-card debug-card">
         <div className="stage-head-row">
-          <p className="stage-tag">Debug</p>
+          <p className="stage-tag">{t("debug.screenTag")}</p>
           <div className="stage-head-actions">
             <button
               className="back-icon-button"
@@ -138,17 +173,37 @@ export const DebugScreen = ({
           </div>
         </div>
 
-        <h1 className="title">Keisando</h1>
-        <p className="stage-select-description">
-          Debug actions for development.
-        </p>
+        <h1 className="title">{t("common.appName")}</h1>
+        <p className="stage-select-description">{t("debug.description")}</p>
+
+        <section
+          className="debug-section"
+          aria-labelledby="debug-language-heading"
+        >
+          <h2 id="debug-language-heading" className="debug-section-title">
+            {t("debug.language")}
+          </h2>
+          <div className="debug-list">
+            {localeOptions.map((option) => (
+              <button
+                key={option.key}
+                className="debug-button"
+                type="button"
+                aria-pressed={localeOverride === option.value}
+                onClick={() => setLocaleOverride(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </section>
 
         <section
           className="debug-section"
           aria-labelledby="debug-storage-heading"
         >
           <h2 id="debug-storage-heading" className="debug-section-title">
-            Storage
+            {t("debug.storage")}
           </h2>
           <div className="debug-storage-actions">
             <button
@@ -157,14 +212,14 @@ export const DebugScreen = ({
               onClick={onResetUnlockProgress}
               disabled={!canResetUnlockProgress}
             >
-              Reset Stage Unlock Progress (Active Player)
+              {t("debug.resetUnlockProgress")}
             </button>
             <button
               className="debug-danger-button"
               type="button"
               onClick={onClearAllData}
             >
-              Clear All Local Data
+              {t("debug.clearAllData")}
             </button>
           </div>
         </section>
@@ -177,7 +232,7 @@ export const DebugScreen = ({
             id="debug-clear-condition-heading"
             className="debug-section-title"
           >
-            Stage Clear Conditions
+            {t("debug.clearConditions")}
           </h2>
           <div className="debug-condition-list">
             {stages.map((stage) => {
@@ -192,7 +247,7 @@ export const DebugScreen = ({
                     className="debug-condition-label"
                     htmlFor={`${stage.id}-seconds`}
                   >
-                    Clear within (seconds)
+                    {t("debug.clearWithinSeconds")}
                   </label>
                   <input
                     id={`${stage.id}-seconds`}
@@ -227,7 +282,7 @@ export const DebugScreen = ({
                         });
                       }}
                     />
-                    No mistakes required
+                    {t("debug.noMistakesRequired")}
                   </label>
                 </div>
               );
@@ -238,7 +293,7 @@ export const DebugScreen = ({
             type="button"
             onClick={onResetStageClearConditions}
           >
-            Reset Clear Conditions to Default
+            {t("debug.resetClearConditions")}
           </button>
         </section>
 
@@ -247,7 +302,7 @@ export const DebugScreen = ({
           aria-labelledby="debug-effects-heading"
         >
           <h2 id="debug-effects-heading" className="debug-section-title">
-            Effects
+            {t("debug.effects")}
           </h2>
           <div className="debug-effects-preview" style={effectStyle}>
             <div className="performance-bg" aria-hidden="true">
@@ -257,7 +312,7 @@ export const DebugScreen = ({
             </div>
             <div className="debug-effects-inner">
               <div className="debug-effects-subsection">
-                <p className="debug-effects-label">Combo Burst</p>
+                <p className="debug-effects-label">{t("debug.comboBurst")}</p>
                 <div className="progress-bar-track">
                   {comboMilestoneValue > 0 && (
                     <span
@@ -265,7 +320,7 @@ export const DebugScreen = ({
                       className="combo-progress-overlay"
                       aria-hidden="true"
                     >
-                      {comboMilestoneValue} COMBO!
+                      {comboMilestoneLabel}
                     </span>
                   )}
                 </div>
@@ -290,7 +345,9 @@ export const DebugScreen = ({
               </div>
 
               <div className="debug-effects-subsection">
-                <p className="debug-effects-label">Clear Celebration</p>
+                <p className="debug-effects-label">
+                  {t("debug.clearCelebration")}
+                </p>
                 <div className="clear-summary debug-clear-summary">
                   {hasTriggeredClearEffect && (
                     <div
@@ -320,9 +377,9 @@ export const DebugScreen = ({
                     </div>
                   )}
                   {hasTriggeredClearEffect && clearEffect.badgeLabel && (
-                    <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
+                    <p className="clear-best-badge">{clearBestBadgeLabel}</p>
                   )}
-                  <p className="clear-title">Stage Clear!</p>
+                  <p className="clear-title">{t("debug.clearTitle")}</p>
                 </div>
               </div>
             </div>
@@ -333,49 +390,49 @@ export const DebugScreen = ({
               type="button"
               onClick={() => triggerCombo("low", 3)}
             >
-              Combo Burst: x3
+              {t("debug.comboBurstX3")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={() => triggerCombo("mid", 5)}
             >
-              Combo Burst: x5
+              {t("debug.comboBurstX5")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={() => triggerCombo("high", 10)}
             >
-              Combo Burst: x10
+              {t("debug.comboBurstX10")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={() => triggerClear("normal", "none")}
             >
-              Clear Effect: Normal
+              {t("debug.clearEffectNormal")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={() => triggerClear("noMistake", "none")}
             >
-              Clear Effect: No Mistake
+              {t("debug.clearEffectNoMistake")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={() => triggerClear("best", "my")}
             >
-              Clear Effect: My Best
+              {t("debug.clearEffectMyBest")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={() => triggerClear("best", "global")}
             >
-              Clear Effect: Global Best
+              {t("debug.clearEffectGlobalBest")}
             </button>
           </div>
         </section>
@@ -385,77 +442,77 @@ export const DebugScreen = ({
           aria-labelledby="debug-sound-heading"
         >
           <h2 id="debug-sound-heading" className="debug-section-title">
-            Sound
+            {t("debug.sound")}
           </h2>
           <div className="debug-list">
             <button className="debug-button" type="button" onClick={onStartBgm}>
-              BGM Start
+              {t("debug.bgmStart")}
             </button>
             <button className="debug-button" type="button" onClick={onStopBgm}>
-              BGM Stop
+              {t("debug.bgmStop")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayUiTap}
             >
-              UI Tap
+              {t("debug.uiTap")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayCountdownTick}
             >
-              Countdown Tick
+              {t("debug.countdownTick")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayRoundStart}
             >
-              Round Start
+              {t("debug.roundStart")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayCorrect}
             >
-              Correct
+              {t("debug.correct")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayWrong}
             >
-              Wrong
+              {t("debug.wrong")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayClearGlobalBest}
             >
-              Clear: Global Best
+              {t("debug.clearSoundGlobalBest")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayClearMyBest}
             >
-              Clear: My Best
+              {t("debug.clearSoundMyBest")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayClearNoMistake}
             >
-              Clear: No Mistake
+              {t("debug.clearSoundNoMistake")}
             </button>
             <button
               className="debug-button"
               type="button"
               onClick={onPlayClearWithMistake}
             >
-              Clear: With Mistake
+              {t("debug.clearSoundWithMistake")}
             </button>
           </div>
         </section>

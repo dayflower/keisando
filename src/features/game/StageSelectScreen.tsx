@@ -1,6 +1,7 @@
 import { CircleUserRound, History, Trophy } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
+import { useI18n } from "../../shared/i18n";
 import { STAGES } from "../../shared/stages";
 import type {
   Player,
@@ -49,6 +50,7 @@ export const StageSelectScreen = ({
   onToggleMute,
   onUiTap,
 }: StageSelectScreenProps) => {
+  const { t } = useI18n();
   const stageButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const stageIndexById = useMemo(
     () => new Map(STAGES.map((stage, index) => [stage.id, index])),
@@ -60,7 +62,7 @@ export const StageSelectScreen = ({
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
-          <p className="stage-tag">Select Stage</p>
+          <p className="stage-tag">{t("stageSelect.screenTag")}</p>
           <div className="stage-head-actions">
             <SoundToggleButton
               isMuted={isMuted}
@@ -89,14 +91,14 @@ export const StageSelectScreen = ({
               aria-label="Open player selection"
             >
               <CircleUserRound size={18} aria-hidden="true" />
-              <span>{activePlayer?.name ?? "No Player"}</span>
+              <span>{activePlayer?.name ?? t("stageSelect.noPlayer")}</span>
             </button>
           </div>
         </div>
-        <h1 className="title">Keisando</h1>
+        <h1 className="title">{t("common.appName")}</h1>
         {!canStartStage && (
           <p className="stage-select-hint">
-            Select a player before starting a stage.
+            {t("stageSelect.selectPlayerHint")}
           </p>
         )}
 
@@ -136,13 +138,13 @@ export const StageSelectScreen = ({
                     <span className="stage-item-tag">{stage.tag}</span>
                   </span>
                   <span className="stage-item-record">
-                    Global Best:{" "}
+                    {t("stageSelect.globalBest")}:{" "}
                     {stageGlobalBest
-                      ? `${formatElapsedTime(stageGlobalBest.elapsedMs)} (${playerNameById.get(stageGlobalBest.playerId) ?? "Unknown"})`
+                      ? `${formatElapsedTime(stageGlobalBest.elapsedMs)} (${playerNameById.get(stageGlobalBest.playerId) ?? t("common.unknownPlayer")})`
                       : "--:--.--"}
                   </span>
                   <span className="stage-item-record">
-                    My Best:{" "}
+                    {t("stageSelect.myBest")}:{" "}
                     {stageMyBest
                       ? formatElapsedTime(stageMyBest.elapsedMs)
                       : "--:--.--"}
@@ -157,7 +159,7 @@ export const StageSelectScreen = ({
                   }}
                 >
                   <Trophy size={14} aria-hidden="true" />
-                  <span>Ranking</span>
+                  <span>{t("stageSelect.ranking")}</span>
                 </button>
               </article>
             );
@@ -172,7 +174,7 @@ export const StageSelectScreen = ({
               onOpenDebug();
             }}
           >
-            Open Debug
+            {t("stageSelect.openDebug")}
           </button>
         ) : null}
       </section>

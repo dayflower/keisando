@@ -1,4 +1,10 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { DebugScreen } from "./features/debug/DebugScreen";
 import { normalizeClearCondition } from "./features/game/clearConditions";
 import { PlayingScreen } from "./features/game/PlayingScreen";
@@ -16,6 +22,12 @@ import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
 import { useGameSoundEffects } from "./features/sound/useGameSoundEffects";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
+import {
+  detectLocale,
+  I18nProvider,
+  type LocaleOverride,
+  translate,
+} from "./shared/i18n";
 import { STAGES } from "./shared/stages";
 import type {
   Screen,
@@ -33,6 +45,8 @@ import {
 } from "./storage/repositories/unlockProgressRepo";
 
 function App() {
+  const [detectedLocale] = useState(() => detectLocale());
+  const [localeOverride, setLocaleOverride] = useState<LocaleOverride>(null);
   const [screen, setScreen] = useState<Screen>("stageSelect");
   const [newPlayerName, setNewPlayerName] = useState("");
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -148,6 +162,7 @@ function App() {
 
     return unlocked;
   }, [activePlayerId, unlockedStageIdsByPlayer]);
+  const locale = localeOverride ?? detectedLocale;
 
   useEffect(() => {
     saveStageClearConditionOverrides(stageClearConditionOverrides);
@@ -269,7 +284,7 @@ function App() {
 
   const handleClearAllData = () => {
     const confirmed = window.confirm(
-      "Delete all local Keisando data? This cannot be undone.",
+      translate(locale, "debug.confirmClearAllData"),
     );
     if (!confirmed) {
       return;
@@ -315,8 +330,10 @@ function App() {
     onUiTap: playUiTap,
   });
 
+  let content: ReactNode = null;
+
   if (screen === "stageSelect") {
-    return (
+    content = (
       <StageSelectScreen
         activePlayer={activePlayer}
         canStartStage={canStartStage}
@@ -337,7 +354,7 @@ function App() {
   }
 
   if (screen === "debug") {
-    return (
+    content = (
       <DebugScreen
         isMuted={isMuted}
         onToggleMute={toggleMute}
@@ -366,46 +383,46 @@ function App() {
 
   if (screen === "historyDetail") {
     if (!activePlayer || !historySummary) {
-      return null;
+      content = null;
+    } else {
+      content = (
+        <HistoryDetailScreen
+          activePlayer={activePlayer}
+          historySummary={historySummary}
+          historyRecords={historyRecords}
+          stageSummaries={stageSummaries}
+          onBackToStageSelect={navigation.backToStageSelect}
+          isMuted={isMuted}
+          onToggleMute={toggleMute}
+          onUiTap={playUiTap}
+        />
+      );
     }
-
-    return (
-      <HistoryDetailScreen
-        activePlayer={activePlayer}
-        historySummary={historySummary}
-        historyRecords={historyRecords}
-        stageSummaries={stageSummaries}
-        onBackToStageSelect={navigation.backToStageSelect}
-        isMuted={isMuted}
-        onToggleMute={toggleMute}
-        onUiTap={playUiTap}
-      />
-    );
   }
 
   if (screen === "ranking") {
     if (!rankingStage) {
-      return null;
+      content = null;
+    } else {
+      content = (
+        <RankingScreen
+          rankingStage={rankingStage}
+          rankingTab={rankingTab}
+          activePlayer={activePlayer}
+          playerNameById={playerNameById}
+          rows={rankingRows}
+          onSetRankingTab={setRankingTab}
+          onBackToStageSelect={navigation.backToStageSelect}
+          isMuted={isMuted}
+          onToggleMute={toggleMute}
+          onUiTap={playUiTap}
+        />
+      );
     }
-
-    return (
-      <RankingScreen
-        rankingStage={rankingStage}
-        rankingTab={rankingTab}
-        activePlayer={activePlayer}
-        playerNameById={playerNameById}
-        rows={rankingRows}
-        onSetRankingTab={setRankingTab}
-        onBackToStageSelect={navigation.backToStageSelect}
-        isMuted={isMuted}
-        onToggleMute={toggleMute}
-        onUiTap={playUiTap}
-      />
-    );
   }
 
   if (screen === "playerSelect") {
-    return (
+    content = (
       <PlayerSelectScreen
         players={players}
         activePlayerId={activePlayerId}
@@ -427,41 +444,54 @@ function App() {
     );
   }
 
-  if (!game.isPlaying || !game.selectedStage || !game.question) {
-    return null;
+  if (
+    screen === "playing" &&
+    game.isPlaying &&
+    game.selectedStage &&
+    game.question
+  ) {
+    content = (
+      <PlayingScreen
+        selectedStage={game.selectedStage}
+        playingPlayer={playingPlayer}
+        question={game.question}
+        answeredCount={game.answeredCount}
+        requiredCount={game.requiredCount}
+        currentCombo={game.currentCombo}
+        comboEffectTick={game.comboEffectTick}
+        comboMilestoneTick={game.comboMilestoneTick}
+        comboMilestoneValue={game.comboMilestoneValue}
+        comboEffectOrigin={game.comboEffectOrigin}
+        remainingCount={game.remainingCount}
+        elapsedMs={game.elapsedMs}
+        bestTimeMs={game.bestTimeMs}
+        isCleared={game.isCleared}
+        isRoundActive={game.isRoundActive}
+        countdownDisplay={game.countdownDisplay}
+        wrongAnswerCount={game.wrongAnswerCount}
+        lastResult={game.lastResult}
+        clearCelebrationTier={clearFlow.clearCelebration.clearCelebrationTier}
+        clearBestBadge={clearFlow.clearCelebration.clearBestBadge}
+        clearCelebrationTick={clearFlow.clearCelebrationTick}
+        didUnlockNextStageOnClear={clearFlow.didUnlockNextStageOnClear}
+        onAnswer={game.handleAnswer}
+        onBackToStageSelect={navigation.backToStageSelect}
+        onResetStage={game.resetStage}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onUiTap={playUiTap}
+      />
+    );
   }
 
   return (
-    <PlayingScreen
-      selectedStage={game.selectedStage}
-      playingPlayer={playingPlayer}
-      question={game.question}
-      answeredCount={game.answeredCount}
-      requiredCount={game.requiredCount}
-      currentCombo={game.currentCombo}
-      comboEffectTick={game.comboEffectTick}
-      comboMilestoneTick={game.comboMilestoneTick}
-      comboMilestoneValue={game.comboMilestoneValue}
-      comboEffectOrigin={game.comboEffectOrigin}
-      remainingCount={game.remainingCount}
-      elapsedMs={game.elapsedMs}
-      bestTimeMs={game.bestTimeMs}
-      isCleared={game.isCleared}
-      isRoundActive={game.isRoundActive}
-      countdownDisplay={game.countdownDisplay}
-      wrongAnswerCount={game.wrongAnswerCount}
-      lastResult={game.lastResult}
-      clearCelebrationTier={clearFlow.clearCelebration.clearCelebrationTier}
-      clearBestBadge={clearFlow.clearCelebration.clearBestBadge}
-      clearCelebrationTick={clearFlow.clearCelebrationTick}
-      didUnlockNextStageOnClear={clearFlow.didUnlockNextStageOnClear}
-      onAnswer={game.handleAnswer}
-      onBackToStageSelect={navigation.backToStageSelect}
-      onResetStage={game.resetStage}
-      isMuted={isMuted}
-      onToggleMute={toggleMute}
-      onUiTap={playUiTap}
-    />
+    <I18nProvider
+      locale={locale}
+      localeOverride={localeOverride}
+      setLocaleOverride={setLocaleOverride}
+    >
+      {content}
+    </I18nProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import type { FormEvent } from "react";
 import { PLAYER_NAME_MAX_LENGTH } from "../../shared/constants";
+import { useI18n } from "../../shared/i18n";
 import type { Player } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 
@@ -31,11 +32,13 @@ export const PlayerSelectScreen = ({
   onToggleMute,
   onUiTap,
 }: PlayerSelectScreenProps) => {
+  const { t } = useI18n();
+
   return (
     <main className="app">
       <section className="stage-card">
         <div className="stage-head-row">
-          <p className="stage-tag">Select Player</p>
+          <p className="stage-tag">{t("playerSelect.screenTag")}</p>
           <div className="stage-head-actions">
             <button
               className="back-icon-button"
@@ -55,8 +58,10 @@ export const PlayerSelectScreen = ({
             />
           </div>
         </div>
-        <h1 className="title">Keisando</h1>
-        <p className="stage-select-description">Choose your active player.</p>
+        <h1 className="title">{t("common.appName")}</h1>
+        <p className="stage-select-description">
+          {t("playerSelect.description")}
+        </p>
 
         {players.length > 0 ? (
           <div className="player-list">
@@ -75,16 +80,16 @@ export const PlayerSelectScreen = ({
                 >
                   <span className="player-item-name">{player.name}</span>
                   {isCurrent && (
-                    <span className="player-item-badge">Active</span>
+                    <span className="player-item-badge">
+                      {t("playerSelect.active")}
+                    </span>
                   )}
                 </button>
               );
             })}
           </div>
         ) : (
-          <p className="stage-select-hint">
-            No player yet. Register one below.
-          </p>
+          <p className="stage-select-hint">{t("playerSelect.empty")}</p>
         )}
 
         <form
@@ -95,7 +100,7 @@ export const PlayerSelectScreen = ({
           }}
         >
           <label className="player-register-label" htmlFor="player-name-input">
-            New Player Name
+            {t("playerSelect.newPlayerName")}
           </label>
           <input
             id="player-name-input"
@@ -112,7 +117,7 @@ export const PlayerSelectScreen = ({
           )}
           <div className="player-register-actions">
             <button className="primary-action-button" type="submit">
-              Register
+              {t("playerSelect.register")}
             </button>
           </div>
         </form>
