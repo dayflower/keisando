@@ -1,12 +1,14 @@
 import { ArrowLeft } from "lucide-react";
 import { type CSSProperties, useMemo, useState } from "react";
 import type { StageClearCondition, StageDefinition } from "../../shared/types";
-import {
-  buildClearBurstSpecs,
-  type ClearBestBadge,
-  type ClearCelebrationTier,
-  shouldUseClearShockwave,
+import type {
+  ClearBestBadge,
+  ClearCelebrationTier,
 } from "../game/clearCelebration";
+import {
+  buildClearEffectViewModel,
+  buildComboEffectViewModel,
+} from "../game/effectViewModel";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 
 type DebugScreenProps = {
@@ -71,26 +73,22 @@ export const DebugScreen = ({
   const [clearBestBadge, setClearBestBadge] = useState<ClearBestBadge>("none");
   const [hasTriggeredClearEffect, setHasTriggeredClearEffect] = useState(false);
 
-  const comboParticleCount =
-    comboTier === "high" ? 14 : comboTier === "mid" ? 10 : 0;
-  const comboParticleIndexes = Array.from(
-    { length: comboParticleCount },
-    (_, index) => index,
-  );
-  const clearBurstSpecs = buildClearBurstSpecs(
+  const comboEffect = buildComboEffectViewModel({
+    currentCombo:
+      comboTier === "high"
+        ? 10
+        : comboTier === "mid"
+          ? 5
+          : comboTier === "low"
+            ? 3
+            : 0,
+    lastResult: comboTier === "none" ? null : "correct",
+    comboMilestoneValue,
+  });
+  const clearEffect = buildClearEffectViewModel({
     clearCelebrationTier,
     clearBestBadge,
-  );
-  const withShockwave = shouldUseClearShockwave(
-    clearCelebrationTier,
-    clearBestBadge,
-  );
-  const clearBestBadgeLabel =
-    clearBestBadge === "global"
-      ? "GLOBAL BEST"
-      : clearBestBadge === "my"
-        ? "MY BEST"
-        : "";
+  });
   const effectStyle = useMemo(
     () =>
       ({
@@ -271,14 +269,14 @@ export const DebugScreen = ({
                     </span>
                   )}
                 </div>
-                {comboTier !== "none" && (
+                {comboEffect.comboTier !== "none" && (
                   <div
                     key={comboEffectTick}
-                    className={`combo-effects combo-effects-active combo-tier-${comboTier}`}
+                    className={`combo-effects combo-effects-active combo-tier-${comboEffect.comboTier}`}
                     aria-hidden="true"
                   >
                     <span className="combo-ring" />
-                    {comboParticleIndexes.map((particleIndex) => (
+                    {comboEffect.particleIndexes.map((particleIndex) => (
                       <span
                         key={`debug-combo-particle-${particleIndex}`}
                         className="combo-particle"
@@ -300,11 +298,13 @@ export const DebugScreen = ({
                       className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
                       aria-hidden="true"
                     >
-                      {clearBurstSpecs.map((burstSpec) => (
+                      {clearEffect.burstSpecs.map((burstSpec) => (
                         <span
                           key={burstSpec.id}
                           className={`clear-burst ${
-                            withShockwave ? "clear-burst-shockwave" : ""
+                            clearEffect.withShockwave
+                              ? "clear-burst-shockwave"
+                              : ""
                           }`}
                           style={
                             {
@@ -319,8 +319,8 @@ export const DebugScreen = ({
                       ))}
                     </div>
                   )}
-                  {hasTriggeredClearEffect && clearBestBadgeLabel && (
-                    <p className="clear-best-badge">{clearBestBadgeLabel}</p>
+                  {hasTriggeredClearEffect && clearEffect.badgeLabel && (
+                    <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
                   )}
                   <p className="clear-title">Stage Clear!</p>
                 </div>

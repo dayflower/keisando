@@ -8,12 +8,12 @@ import {
 import { formatElapsedTime } from "../../shared/formatters";
 import type { Player, Question, StageDefinition } from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
+import type { ClearBestBadge, ClearCelebrationTier } from "./clearCelebration";
 import {
-  buildClearBurstSpecs,
-  type ClearBestBadge,
-  type ClearCelebrationTier,
-  shouldUseClearShockwave,
-} from "./clearCelebration";
+  buildClearEffectViewModel,
+  buildComboEffectViewModel,
+  buildPerformanceEffectStyleViewModel,
+} from "./effectViewModel";
 import type { EffectOrigin } from "./useGameSession";
 
 export type PlayingScreenProps = {
@@ -146,40 +146,20 @@ export const PlayingScreen = ({
     progressMax > 0 ? Math.min((correctCount / progressMax) * 100, 100) : 0;
   const roundProgress =
     progressMax > 0 ? Math.min(correctCount / progressMax, 1) : 0;
-  const comboTier =
-    currentCombo >= 10
-      ? "high"
-      : currentCombo >= 5
-        ? "mid"
-        : currentCombo >= 3
-          ? "low"
-          : "none";
-  const comboParticleCount =
-    comboTier === "high" ? 14 : comboTier === "mid" ? 10 : 0;
-  const comboParticleIndexes = Array.from(
-    { length: comboParticleCount },
-    (_, index) => index,
-  );
-  const showComboBurst = lastResult === "correct" && comboTier !== "none";
-  const comboMilestoneLabel =
-    comboMilestoneValue > 0 ? `${comboMilestoneValue} COMBO!` : "";
-  const clearBurstSpecs = buildClearBurstSpecs(
+  const comboEffect = buildComboEffectViewModel({
+    currentCombo,
+    lastResult,
+    comboMilestoneValue,
+  });
+  const clearEffect = buildClearEffectViewModel({
     clearCelebrationTier,
     clearBestBadge,
-  );
-  const withShockwave = shouldUseClearShockwave(
-    clearCelebrationTier,
-    clearBestBadge,
-  );
-  const clearBestBadgeLabel =
-    clearBestBadge === "global"
-      ? "GLOBAL BEST"
-      : clearBestBadge === "my"
-        ? "MY BEST"
-        : "";
+  });
+  const effectStyleViewModel =
+    buildPerformanceEffectStyleViewModel(roundProgress);
   const effectStyle = {
-    "--fx-hue-shift": `${Math.round(roundProgress * 64)}deg`,
-    "--fx-drift-duration": `${Math.max(12, 22 - roundProgress * 8).toFixed(2)}s`,
+    "--fx-hue-shift": effectStyleViewModel.hueShift,
+    "--fx-drift-duration": effectStyleViewModel.driftDuration,
   } as CSSProperties;
   const comboEffectStyle = {
     "--combo-origin-x":
@@ -272,15 +252,15 @@ export const PlayingScreen = ({
         <span className="performance-bg-shape performance-bg-shape-b" />
         <span className="performance-bg-shape performance-bg-shape-c" />
       </div>
-      {showComboBurst && (
+      {comboEffect.showBurst && (
         <div
           key={comboEffectTick}
-          className={`combo-effects combo-effects-active combo-tier-${comboTier}`}
+          className={`combo-effects combo-effects-active combo-tier-${comboEffect.comboTier}`}
           style={comboEffectStyle}
           aria-hidden="true"
         >
           <span className="combo-ring" />
-          {comboParticleIndexes.map((particleIndex) => (
+          {comboEffect.particleIndexes.map((particleIndex) => (
             <span
               key={`combo-particle-${particleIndex}`}
               className="combo-particle"
@@ -337,13 +317,13 @@ export const PlayingScreen = ({
               className="progress-bar-fill"
               style={{ width: `${progressPercent}%` }}
             />
-            {comboMilestoneLabel && (
+            {comboEffect.milestoneLabel && (
               <span
                 key={comboMilestoneTick}
                 className="combo-progress-overlay"
                 aria-hidden="true"
               >
-                {comboMilestoneLabel}
+                {comboEffect.milestoneLabel}
               </span>
             )}
           </div>
@@ -440,11 +420,11 @@ export const PlayingScreen = ({
                 className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
                 aria-hidden="true"
               >
-                {clearBurstSpecs.map((burstSpec) => (
+                {clearEffect.burstSpecs.map((burstSpec) => (
                   <span
                     key={burstSpec.id}
                     className={`clear-burst ${
-                      withShockwave ? "clear-burst-shockwave" : ""
+                      clearEffect.withShockwave ? "clear-burst-shockwave" : ""
                     }`}
                     style={
                       {
@@ -458,8 +438,8 @@ export const PlayingScreen = ({
                   />
                 ))}
               </div>
-              {clearBestBadgeLabel && (
-                <p className="clear-best-badge">{clearBestBadgeLabel}</p>
+              {clearEffect.badgeLabel && (
+                <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
               )}
               <p className="clear-title">Stage Clear!</p>
               {didUnlockNextStageOnClear && (

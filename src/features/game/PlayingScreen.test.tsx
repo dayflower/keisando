@@ -143,6 +143,27 @@ describe("PlayingScreen clear celebration", () => {
     expect(burstCount).toBe(7);
     expect(html).toContain("clear-burst-shockwave");
   });
+
+  it("renders combo burst markup from the shared combo view model", () => {
+    const html = renderToStaticMarkup(
+      <PlayingScreen
+        {...buildProps({
+          isCleared: false,
+          isRoundActive: true,
+          currentCombo: 10,
+          comboEffectTick: 2,
+          comboMilestoneTick: 3,
+          comboMilestoneValue: 10,
+          lastResult: "correct",
+        })}
+      />,
+    );
+
+    expect(html).toContain("combo-effects-active combo-tier-high");
+    const particleCount = html.match(/class="combo-particle"/g)?.length ?? 0;
+    expect(particleCount).toBe(14);
+    expect(html).toContain("10 COMBO!");
+  });
 });
 
 describe("getAnswerByArrowKey", () => {
