@@ -147,7 +147,7 @@ const jaMessages: Record<MessageKey, string> = {
   "stageSelect.globalBest": "全体ベスト",
   "stageSelect.myBest": "自己ベスト",
   "stageSelect.ranking": "ランキング",
-  "stageSelect.openDebug": "デバッグを開く",
+  "stageSelect.openDebug": "デバッグ",
   "playerSelect.screenTag": "プレイヤー選択",
   "playerSelect.description": "使用するプレイヤーを選択します。",
   "playerSelect.active": "選択中",
@@ -211,8 +211,7 @@ const jaMessages: Record<MessageKey, string> = {
   "debug.languageJapanese": "日本語",
   "debug.languageEnglish": "英語",
   "debug.storage": "ストレージ",
-  "debug.resetUnlockProgress":
-    "ステージ解放状況をリセット (アクティブプレイヤー)",
+  "debug.resetUnlockProgress": "ステージ解放状況をリセット (現プレイヤー)",
   "debug.clearAllData": "ローカルデータをすべて削除",
   "debug.clearConditions": "ステージクリア条件",
   "debug.clearWithinSeconds": "クリア制限時間 (秒)",
