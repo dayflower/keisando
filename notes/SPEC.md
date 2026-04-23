@@ -79,6 +79,7 @@ See [package.json](../package.json) for exact scripts and versions.
   - Theme: addition
   - Expression range: single-digit addition, `0-9 + 0-9`
   - Answer range: `0-18`
+  - Zero-valued operands remain possible, but generation retries probabilistically to reduce over-frequency.
 - `stage2`
   - Theme: subtraction
   - Expression range: single-digit subtraction, `0-9 - 0-9`
@@ -88,6 +89,7 @@ See [package.json](../package.json) for exact scripts and versions.
   - Theme: subtraction+
   - Expression range: `1-2` digit minus `1` digit, result constrained to `0-9`
   - Answer range: `0-9`
+  - Zero-valued results remain possible, but generation retries probabilistically to reduce over-frequency.
 
 ### Default Stage Parameters
 - All current stages use:

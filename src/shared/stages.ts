@@ -1,7 +1,29 @@
 import type { StageDefinition } from "./types";
 
+const STAGE1_ZERO_RETRY_RATE = 0.7;
 const STAGE2_ZERO_RETRY_RATE = 0.7;
-const STAGE2_MAX_RETRIES = 3;
+const STAGE3_ZERO_RETRY_RATE = 0.8;
+const MAX_ZERO_RETRIES = 3;
+
+const retryZeroWeightedExpression = <T>(
+  createExpression: () => T,
+  includesZero: (expression: T) => boolean,
+  retryRate: number,
+): T => {
+  let expression = createExpression();
+
+  for (
+    let retry = 0;
+    retry < MAX_ZERO_RETRIES &&
+    includesZero(expression) &&
+    Math.random() < retryRate;
+    retry += 1
+  ) {
+    expression = createExpression();
+  }
+
+  return expression;
+};
 
 export const STAGES: StageDefinition[] = [
   {
@@ -14,14 +36,20 @@ export const STAGES: StageDefinition[] = [
       requireNoMistake: true,
     },
     createExpression: () => {
-      const left = Math.floor(Math.random() * 10);
-      const right = Math.floor(Math.random() * 10);
-      return {
-        left,
-        right,
-        operator: "+" as const,
-        answer: left + right,
-      };
+      return retryZeroWeightedExpression(
+        () => {
+          const left = Math.floor(Math.random() * 10);
+          const right = Math.floor(Math.random() * 10);
+          return {
+            left,
+            right,
+            operator: "+" as const,
+            answer: left + right,
+          };
+        },
+        (expression) => expression.left === 0 || expression.right === 0,
+        STAGE1_ZERO_RETRY_RATE,
+      );
     },
   },
   {
@@ -34,27 +62,20 @@ export const STAGES: StageDefinition[] = [
       requireNoMistake: true,
     },
     createExpression: () => {
-      let left = 0;
-      let right = 0;
-      let answer = 0;
-
-      // Keep zeros possible, but probabilistically retry to reduce over-frequency.
-      for (let retry = 0; retry < STAGE2_MAX_RETRIES; retry += 1) {
-        left = Math.floor(Math.random() * 10);
-        right = Math.floor(Math.random() * (left + 1));
-        answer = left - right;
-        const includesZero = right === 0 || answer === 0;
-        if (!includesZero || Math.random() >= STAGE2_ZERO_RETRY_RATE) {
-          break;
-        }
-      }
-
-      return {
-        left,
-        right,
-        operator: "-" as const,
-        answer,
-      };
+      return retryZeroWeightedExpression(
+        () => {
+          const left = Math.floor(Math.random() * 10);
+          const right = Math.floor(Math.random() * (left + 1));
+          return {
+            left,
+            right,
+            operator: "-" as const,
+            answer: left - right,
+          };
+        },
+        (expression) => expression.right === 0 || expression.answer === 0,
+        STAGE2_ZERO_RETRY_RATE,
+      );
     },
   },
   {
@@ -67,15 +88,20 @@ export const STAGES: StageDefinition[] = [
       requireNoMistake: true,
     },
     createExpression: () => {
-      const answer = Math.floor(Math.random() * 10);
-      const right = Math.floor(Math.random() * 9) + 1;
-      const left = answer + right;
-      return {
-        left,
-        right,
-        operator: "-" as const,
-        answer,
-      };
+      return retryZeroWeightedExpression(
+        () => {
+          const answer = Math.floor(Math.random() * 10);
+          const right = Math.floor(Math.random() * 9) + 1;
+          return {
+            left: answer + right,
+            right,
+            operator: "-" as const,
+            answer,
+          };
+        },
+        (expression) => expression.answer === 0,
+        STAGE3_ZERO_RETRY_RATE,
+      );
     },
   },
 ];

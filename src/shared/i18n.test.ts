@@ -66,6 +66,9 @@ describe("stage helpers", () => {
     );
     expect(getStageTag("en", "stage3")).toBe("Subtraction+");
     expect(getStageLabel("en", "stage2")).toBe("Stage 2");
+    expect(getStageDescription("en", "stage3")).toBe(
+      "1-2 digits minus 1 digit (result 0-9)",
+    );
   });
 
   it("falls back to the raw stage id for unknown stages", () => {
