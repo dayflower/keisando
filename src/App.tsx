@@ -1,17 +1,10 @@
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { DebugScreen } from "./features/debug/DebugScreen";
-import {
-  type ClearSoundVariant,
-  isNewBestRecord,
-  mapClearSoundVariantToCelebration,
-} from "./features/game/clearCelebration";
-import {
-  isStageConditionClear,
-  normalizeClearCondition,
-} from "./features/game/clearConditions";
+import { normalizeClearCondition } from "./features/game/clearConditions";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
 import { useGameSession } from "./features/game/useGameSession";
+import { useStageClearFlow } from "./features/game/useStageClearFlow";
 import { HistoryDetailScreen } from "./features/history/HistoryDetailScreen";
 import { useHistory } from "./features/history/useHistory";
 import { PlayerSelectScreen } from "./features/player/PlayerSelectScreen";
@@ -19,6 +12,7 @@ import { usePlayers } from "./features/player/usePlayers";
 import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
+import { useGameSoundEffects } from "./features/sound/useGameSoundEffects";
 import { useSoundEffects } from "./features/sound/useSoundEffects";
 import { STAGES } from "./shared/stages";
 import type { Screen, StageClearCondition } from "./shared/types";
@@ -87,109 +81,6 @@ function App() {
     openRankingScreen,
     closeRankingScreen,
   } = useRankings({ records, activePlayerId });
-  const game = useGameSession({
-    activePlayer,
-    records,
-    onStageClear: (payload) => {
-      const currentStageIndex = STAGES.findIndex(
-        (stage) => stage.id === payload.stageId,
-      );
-      const nextStage =
-        currentStageIndex >= 0 && currentStageIndex + 1 < STAGES.length
-          ? STAGES[currentStageIndex + 1]
-          : null;
-      const stageCondition = stageClearConditionById.get(payload.stageId);
-      const isConditionClear =
-        stageCondition === undefined
-          ? false
-          : isStageConditionClear(
-              payload.clearRecord.elapsedMs,
-              payload.clearRecord.wrongCount,
-              stageCondition,
-            );
-
-      const currentUnlockedStageIds =
-        unlockedStageIdsByPlayer[payload.playerId] ?? [];
-      const isNextStageNewlyUnlocked =
-        nextStage !== null &&
-        isConditionClear &&
-        !currentUnlockedStageIds.includes(nextStage.id);
-
-      if (isNextStageNewlyUnlocked && nextStage) {
-        setUnlockedStageIdsByPlayer((prev) => ({
-          ...prev,
-          [payload.playerId]: [...(prev[payload.playerId] ?? []), nextStage.id],
-        }));
-      }
-
-      setDidUnlockNextStageOnClear(isNextStageNewlyUnlocked);
-
-      const globalBest =
-        records
-          .filter((record) => record.stageId === payload.stageId)
-          .sort((a, b) =>
-            a.elapsedMs === b.elapsedMs
-              ? a.recordedAt - b.recordedAt
-              : a.elapsedMs - b.elapsedMs,
-          )[0] ?? null;
-      const myBest =
-        records
-          .filter(
-            (record) =>
-              record.stageId === payload.stageId &&
-              record.playerId === payload.playerId,
-          )
-          .sort((a, b) =>
-            a.elapsedMs === b.elapsedMs
-              ? a.recordedAt - b.recordedAt
-              : a.elapsedMs - b.elapsedMs,
-          )[0] ?? null;
-      const isGlobalBestUpdated = isNewBestRecord(
-        payload.clearRecord,
-        globalBest,
-      );
-      const isMyBestUpdated = isNewBestRecord(payload.clearRecord, myBest);
-      const isNoMistakeClear = payload.mistakeCount === 0;
-
-      if (isGlobalBestUpdated) {
-        clearSoundVariantRef.current = "globalBest";
-      } else if (isMyBestUpdated) {
-        clearSoundVariantRef.current = "myBest";
-      } else {
-        clearSoundVariantRef.current = isNoMistakeClear
-          ? "noMistake"
-          : "withMistake";
-      }
-      setClearCelebrationTick((prev) => prev + 1);
-
-      addRecord(payload.clearRecord);
-      appendClearRecord({
-        playerId: payload.playerId,
-        stageId: payload.stageId,
-        score: payload.score,
-        durationMs: payload.durationMs,
-        playedAt: payload.playedAt,
-        mistakeCount: payload.mistakeCount,
-      });
-    },
-  });
-
-  const canStartStage = activePlayer !== null;
-  const previousCountdownRef = useRef<number | null>(null);
-  const previousRoundActiveRef = useRef<boolean>(false);
-  const previousAnsweredCountRef = useRef<number>(0);
-  const previousClearedRef = useRef<boolean>(false);
-  const clearSoundVariantRef = useRef<ClearSoundVariant>("withMistake");
-  const [clearCelebrationTick, setClearCelebrationTick] = useState(0);
-  const [didUnlockNextStageOnClear, setDidUnlockNextStageOnClear] =
-    useState(false);
-  const playingPlayer = useMemo(
-    () => players.find((player) => player.id === game.playingPlayerId) ?? null,
-    [game.playingPlayerId, players],
-  );
-  const clearCelebration = mapClearSoundVariantToCelebration(
-    clearSoundVariantRef.current,
-  );
   const stageClearConditionById = useMemo(() => {
     const nextMap = new Map<string, StageClearCondition>();
 
@@ -205,6 +96,25 @@ function App() {
 
     return nextMap;
   }, [stageClearConditionOverrides]);
+  const clearFlow = useStageClearFlow({
+    records,
+    unlockedStageIdsByPlayer,
+    setUnlockedStageIdsByPlayer,
+    addRecord,
+    appendClearRecord,
+    stageClearConditionById,
+  });
+  const game = useGameSession({
+    activePlayer,
+    records,
+    onStageClear: clearFlow.handleStageClear,
+  });
+
+  const canStartStage = activePlayer !== null;
+  const playingPlayer = useMemo(
+    () => players.find((player) => player.id === game.playingPlayerId) ?? null,
+    [game.playingPlayerId, players],
+  );
   const unlockedStageIds = useMemo(() => {
     if (STAGES.length === 0) {
       return new Set<string>();
@@ -230,154 +140,23 @@ function App() {
     saveUnlockedStageIdsByPlayer(unlockedStageIdsByPlayer);
   }, [unlockedStageIdsByPlayer]);
 
-  useEffect(() => {
-    const shouldPlayBgm =
-      screen === "playing" &&
-      game.isPlaying &&
-      game.isRoundActive &&
-      !game.isCleared;
-    if (shouldPlayBgm) {
-      startBgm();
-    } else {
-      stopBgm();
-    }
-
-    return () => {
-      stopBgm();
-    };
-  }, [
+  useGameSoundEffects({
     screen,
-    game.isPlaying,
-    game.isRoundActive,
-    game.isCleared,
-    startBgm,
-    stopBgm,
-  ]);
-
-  useEffect(() => {
-    if (
-      screen !== "playing" ||
-      !game.isPlaying ||
-      game.isCleared ||
-      game.isRoundActive
-    ) {
-      previousCountdownRef.current = null;
-      return;
-    }
-
-    if (previousCountdownRef.current !== game.countdownDisplay) {
-      playCountdownTick();
-      previousCountdownRef.current = game.countdownDisplay;
-    }
-  }, [
-    screen,
-    game.isPlaying,
-    game.isCleared,
-    game.isRoundActive,
-    game.countdownDisplay,
-    playCountdownTick,
-  ]);
-
-  useEffect(() => {
-    if (
-      screen === "playing" &&
-      game.isPlaying &&
-      !game.isCleared &&
-      !previousRoundActiveRef.current &&
-      game.isRoundActive
-    ) {
-      playRoundStart();
-    }
-    previousRoundActiveRef.current = game.isRoundActive;
-  }, [
-    screen,
-    game.isPlaying,
-    game.isCleared,
-    game.isRoundActive,
-    playRoundStart,
-  ]);
-
-  useEffect(() => {
-    if (screen !== "playing" || !game.isPlaying) {
-      previousAnsweredCountRef.current = game.answeredCount;
-      return;
-    }
-
-    if (
-      game.lastResult !== null &&
-      game.answeredCount !== previousAnsweredCountRef.current
-    ) {
-      if (game.lastResult === "correct") {
-        playCorrect();
-      } else {
-        playWrong();
-      }
-    }
-    previousAnsweredCountRef.current = game.answeredCount;
-  }, [
-    screen,
-    game.isPlaying,
-    game.answeredCount,
-    game.lastResult,
-    playCorrect,
-    playWrong,
-  ]);
-
-  useEffect(() => {
-    if (
-      screen === "playing" &&
-      game.isPlaying &&
-      game.isCleared &&
-      !previousClearedRef.current
-    ) {
-      stopBgm();
-      switch (clearSoundVariantRef.current) {
-        case "globalBest":
-          playClearGlobalBest();
-          break;
-        case "myBest":
-          playClearMyBest();
-          break;
-        case "noMistake":
-          playClearNoMistake();
-          break;
-        case "withMistake":
-          playClearWithMistake();
-          break;
-        default:
-          playClearWithMistake();
-      }
-    }
-    previousClearedRef.current = game.isCleared;
-  }, [
-    screen,
-    game.isPlaying,
-    game.isCleared,
-    playClearGlobalBest,
-    playClearMyBest,
-    playClearNoMistake,
-    playClearWithMistake,
-    stopBgm,
-  ]);
-
-  const backToStageSelect = () => {
-    setScreen("stageSelect");
-    game.stopSession();
-    setDidUnlockNextStageOnClear(false);
-    closeRankingScreen();
-  };
-
-  const handleStartStage = (stage: (typeof STAGES)[number]) => {
-    if (!unlockedStageIds.has(stage.id)) {
-      return;
-    }
-
-    setDidUnlockNextStageOnClear(false);
-
-    if (game.startStage(stage)) {
-      setScreen("playing");
-    }
-  };
+    game,
+    clearSoundVariant: clearFlow.clearSoundVariant,
+    soundEffects: {
+      startBgm,
+      stopBgm,
+      playCountdownTick,
+      playRoundStart,
+      playCorrect,
+      playWrong,
+      playClearGlobalBest,
+      playClearMyBest,
+      playClearNoMistake,
+      playClearWithMistake,
+    },
+  });
 
   const handleUpdateStageClearCondition = (
     stageId: string,
@@ -406,31 +185,53 @@ function App() {
       return;
     }
 
-    setDidUnlockNextStageOnClear(false);
+    clearFlow.resetClearFlow();
     setUnlockedStageIdsByPlayer((prev) => ({
       ...prev,
       [activePlayerId]: [],
     }));
   };
 
-  const handleOpenRanking = (stageId: string) => {
-    openRankingScreen(stageId);
-    setScreen("ranking");
-  };
+  const navigation = {
+    backToStageSelect: () => {
+      setScreen("stageSelect");
+      game.stopSession();
+      clearFlow.resetClearFlow();
+      closeRankingScreen();
+    },
+    startStage: (stage: (typeof STAGES)[number]) => {
+      if (!unlockedStageIds.has(stage.id)) {
+        return;
+      }
 
-  const handleOpenPlayHistory = () => {
-    if (!activePlayerId) return;
-    setScreen("historyDetail");
-  };
+      clearFlow.resetClearFlow();
 
-  const handleOpenPlayerSelect = () => {
-    setRegisterError(null);
-    setNewPlayerName("");
-    setScreen("playerSelect");
-  };
-
-  const handleOpenDebug = () => {
-    setScreen("debug");
+      if (game.startStage(stage)) {
+        setScreen("playing");
+      }
+    },
+    openRanking: (stageId: string) => {
+      openRankingScreen(stageId);
+      setScreen("ranking");
+    },
+    openPlayHistory: () => {
+      if (!activePlayerId) {
+        return;
+      }
+      setScreen("historyDetail");
+    },
+    openPlayerSelect: () => {
+      setRegisterError(null);
+      setNewPlayerName("");
+      setScreen("playerSelect");
+    },
+    openDebug: () => {
+      setScreen("debug");
+    },
+    selectPlayer: (playerId: string) => {
+      selectPlayer(playerId);
+      setScreen("stageSelect");
+    },
   };
 
   const handleClearAllData = () => {
@@ -447,20 +248,13 @@ function App() {
     clearRecords();
     resetPlayers();
     resetHistory();
-    clearSoundVariantRef.current = "withMistake";
-    setClearCelebrationTick(0);
-    setDidUnlockNextStageOnClear(false);
+    clearFlow.resetClearFlow();
     setStageClearConditionOverrides({});
     setUnlockedStageIdsByPlayer({});
     setRegisterError(null);
     setNewPlayerName("");
     closeRankingScreen();
     setMuted(false);
-    setScreen("stageSelect");
-  };
-
-  const handleSelectPlayer = (playerId: string) => {
-    selectPlayer(playerId);
     setScreen("stageSelect");
   };
 
@@ -490,11 +284,11 @@ function App() {
         unlockedStageIds={unlockedStageIds}
         playerNameById={playerNameById}
         records={records}
-        onStartStage={handleStartStage}
-        onOpenRankingScreen={handleOpenRanking}
-        onOpenPlayHistory={handleOpenPlayHistory}
-        onOpenPlayerSelect={handleOpenPlayerSelect}
-        onOpenDebug={handleOpenDebug}
+        onStartStage={navigation.startStage}
+        onOpenRankingScreen={navigation.openRanking}
+        onOpenPlayHistory={navigation.openPlayHistory}
+        onOpenPlayerSelect={navigation.openPlayerSelect}
+        onOpenDebug={navigation.openDebug}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onUiTap={playUiTap}
@@ -541,7 +335,7 @@ function App() {
         historySummary={historySummary}
         historyRecords={historyRecords}
         stageSummaries={stageSummaries}
-        onBackToStageSelect={backToStageSelect}
+        onBackToStageSelect={navigation.backToStageSelect}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onUiTap={playUiTap}
@@ -562,7 +356,7 @@ function App() {
         playerNameById={playerNameById}
         rows={rankingRows}
         onSetRankingTab={setRankingTab}
-        onBackToStageSelect={backToStageSelect}
+        onBackToStageSelect={navigation.backToStageSelect}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onUiTap={playUiTap}
@@ -583,7 +377,7 @@ function App() {
             setRegisterError(null);
           }
         }}
-        onSelectPlayer={handleSelectPlayer}
+        onSelectPlayer={navigation.selectPlayer}
         onRegisterPlayer={handleRegisterPlayer}
         onBackToStageSelect={() => setScreen("stageSelect")}
         isMuted={isMuted}
@@ -617,12 +411,12 @@ function App() {
       countdownDisplay={game.countdownDisplay}
       wrongAnswerCount={game.wrongAnswerCount}
       lastResult={game.lastResult}
-      clearCelebrationTier={clearCelebration.clearCelebrationTier}
-      clearBestBadge={clearCelebration.clearBestBadge}
-      clearCelebrationTick={clearCelebrationTick}
-      didUnlockNextStageOnClear={didUnlockNextStageOnClear}
+      clearCelebrationTier={clearFlow.clearCelebration.clearCelebrationTier}
+      clearBestBadge={clearFlow.clearCelebration.clearBestBadge}
+      clearCelebrationTick={clearFlow.clearCelebrationTick}
+      didUnlockNextStageOnClear={clearFlow.didUnlockNextStageOnClear}
       onAnswer={game.handleAnswer}
-      onBackToStageSelect={backToStageSelect}
+      onBackToStageSelect={navigation.backToStageSelect}
       onResetStage={game.resetStage}
       isMuted={isMuted}
       onToggleMute={toggleMute}

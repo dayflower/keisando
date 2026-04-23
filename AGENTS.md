@@ -4,6 +4,14 @@
 - Keep docs short; link to concrete files instead of duplicating behavior descriptions.
 - When docs and code disagree, fix docs immediately in the same change.
 
+# App / Feature Boundaries
+
+- Keep `src/App.tsx` as a thin orchestration layer for screen selection and feature composition.
+- Do not place stage-clear aggregation, unlock updates, history writes, or sound-trigger conditions directly in `App.tsx`; move them into feature hooks or logic modules.
+- When side effects depend on multiple state conditions, prefer a dedicated hook over adding more conditional `useEffect` blocks to top-level components.
+- Prefer extracting pure decision helpers from complex UI/state logic so behavior can be tested without rendering.
+- Keep components and hooks focused on wiring, and move branching business rules into small testable functions.
+
 # Stack Snapshot
 
 - Language: TypeScript
