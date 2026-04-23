@@ -17,6 +17,7 @@ type PreviousGameSoundState = {
   isRoundActive: boolean;
   answeredCount: number;
   isCleared: boolean;
+  shouldPlayBgm: boolean;
 };
 
 type GameSoundCommand =
@@ -35,6 +36,7 @@ const INITIAL_PREVIOUS_STATE: PreviousGameSoundState = {
   isRoundActive: false,
   answeredCount: 0,
   isCleared: false,
+  shouldPlayBgm: false,
 };
 
 export const getGameSoundCommands = (
@@ -61,7 +63,9 @@ export const getGameSoundCommands = (
     game.isRoundActive &&
     !game.isCleared;
 
-  commands.push({ type: shouldPlayBgm ? "startBgm" : "stopBgm" });
+  if (shouldPlayBgm !== previous.shouldPlayBgm) {
+    commands.push({ type: shouldPlayBgm ? "startBgm" : "stopBgm" });
+  }
 
   let nextCountdownDisplay: number | null = null;
   if (
@@ -103,7 +107,6 @@ export const getGameSoundCommands = (
     game.isCleared &&
     !previous.isCleared
   ) {
-    commands.push({ type: "stopBgm" });
     commands.push({ type: "playClear", variant: clearSoundVariant });
   }
 
@@ -114,6 +117,7 @@ export const getGameSoundCommands = (
       isRoundActive: game.isRoundActive,
       answeredCount: game.answeredCount,
       isCleared: game.isCleared,
+      shouldPlayBgm,
     },
   };
 };
@@ -202,11 +206,26 @@ export const useGameSoundEffects = ({
   >;
 }) => {
   const previousRef = useRef<PreviousGameSoundState>(INITIAL_PREVIOUS_STATE);
+  const {
+    isPlaying,
+    isRoundActive,
+    isCleared,
+    countdownDisplay,
+    answeredCount,
+    lastResult,
+  } = game;
 
   useEffect(() => {
     const { commands, nextPrevious } = getGameSoundCommands(
       screen,
-      game,
+      {
+        isPlaying,
+        isRoundActive,
+        isCleared,
+        countdownDisplay,
+        answeredCount,
+        lastResult,
+      },
       previousRef.current,
       clearSoundVariant,
     );
@@ -216,11 +235,21 @@ export const useGameSoundEffects = ({
     }
 
     previousRef.current = nextPrevious;
-  }, [clearSoundVariant, game, screen, soundEffects]);
+  }, [
+    answeredCount,
+    clearSoundVariant,
+    countdownDisplay,
+    isCleared,
+    isPlaying,
+    isRoundActive,
+    lastResult,
+    screen,
+    soundEffects,
+  ]);
 
   useEffect(() => {
     return () => {
       soundEffects.stopBgm();
     };
-  }, [soundEffects]);
+  }, [soundEffects.stopBgm]);
 };

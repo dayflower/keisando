@@ -140,11 +140,8 @@ function App() {
     saveUnlockedStageIdsByPlayer(unlockedStageIdsByPlayer);
   }, [unlockedStageIdsByPlayer]);
 
-  useGameSoundEffects({
-    screen,
-    game,
-    clearSoundVariant: clearFlow.clearSoundVariant,
-    soundEffects: {
+  const gameSoundEffects = useMemo(
+    () => ({
       startBgm,
       stopBgm,
       playCountdownTick,
@@ -155,7 +152,26 @@ function App() {
       playClearMyBest,
       playClearNoMistake,
       playClearWithMistake,
-    },
+    }),
+    [
+      playClearGlobalBest,
+      playClearMyBest,
+      playClearNoMistake,
+      playClearWithMistake,
+      playCountdownTick,
+      playCorrect,
+      playRoundStart,
+      playWrong,
+      startBgm,
+      stopBgm,
+    ],
+  );
+
+  useGameSoundEffects({
+    screen,
+    game,
+    clearSoundVariant: clearFlow.clearSoundVariant,
+    soundEffects: gameSoundEffects,
   });
 
   const handleUpdateStageClearCondition = (
