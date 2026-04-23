@@ -1,37 +1,15 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  installTestLocalStorage,
+  resetTestLocalStorage,
+} from "./testLocalStorage";
+import {
   loadUnlockedStageIdsByPlayer,
   saveUnlockedStageIdsByPlayer,
 } from "./unlockProgressRepo";
 
-type StorageMap = Map<string, string>;
-
-const installLocalStorage = (store: StorageMap) => {
-  const localStorageMock = {
-    get length() {
-      return store.size;
-    },
-    key: (index: number) => Array.from(store.keys())[index] ?? null,
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    clear: () => {
-      store.clear();
-    },
-  };
-
-  Object.defineProperty(globalThis, "localStorage", {
-    configurable: true,
-    value: localStorageMock,
-  });
-};
-
 afterEach(() => {
-  Reflect.deleteProperty(globalThis, "localStorage");
+  resetTestLocalStorage();
 });
 
 describe("unlockProgressRepo", () => {
@@ -46,7 +24,7 @@ describe("unlockProgressRepo", () => {
         }),
       ],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadUnlockedStageIdsByPlayer()).toEqual({
       p1: ["stage2", "stage3"],
@@ -55,7 +33,7 @@ describe("unlockProgressRepo", () => {
 
   it("saves unlocked-stage entries", () => {
     const store = new Map<string, string>();
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     saveUnlockedStageIdsByPlayer({ p1: ["stage2"], p2: ["stage2", "stage3"] });
 

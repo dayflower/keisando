@@ -6,31 +6,13 @@ import {
   saveActivePlayerId,
   savePlayers,
 } from "./playersRepo";
-
-type StorageMap = Map<string, string>;
-
-const installLocalStorage = (store: StorageMap) => {
-  const localStorageMock = {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    clear: () => {
-      store.clear();
-    },
-  };
-
-  Object.defineProperty(globalThis, "localStorage", {
-    configurable: true,
-    value: localStorageMock,
-  });
-};
+import {
+  installTestLocalStorage,
+  resetTestLocalStorage,
+} from "./testLocalStorage";
 
 afterEach(() => {
-  Reflect.deleteProperty(globalThis, "localStorage");
+  resetTestLocalStorage();
 });
 
 describe("playersRepo", () => {
@@ -46,7 +28,7 @@ describe("playersRepo", () => {
         ]),
       ],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadPlayers()).toEqual([
       { id: "p1", name: "Alice", createdAt: 1_700_000_000_000 },
@@ -57,7 +39,7 @@ describe("playersRepo", () => {
     const store = new Map<string, string>([
       [USERS_STORAGE_KEY, '{"bad":true}'],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadPlayers()).toEqual([]);
   });
@@ -66,7 +48,7 @@ describe("playersRepo", () => {
     const store = new Map<string, string>([
       [CURRENT_USER_ID_STORAGE_KEY, "player-1"],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadActivePlayerId()).toBe("player-1");
 
@@ -79,7 +61,7 @@ describe("playersRepo", () => {
 
   it("saves players", () => {
     const store = new Map<string, string>();
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     savePlayers([{ id: "p1", name: "Alice", createdAt: 1_700_000_000_000 }]);
 

@@ -3,35 +3,13 @@ import {
   loadStageClearConditionOverrides,
   saveStageClearConditionOverrides,
 } from "./stageClearConditionsRepo";
-
-type StorageMap = Map<string, string>;
-
-const installLocalStorage = (store: StorageMap) => {
-  const localStorageMock = {
-    get length() {
-      return store.size;
-    },
-    key: (index: number) => Array.from(store.keys())[index] ?? null,
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    clear: () => {
-      store.clear();
-    },
-  };
-
-  Object.defineProperty(globalThis, "localStorage", {
-    configurable: true,
-    value: localStorageMock,
-  });
-};
+import {
+  installTestLocalStorage,
+  resetTestLocalStorage,
+} from "./testLocalStorage";
 
 afterEach(() => {
-  Reflect.deleteProperty(globalThis, "localStorage");
+  resetTestLocalStorage();
 });
 
 describe("stageClearConditionsRepo", () => {
@@ -46,7 +24,7 @@ describe("stageClearConditionsRepo", () => {
         }),
       ],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadStageClearConditionOverrides()).toEqual({
       stage1: { maxElapsedMs: 12_000, requireNoMistake: true },
@@ -55,7 +33,7 @@ describe("stageClearConditionsRepo", () => {
 
   it("saves overrides", () => {
     const store = new Map<string, string>();
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     saveStageClearConditionOverrides({
       stage1: { maxElapsedMs: 15_000, requireNoMistake: true },

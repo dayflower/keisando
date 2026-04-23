@@ -13,31 +13,13 @@ import {
   savePlayerHistory,
   saveStageSummaries,
 } from "./historyRepo";
-
-type StorageMap = Map<string, string>;
-
-const installLocalStorage = (store: StorageMap) => {
-  const localStorageMock = {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    clear: () => {
-      store.clear();
-    },
-  };
-
-  Object.defineProperty(globalThis, "localStorage", {
-    configurable: true,
-    value: localStorageMock,
-  });
-};
+import {
+  installTestLocalStorage,
+  resetTestLocalStorage,
+} from "./testLocalStorage";
 
 afterEach(() => {
-  Reflect.deleteProperty(globalThis, "localStorage");
+  resetTestLocalStorage();
 });
 
 describe("historyRepo", () => {
@@ -70,7 +52,7 @@ describe("historyRepo", () => {
         ]),
       ],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadPlayerHistory(playerId)).toEqual([
       {
@@ -93,7 +75,7 @@ describe("historyRepo", () => {
       [getLifetimeSummaryStorageKey(playerId), "[]"],
       [getStageSummaryStorageKey(playerId), '{"bad":true}'],
     ]);
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     expect(loadPlayerHistory(playerId)).toEqual([]);
     expect(loadLifetimeSummary(playerId)).toEqual(
@@ -105,7 +87,7 @@ describe("historyRepo", () => {
   it("saves history data", () => {
     const playerId = "p1";
     const store = new Map<string, string>();
-    installLocalStorage(store);
+    installTestLocalStorage(store);
 
     savePlayerHistory(playerId, [
       {
