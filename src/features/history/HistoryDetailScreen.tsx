@@ -98,7 +98,7 @@ export const HistoryDetailScreen = ({
           </h2>
           <div className="history-table-wrap">
             {historyRecords.length === 0 ? (
-              <p className="stage-select-hint">
+              <p className="stage-select-hint ranking-empty-message">
                 {t("history.noRecentRecords")}
               </p>
             ) : (
@@ -134,7 +134,7 @@ export const HistoryDetailScreen = ({
           </h2>
           <div className="history-table-wrap">
             {stageSummaries.length === 0 ? (
-              <p className="stage-select-hint">
+              <p className="stage-select-hint ranking-empty-message">
                 {t("history.noStageAggregates")}
               </p>
             ) : (
