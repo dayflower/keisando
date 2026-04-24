@@ -28,8 +28,10 @@ const renderScreen = () =>
         onPlayClearWithMistake={() => {}}
         stages={STAGES}
         stageClearConditionById={new Map()}
+        stageQuestionCountById={new Map()}
         onUpdateStageClearCondition={() => {}}
-        onResetStageClearConditions={() => {}}
+        onUpdateStageQuestionCount={() => {}}
+        onResetStageSettings={() => {}}
         canUnlockAllStages={true}
         onUnlockAllStages={() => {}}
         canResetUnlockProgress={true}
@@ -49,5 +51,6 @@ describe("DebugScreen", () => {
     expect(html).toContain(
       '<div class="screen-scroll-panel"><section class="debug-section"',
     );
+    expect(html).toContain("Question count");
   });
 });

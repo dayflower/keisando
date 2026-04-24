@@ -4,6 +4,8 @@ export const RECORDS_STORAGE_KEY = "keisando:records:v1";
 export const SOUND_MUTED_STORAGE_KEY = "keisando:sound-muted";
 export const STAGE_CLEAR_CONDITIONS_STORAGE_KEY =
   "keisando:stage-clear-conditions:v1";
+export const STAGE_QUESTION_COUNTS_STORAGE_KEY =
+  "keisando:stage-question-counts:v1";
 export const UNLOCKED_STAGE_IDS_BY_PLAYER_STORAGE_KEY =
   "keisando:unlocked-stage-ids-by-player:v1";
 

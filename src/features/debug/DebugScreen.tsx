@@ -29,11 +29,13 @@ type DebugScreenProps = {
   onPlayClearWithMistake: () => void;
   stages: StageDefinition[];
   stageClearConditionById: Map<string, StageClearCondition>;
+  stageQuestionCountById: Map<string, number>;
   onUpdateStageClearCondition: (
     stageId: string,
     next: StageClearCondition,
   ) => void;
-  onResetStageClearConditions: () => void;
+  onUpdateStageQuestionCount: (stageId: string, next: number) => void;
+  onResetStageSettings: () => void;
   canUnlockAllStages: boolean;
   onUnlockAllStages: () => void;
   canResetUnlockProgress: boolean;
@@ -58,8 +60,10 @@ export const DebugScreen = ({
   onPlayClearWithMistake,
   stages,
   stageClearConditionById,
+  stageQuestionCountById,
   onUpdateStageClearCondition,
-  onResetStageClearConditions,
+  onUpdateStageQuestionCount,
+  onResetStageSettings,
   canUnlockAllStages,
   onUnlockAllStages,
   canResetUnlockProgress,
@@ -247,19 +251,47 @@ export const DebugScreen = ({
               id="debug-clear-condition-heading"
               className="debug-section-title"
             >
-              {t("debug.clearConditions")}
+              {t("debug.stageSettings")}
             </h2>
             <div className="debug-condition-list">
               {stages.map((stage) => {
                 const condition =
                   stageClearConditionById.get(stage.id) ??
                   stage.defaultClearCondition;
+                const questionCount =
+                  stageQuestionCountById.get(stage.id) ??
+                  stage.baseQuestionCount;
 
                 return (
                   <div key={stage.id} className="debug-condition-item">
                     <p className="debug-condition-title">
                       {getStageLabel(locale, stage.id)}
                     </p>
+                    <label
+                      className="debug-condition-label"
+                      htmlFor={`${stage.id}-question-count`}
+                    >
+                      {t("debug.questionCount")}
+                    </label>
+                    <input
+                      id={`${stage.id}-question-count`}
+                      className="debug-condition-input"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={questionCount}
+                      onChange={(event) => {
+                        const nextQuestionCount = Number.parseInt(
+                          event.target.value,
+                          10,
+                        );
+                        if (!Number.isFinite(nextQuestionCount)) {
+                          return;
+                        }
+
+                        onUpdateStageQuestionCount(stage.id, nextQuestionCount);
+                      }}
+                    />
                     <label
                       className="debug-condition-label"
                       htmlFor={`${stage.id}-seconds`}
@@ -324,9 +356,9 @@ export const DebugScreen = ({
             <button
               className="debug-button"
               type="button"
-              onClick={onResetStageClearConditions}
+              onClick={onResetStageSettings}
             >
-              {t("debug.resetClearConditions")}
+              {t("debug.resetStageSettings")}
             </button>
           </section>
 

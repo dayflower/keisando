@@ -11,6 +11,7 @@ import { normalizeClearCondition } from "./features/game/clearConditions";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
 import { getNextPlayableStage } from "./features/game/stageProgression";
+import { applyStageQuestionCountOverride } from "./features/game/stageQuestionCounts";
 import { useGameSession } from "./features/game/useGameSession";
 import { useStageClearFlow } from "./features/game/useStageClearFlow";
 import { HistoryDetailScreen } from "./features/history/HistoryDetailScreen";
@@ -43,6 +44,10 @@ import {
   saveStageClearConditionOverrides,
 } from "./storage/repositories/stageClearConditionsRepo";
 import {
+  loadStageQuestionCountOverrides,
+  saveStageQuestionCountOverrides,
+} from "./storage/repositories/stageQuestionCountOverridesRepo";
+import {
   loadUnlockedStageIdsByPlayer,
   saveUnlockedStageIdsByPlayer,
 } from "./storage/repositories/unlockProgressRepo";
@@ -74,9 +79,21 @@ function App() {
     useState<Record<string, StageClearCondition>>(() =>
       loadStageClearConditionOverrides(),
     );
+  const [stageQuestionCountOverrides, setStageQuestionCountOverrides] =
+    useState<Record<string, number>>(() => loadStageQuestionCountOverrides());
   const [unlockedStageIdsByPlayer, setUnlockedStageIdsByPlayer] = useState<
     Record<string, string[]>
   >(() => loadUnlockedStageIdsByPlayer());
+  const effectiveStages = useMemo(
+    () =>
+      STAGES.map((stage) =>
+        applyStageQuestionCountOverride(
+          stage,
+          stageQuestionCountOverrides[stage.id],
+        ),
+      ),
+    [stageQuestionCountOverrides],
+  );
 
   const {
     players,
@@ -109,7 +126,7 @@ function App() {
   const stageClearConditionById = useMemo(() => {
     const nextMap = new Map<string, StageClearCondition>();
 
-    for (const stage of STAGES) {
+    for (const stage of effectiveStages) {
       nextMap.set(
         stage.id,
         normalizeClearCondition(
@@ -120,7 +137,14 @@ function App() {
     }
 
     return nextMap;
-  }, [stageClearConditionOverrides]);
+  }, [effectiveStages, stageClearConditionOverrides]);
+  const stageQuestionCountById = useMemo(
+    () =>
+      new Map(
+        effectiveStages.map((stage) => [stage.id, stage.baseQuestionCount]),
+      ),
+    [effectiveStages],
+  );
   const clearFlow = useStageClearFlow({
     records,
     unlockedStageIdsByPlayer,
@@ -177,13 +201,17 @@ function App() {
     return getNextPlayableStage(
       game.selectedStage.id,
       unlockedStageIds,
-      STAGES,
+      effectiveStages,
     );
-  }, [game.selectedStage, unlockedStageIds]);
+  }, [effectiveStages, game.selectedStage, unlockedStageIds]);
 
   useEffect(() => {
     saveStageClearConditionOverrides(stageClearConditionOverrides);
   }, [stageClearConditionOverrides]);
+
+  useEffect(() => {
+    saveStageQuestionCountOverrides(stageQuestionCountOverrides);
+  }, [stageQuestionCountOverrides]);
 
   useEffect(() => {
     saveUnlockedStageIdsByPlayer(unlockedStageIdsByPlayer);
@@ -241,8 +269,22 @@ function App() {
     }));
   };
 
-  const handleResetStageClearConditions = () => {
+  const handleUpdateStageQuestionCount = (stageId: string, next: number) => {
+    const targetStage = STAGES.find((stage) => stage.id === stageId);
+    if (!targetStage) {
+      return;
+    }
+
+    setStageQuestionCountOverrides((prev) => ({
+      ...prev,
+      [stageId]: applyStageQuestionCountOverride(targetStage, next)
+        .baseQuestionCount,
+    }));
+  };
+
+  const handleResetStageSettings = () => {
     setStageClearConditionOverrides({});
+    setStageQuestionCountOverrides({});
   };
 
   const handleResetUnlockProgress = () => {
@@ -279,10 +321,12 @@ function App() {
       if (!unlockedStageIds.has(stage.id)) {
         return;
       }
+      const effectiveStage =
+        effectiveStages.find((candidate) => candidate.id === stage.id) ?? stage;
 
       clearFlow.resetClearFlow();
 
-      if (game.startStage(stage)) {
+      if (game.startStage(effectiveStage)) {
         setScreen("playing");
       }
     },
@@ -337,6 +381,7 @@ function App() {
     resetHistory();
     clearFlow.resetClearFlow();
     setStageClearConditionOverrides({});
+    setStageQuestionCountOverrides({});
     setUnlockedStageIdsByPlayer({});
     setRegisterErrorCode(null);
     setNewPlayerName("");
@@ -410,10 +455,12 @@ function App() {
         onPlayClearMyBest={playClearMyBest}
         onPlayClearNoMistake={playClearNoMistake}
         onPlayClearWithMistake={playClearWithMistake}
-        stages={STAGES}
+        stages={effectiveStages}
         stageClearConditionById={stageClearConditionById}
+        stageQuestionCountById={stageQuestionCountById}
         onUpdateStageClearCondition={handleUpdateStageClearCondition}
-        onResetStageClearConditions={handleResetStageClearConditions}
+        onUpdateStageQuestionCount={handleUpdateStageQuestionCount}
+        onResetStageSettings={handleResetStageSettings}
         canUnlockAllStages={
           activePlayerId !== null && unlockedStageIds.size < STAGES.length
         }
