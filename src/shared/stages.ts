@@ -8,6 +8,7 @@ const STAGE5_ZERO_RETRY_RATE = 0.9;
 const STAGE5_ONE_RETRY_RATE = 0.6;
 const STAGE6_ZERO_RETRY_RATE = 0.9;
 const STAGE6_ONE_RETRY_RATE = 0.6;
+const STAGE7_ONE_RETRY_RATE = 0.6;
 const MAX_ZERO_RETRIES = 3;
 
 const retryZeroWeightedExpression = <T>(
@@ -214,5 +215,37 @@ export const STAGES: StageDefinition[] = [
         STAGE6_ONE_RETRY_RATE,
       );
     },
+  },
+  {
+    id: "stage7",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 9,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
+    createExpression: () => {
+      return retryWeightedAnswerExpression(
+        () => {
+          const answer = Math.floor(Math.random() * 10);
+          const right = Math.floor(Math.random() * 8) + 2;
+          const remainder = Math.floor(Math.random() * (right - 1)) + 1;
+          return {
+            left: right * answer + remainder,
+            right,
+            operator: "×" as const,
+            answer,
+            remainder,
+          };
+        },
+        0,
+        STAGE7_ONE_RETRY_RATE,
+      );
+    },
+    formatQuestion: (expression) =>
+      `${expression.left} = ${expression.right} × ? + ${expression.remainder ?? 0}`,
+    formatOptionLabel: (value, expression) =>
+      `${value} (${expression.right * value})`,
   },
 ];

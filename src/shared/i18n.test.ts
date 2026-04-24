@@ -68,6 +68,7 @@ describe("stage helpers", () => {
     expect(getStageTag("ja", "stage4")).toBe("かけ算");
     expect(getStageTag("ja", "stage5")).toBe("かけ算あなうめ");
     expect(getStageTag("ja", "stage6")).toBe("わり算");
+    expect(getStageTag("ja", "stage7")).toBe("かけ算あなうめ+");
     expect(getStageLabel("en", "stage2")).toBe("Stage 2");
     expect(getStageDescription("en", "stage3")).toBe(
       "1-2 digits minus 1 digit (result 0-9)",
@@ -80,6 +81,9 @@ describe("stage helpers", () => {
     );
     expect(getStageDescription("en", "stage6")).toBe(
       "2-digit or less division (result 0-9, divisor 1-9)",
+    );
+    expect(getStageDescription("en", "stage7")).toBe(
+      "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
     );
   });
 

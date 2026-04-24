@@ -47,4 +47,35 @@ describe("createQuestion", () => {
       question.options.every((option) => option.label.includes("8 ×")),
     ).toBe(true);
   });
+
+  it("supports remainder-aware multiplication fill-in labels", () => {
+    const stage: StageDefinition = {
+      id: "stage7",
+      baseQuestionCount: 10,
+      answerMin: 0,
+      answerMax: 9,
+      defaultClearCondition: {
+        maxElapsedMs: 15_000,
+        requireNoMistake: true,
+      },
+      createExpression: () => ({
+        left: 58,
+        right: 7,
+        operator: "×",
+        answer: 8,
+        remainder: 2,
+      }),
+      formatQuestion: (expression) =>
+        `${expression.left} = ${expression.right} × ? + ${expression.remainder ?? 0}`,
+      formatOptionLabel: (value, expression) =>
+        `${value} (${expression.right * value})`,
+    };
+
+    const question = createQuestion(stage, new Set());
+
+    expect(question.prompt).toBe("58 = 7 × ? + 2");
+    expect(question.options.some((option) => option.label === "8 (56)")).toBe(
+      true,
+    );
+  });
 });

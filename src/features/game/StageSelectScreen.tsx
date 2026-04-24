@@ -41,6 +41,7 @@ const stageOperatorById: Record<string, string> = {
   stage4: "×",
   stage5: "=×",
   stage6: "÷",
+  stage7: "=×+",
 };
 
 export const StageSelectScreen = ({

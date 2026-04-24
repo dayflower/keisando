@@ -3,6 +3,7 @@ export type StageExpression = {
   right: number;
   operator: "+" | "-" | "×" | "÷";
   answer: number;
+  remainder?: number;
 };
 
 export type QuestionOption = {

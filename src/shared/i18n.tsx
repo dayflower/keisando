@@ -142,6 +142,10 @@ const enMessages = {
   "stage.stage6.tag": "Division",
   "stage.stage6.description":
     "2-digit or less division (result 0-9, divisor 1-9)",
+  "stage.stage7.name": "Stage 7",
+  "stage.stage7.tag": "Multiplication Fill-in+",
+  "stage.stage7.description":
+    "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
 } as const;
 
 export type MessageKey = keyof typeof enMessages;
@@ -277,6 +281,10 @@ const jaMessages: Record<MessageKey, string> = {
   "stage.stage6.name": "Stage 6",
   "stage.stage6.tag": "わり算",
   "stage.stage6.description": "2桁以下のわり算 (答えは0-9, 割る数は1-9)",
+  "stage.stage7.name": "Stage 7",
+  "stage.stage7.tag": "かけ算あなうめ+",
+  "stage.stage7.description":
+    "58 = 7 × ? + 2 のようなかけ算あなうめ (答えは0-9, あまりは1以上)",
 };
 
 const messages: Record<Locale, Record<MessageKey, string>> = {
@@ -303,7 +311,10 @@ type StageMessageKey =
   | "stage.stage5.description"
   | "stage.stage6.name"
   | "stage.stage6.tag"
-  | "stage.stage6.description";
+  | "stage.stage6.description"
+  | "stage.stage7.name"
+  | "stage.stage7.tag"
+  | "stage.stage7.description";
 
 const stageMessageKeys = {
   stage1: {
@@ -335,6 +346,11 @@ const stageMessageKeys = {
     name: "stage.stage6.name",
     tag: "stage.stage6.tag",
     description: "stage.stage6.description",
+  },
+  stage7: {
+    name: "stage.stage7.name",
+    tag: "stage.stage7.tag",
+    description: "stage.stage7.description",
   },
 } as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 

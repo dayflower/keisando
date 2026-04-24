@@ -35,6 +35,7 @@ const buildProps = (
     "stage4",
     "stage5",
     "stage6",
+    "stage7",
   ]),
   playerNameById: new Map([
     ["player1", "Alice"],

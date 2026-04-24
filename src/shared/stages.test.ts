@@ -13,6 +13,7 @@ describe("STAGES", () => {
     const stage4 = STAGES[3];
     const stage5 = STAGES[4];
     const stage6 = STAGES[5];
+    const stage7 = STAGES[6];
 
     expect(stage1?.id).toBe("stage1");
     expect(stage1?.answerMin).toBe(0);
@@ -32,6 +33,9 @@ describe("STAGES", () => {
     expect(stage6?.id).toBe("stage6");
     expect(stage6?.answerMin).toBe(0);
     expect(stage6?.answerMax).toBe(9);
+    expect(stage7?.id).toBe("stage7");
+    expect(stage7?.answerMin).toBe(0);
+    expect(stage7?.answerMax).toBe(9);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -353,5 +357,86 @@ describe("STAGES", () => {
       operator: "÷",
       answer: 1,
     });
+  });
+
+  it("stage7 keeps remainders above zero and below the multiplier", () => {
+    const stage7 = STAGES[6];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.8)
+      .mockReturnValueOnce(0.75)
+      .mockReturnValueOnce(0.1);
+
+    const expression = stage7.createExpression();
+
+    expect(expression).toEqual({
+      left: 65,
+      right: 8,
+      operator: "×",
+      answer: 8,
+      remainder: 1,
+    });
+  });
+
+  it("stage7 retries answer 1 when the retry gate allows it", () => {
+    const stage7 = STAGES[6];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0);
+
+    const expression = stage7.createExpression();
+
+    expect(expression).toEqual({
+      left: 13,
+      right: 6,
+      operator: "×",
+      answer: 2,
+      remainder: 1,
+    });
+  });
+
+  it("stage7 never uses 1 as the multiplier", () => {
+    const stage7 = STAGES[6];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0);
+
+    const expression = stage7.createExpression();
+
+    expect(expression.right).toBe(2);
+    expect(expression.remainder).toBe(1);
+  });
+
+  it("stage7 formats remainder prompts and option labels", () => {
+    const stage7 = STAGES[6];
+
+    const prompt = stage7.formatQuestion?.({
+      left: 58,
+      right: 7,
+      operator: "×",
+      answer: 8,
+      remainder: 2,
+    });
+    const optionLabel = stage7.formatOptionLabel?.(8, {
+      left: 58,
+      right: 7,
+      operator: "×",
+      answer: 8,
+      remainder: 2,
+    });
+
+    expect(prompt).toBe("58 = 7 × ? + 2");
+    expect(optionLabel).toBe("8 (56)");
   });
 });
