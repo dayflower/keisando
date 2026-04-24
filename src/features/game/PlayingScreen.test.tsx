@@ -168,15 +168,15 @@ describe("PlayingScreen clear celebration", () => {
         isRoundActive: true,
         lastResult: null,
         answeredCount: 3,
-        requiredCount: 10,
-        remainingCount: 7,
+        requiredCount: 20,
+        remainingCount: 17,
       },
       "ja",
     );
 
     expect(html).toContain("Stage 1 / 足し算 / Alice");
-    expect(html).toContain("回答数: 3 / 10");
-    expect(html).toContain("残り: 7");
+    expect(html).toContain("回答数: 3 / 20");
+    expect(html).toContain("残り: 17");
     expect(html).toContain("問題進捗");
     expect(html).toContain("1 + 1 = ?");
     expect(html).not.toContain("正しい答えを選んで");

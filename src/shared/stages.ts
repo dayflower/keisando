@@ -270,9 +270,9 @@ const stage9SourceStages: StageDefinition[] = [];
 export const STAGES: StageDefinition[] = [
   {
     id: "stage1",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -296,9 +296,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage2",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -321,9 +321,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage3",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -346,9 +346,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage4",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -372,9 +372,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage5",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -406,9 +406,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage6",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -431,9 +431,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage7",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -468,9 +468,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage8",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
@@ -517,9 +517,9 @@ export const STAGES: StageDefinition[] = [
   },
   {
     id: "stage9",
-    baseQuestionCount: 10,
+    baseQuestionCount: 20,
     defaultClearCondition: {
-      maxElapsedMs: 15_000,
+      maxElapsedMs: 30_000,
       maxMistakes: 0,
     },
     createExpression: () => {
