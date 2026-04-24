@@ -275,7 +275,6 @@ textarea {
 }
 
 .debug-entry-button {
-  margin: auto 0 0;
   border: none;
   border-radius: 999px;
   align-self: flex-start;
@@ -1232,6 +1231,15 @@ textarea {
 
 .debug-section {
   margin-top: 1rem;
+}
+
+.stage-select-card {
+  overflow: auto;
+}
+
+.stage-select-footer {
+  margin-top: auto;
+  padding-top: 1rem;
 }
 
 .debug-card {

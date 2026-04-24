@@ -61,7 +61,7 @@ export const StageSelectScreen = ({
 
   return (
     <main className="app">
-      <section className="stage-card">
+      <section className="stage-card stage-select-card">
         <div className="stage-head-row">
           <p className="stage-tag">{t("stageSelect.screenTag")}</p>
           <div className="stage-head-actions">
@@ -173,16 +173,18 @@ export const StageSelectScreen = ({
           })}
         </div>
         {import.meta.env.DEV ? (
-          <button
-            className="debug-entry-button"
-            type="button"
-            onClick={() => {
-              onUiTap?.();
-              onOpenDebug();
-            }}
-          >
-            {t("stageSelect.openDebug")}
-          </button>
+          <div className="stage-select-footer">
+            <button
+              className="debug-entry-button"
+              type="button"
+              onClick={() => {
+                onUiTap?.();
+                onOpenDebug();
+              }}
+            >
+              {t("stageSelect.openDebug")}
+            </button>
+          </div>
         ) : null}
       </section>
     </main>
