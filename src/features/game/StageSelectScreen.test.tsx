@@ -108,6 +108,16 @@ describe("StageSelectScreen", () => {
     expect(html).toContain("12回プレイ / 連続正解 8 / 最高連続 21");
   });
 
+  it("renders fixed and scroll panels for the partial scroll layout", () => {
+    const html = renderScreen({}, "ja");
+
+    expect(html).toContain('class="screen-fixed-panel"');
+    expect(html).toContain('class="screen-scroll-panel"');
+    expect(html).toContain(
+      '<div class="screen-scroll-panel"><div class="stage-list">',
+    );
+  });
+
   it("does not render lifetime summary without an active player", () => {
     const html = renderScreen(
       {
