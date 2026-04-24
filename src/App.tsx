@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { DebugScreen } from "./features/debug/DebugScreen";
+import { unlockAllStagesForPlayer } from "./features/debug/logic";
 import { normalizeClearCondition } from "./features/game/clearConditions";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
@@ -244,6 +245,17 @@ function App() {
     }));
   };
 
+  const handleUnlockAllStages = () => {
+    if (!activePlayerId) {
+      return;
+    }
+
+    clearFlow.resetClearFlow();
+    setUnlockedStageIdsByPlayer((prev) =>
+      unlockAllStagesForPlayer(prev, activePlayerId, STAGES),
+    );
+  };
+
   const navigation = {
     backToStageSelect: () => {
       setScreen("stageSelect");
@@ -378,6 +390,10 @@ function App() {
         stageClearConditionById={stageClearConditionById}
         onUpdateStageClearCondition={handleUpdateStageClearCondition}
         onResetStageClearConditions={handleResetStageClearConditions}
+        canUnlockAllStages={
+          activePlayerId !== null && unlockedStageIds.size < STAGES.length
+        }
+        onUnlockAllStages={handleUnlockAllStages}
         canResetUnlockProgress={activePlayerId !== null}
         onResetUnlockProgress={handleResetUnlockProgress}
         onClearAllData={handleClearAllData}

@@ -34,6 +34,8 @@ type DebugScreenProps = {
     next: StageClearCondition,
   ) => void;
   onResetStageClearConditions: () => void;
+  canUnlockAllStages: boolean;
+  onUnlockAllStages: () => void;
   canResetUnlockProgress: boolean;
   onResetUnlockProgress: () => void;
   onClearAllData: () => void;
@@ -58,6 +60,8 @@ export const DebugScreen = ({
   stageClearConditionById,
   onUpdateStageClearCondition,
   onResetStageClearConditions,
+  canUnlockAllStages,
+  onUnlockAllStages,
   canResetUnlockProgress,
   onResetUnlockProgress,
   onClearAllData,
@@ -203,6 +207,14 @@ export const DebugScreen = ({
             {t("debug.storage")}
           </h2>
           <div className="debug-storage-actions">
+            <button
+              className="debug-button debug-storage-button"
+              type="button"
+              onClick={onUnlockAllStages}
+              disabled={!canUnlockAllStages}
+            >
+              {t("debug.unlockAllStages")}
+            </button>
             <button
               className="debug-button debug-storage-button"
               type="button"
