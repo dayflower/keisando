@@ -1,6 +1,10 @@
 import { CircleUserRound, History, Trophy } from "lucide-react";
 import { useMemo, useRef } from "react";
-import { formatElapsedTime } from "../../shared/formatters";
+import {
+  formatElapsedTime,
+  formatRecordedAt,
+  isRecordedAtToday,
+} from "../../shared/formatters";
 import { getStageName, getStageTag, useI18n } from "../../shared/i18n";
 import { STAGES } from "../../shared/stages";
 import type {
@@ -59,6 +63,39 @@ export const StageSelectScreen = ({
     [],
   );
   useStageSelectKeyboardNavigation({ canStartStage, stageButtonRefs });
+
+  const renderBestRecord = (
+    label: string,
+    record: StageRunRecord | null | undefined,
+    playerName?: string,
+  ) => {
+    if (!record) {
+      return <span className="stage-item-record">{label}: --:--.--</span>;
+    }
+
+    const isTodayRecord = isRecordedAtToday(record.recordedAt);
+
+    return (
+      <span className="stage-item-record">
+        <span className="stage-item-record-line">
+          <span className="stage-item-record-label">{label}:</span>
+          <span className="stage-item-record-value">
+            {formatElapsedTime(record.elapsedMs)}
+          </span>
+          {playerName ? (
+            <span className="stage-item-record-player">({playerName})</span>
+          ) : null}
+          <span
+            className={`stage-item-record-meta ${
+              isTodayRecord ? "stage-item-record-meta-today" : ""
+            }`}
+          >
+            {formatRecordedAt(record.recordedAt, locale)}
+          </span>
+        </span>
+      </span>
+    );
+  };
 
   return (
     <main className="app">
@@ -145,18 +182,15 @@ export const StageSelectScreen = ({
                     <strong>{stageName}</strong>
                     <span className="stage-item-tag">{stageTag}</span>
                   </span>
-                  <span className="stage-item-record">
-                    {t("stageSelect.globalBest")}:{" "}
-                    {stageGlobalBest
-                      ? `${formatElapsedTime(stageGlobalBest.elapsedMs)} (${playerNameById.get(stageGlobalBest.playerId) ?? t("common.unknownPlayer")})`
-                      : "--:--.--"}
-                  </span>
-                  <span className="stage-item-record">
-                    {t("stageSelect.myBest")}:{" "}
-                    {stageMyBest
-                      ? formatElapsedTime(stageMyBest.elapsedMs)
-                      : "--:--.--"}
-                  </span>
+                  {renderBestRecord(
+                    t("stageSelect.globalBest"),
+                    stageGlobalBest,
+                    stageGlobalBest
+                      ? (playerNameById.get(stageGlobalBest.playerId) ??
+                          t("common.unknownPlayer"))
+                      : undefined,
+                  )}
+                  {renderBestRecord(t("stageSelect.myBest"), stageMyBest)}
                 </button>
                 <button
                   className="stage-ranking-button"

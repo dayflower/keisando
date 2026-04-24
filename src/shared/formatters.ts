@@ -30,6 +30,25 @@ export const formatElapsedTime = (elapsedMs: number): string => {
 export const formatRecordedAt = (recordedAt: number, locale: Locale): string =>
   recordDateFormatterByLocale[locale].format(recordedAt);
 
+export const isSameLocalDate = (
+  timestamp: number,
+  referenceTimestamp: number,
+): boolean => {
+  const date = new Date(timestamp);
+  const referenceDate = new Date(referenceTimestamp);
+
+  return (
+    date.getFullYear() === referenceDate.getFullYear() &&
+    date.getMonth() === referenceDate.getMonth() &&
+    date.getDate() === referenceDate.getDate()
+  );
+};
+
+export const isRecordedAtToday = (
+  recordedAt: number,
+  now: number = Date.now(),
+): boolean => isSameLocalDate(recordedAt, now);
+
 export const formatRate = (numerator: number, denominator: number): string => {
   if (denominator <= 0) return "0.0%";
   return `${((numerator / denominator) * 100).toFixed(1)}%`;

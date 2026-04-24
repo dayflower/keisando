@@ -462,6 +462,41 @@ textarea {
   color: #173a6f;
 }
 
+.stage-item-record-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.stage-item-record-label {
+  flex: 0 0 auto;
+}
+
+.stage-item-record-value {
+  flex: 0 0 auto;
+}
+
+.stage-item-record-player {
+  flex: 0 1 auto;
+  min-width: 0;
+  color: #31588f;
+}
+
+.stage-item-record-meta {
+  display: inline;
+  margin-left: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #31588f;
+}
+
+.stage-item-record-meta-today {
+  text-decoration: underline dotted;
+  text-underline-offset: 0.12em;
+  text-decoration-thickness: 0.08em;
+}
+
 .stage-item-lock-note {
   display: block;
   margin-top: 0.55rem;
