@@ -96,16 +96,36 @@ See [package.json](../package.json) for exact scripts and versions.
   - Answer range: `0-81`
   - Zero-valued operands remain possible, but generation retries probabilistically to reduce over-frequency.
 - `stage5`
+  - Theme: multiplication fill-in
+  - Expression range: fill-in form like `56 = 8 × ?`, answer constrained to `0-9`
+  - Answer range: `0-9`
+  - Zero-valued and one-valued answers remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage6`
   - Theme: division
   - Expression range: exact division, dividend up to `2` digits, divisor `1-9`, result `0-9`
   - Answer range: `0-9`
-  - Dividends containing `0` remain possible, but generation retries probabilistically to reduce over-frequency.
+  - Zero-valued and one-valued answers remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage7`
+  - Theme: multiplication fill-in+
+  - Expression range: fill-in form with remainder like `58 = 7 × ? + 2`, answer constrained to `0-9`
+  - Answer range: `0-9`
+  - One-valued answers remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage8`
+  - Theme: division+
+  - Expression range: division with remainder, divisor `2-9`, quotient `0-9`, remainder `0-(divisor-1)`
+  - Answer range: quotient and remainder pairs shown as localized labels like `8 R 1`
+  - Zero-valued quotients, zero remainders, and one-valued quotients remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage9`
+  - Theme: mixed arithmetic
+  - Expression range: random mix of question patterns from `stage1`, `stage3`, `stage4`, and `stage8`
+  - Answer range: depends on the generated source pattern
+  - Uses numeric options for standard arithmetic and quotient/remainder options for division-with-remainder questions.
 
 ### Default Stage Parameters
 - All current stages use:
   - `baseQuestionCount = 10`
   - `maxElapsedMs = 15000`
-  - `requireNoMistake = true`
+  - `maxMistakes = 0`
 
 ### Unlock Rules
 - The first stage is always available.
@@ -133,12 +153,12 @@ See [package.json](../package.json) for exact scripts and versions.
   - `playerId`
   - `playedAt`
   - `stageId`
-  - `result`
   - `durationMs`
   - `mistakeCount`
   - `appVersion`
 - The history screen also shows:
   - Lifetime summary
+  - Lifetime correct-answer streaks
   - Recent history for the last 10 days
   - Per-stage lifetime aggregates
 
@@ -146,7 +166,8 @@ See [package.json](../package.json) for exact scripts and versions.
 - Each stage has a default clear condition.
 - The debug screen can override clear conditions per stage:
   - Maximum elapsed time
-  - No-mistake requirement
+  - Maximum mistakes allowed
+- The debug screen can also override per-stage question counts.
 - Overrides are persisted locally.
 
 ## 6. Architecture Overview
@@ -174,6 +195,7 @@ See [package.json](../package.json) for exact scripts and versions.
 - `keisando:records:v1`
 - `keisando:sound-muted`
 - `keisando:stage-clear-conditions:v1`
+- `keisando:stage-question-counts:v1`
 - `keisando:unlocked-stage-ids-by-player:v1`
 - `keisando:user:<PLAYER_ID>:history`
 - `keisando:user:<PLAYER_ID>:lifetime-summary`
@@ -187,6 +209,7 @@ See [package.json](../package.json) for exact scripts and versions.
   - Per-player history and summary data
   - Per-player unlock progress
   - Stage clear condition overrides
+  - Stage question count overrides
   - Sound mute preference
 - Not persisted:
   - Active in-progress stage session state
@@ -209,9 +232,11 @@ See [package.json](../package.json) for exact scripts and versions.
 
 ## 9. Debug Capabilities
 - Change effective language.
+- Unlock all stages for the active player.
 - Reset unlock progress for the active player.
 - Clear all local data.
 - Override per-stage clear conditions.
+- Override per-stage question counts.
 - Trigger visual effect previews.
 - Trigger sound effect previews.
 
