@@ -90,6 +90,11 @@ See [package.json](../package.json) for exact scripts and versions.
   - Expression range: `1-2` digit minus `1` digit, result constrained to `0-9`
   - Answer range: `0-9`
   - Zero-valued results remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage4`
+  - Theme: multiplication
+  - Expression range: single-digit multiplication, `0-9 × 0-9`
+  - Answer range: `0-81`
+  - Zero-valued operands remain possible, but generation retries probabilistically to reduce over-frequency.
 
 ### Default Stage Parameters
 - All current stages use:

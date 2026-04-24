@@ -10,6 +10,7 @@ describe("STAGES", () => {
     const stage1 = STAGES[0];
     const stage2 = STAGES[1];
     const stage3 = STAGES[2];
+    const stage4 = STAGES[3];
 
     expect(stage1?.id).toBe("stage1");
     expect(stage1?.answerMin).toBe(0);
@@ -20,6 +21,9 @@ describe("STAGES", () => {
     expect(stage3?.id).toBe("stage3");
     expect(stage3?.answerMin).toBe(0);
     expect(stage3?.answerMax).toBe(9);
+    expect(stage4?.id).toBe("stage4");
+    expect(stage4?.answerMin).toBe(0);
+    expect(stage4?.answerMax).toBe(81);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -119,6 +123,46 @@ describe("STAGES", () => {
       left: 4,
       right: 4,
       operator: "-",
+      answer: 0,
+    });
+  });
+
+  it("stage4 retries zero-inclusive expressions when the retry gate allows it", () => {
+    const stage4 = STAGES[3];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.6)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.5);
+
+    const expression = stage4.createExpression();
+
+    expect(expression).toEqual({
+      left: 4,
+      right: 5,
+      operator: "×",
+      answer: 20,
+    });
+  });
+
+  it("stage4 can still return zero-inclusive expressions", () => {
+    const stage4 = STAGES[3];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.6)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage4.createExpression();
+
+    expect(expression).toEqual({
+      left: 0,
+      right: 6,
+      operator: "×",
       answer: 0,
     });
   });

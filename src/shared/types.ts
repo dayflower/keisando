@@ -1,7 +1,7 @@
 export type StageExpression = {
   left: number;
   right: number;
-  operator: "+" | "-";
+  operator: "+" | "-" | "×";
   answer: number;
 };
 
@@ -26,7 +26,7 @@ export type StageClearCondition = {
 export type Question = {
   left: number;
   right: number;
-  operator: "+" | "-";
+  operator: "+" | "-" | "×";
   answer: number;
   options: number[];
 };

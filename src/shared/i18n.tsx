@@ -133,6 +133,9 @@ const enMessages = {
   "stage.stage3.name": "Stage 3",
   "stage.stage3.tag": "Subtraction+",
   "stage.stage3.description": "1-2 digits minus 1 digit (result 0-9)",
+  "stage.stage4.name": "Stage 4",
+  "stage.stage4.tag": "Multiplication",
+  "stage.stage4.description": "Single-digit multiplication (0-9 × 0-9)",
 } as const;
 
 export type MessageKey = keyof typeof enMessages;
@@ -261,6 +264,9 @@ const jaMessages: Record<MessageKey, string> = {
   "stage.stage3.name": "Stage 3",
   "stage.stage3.tag": "引き算+",
   "stage.stage3.description": "1-2桁から1桁を引く (答えは0-9)",
+  "stage.stage4.name": "Stage 4",
+  "stage.stage4.tag": "かけ算",
+  "stage.stage4.description": "1桁どうしのかけ算 (0-9 × 0-9)",
 };
 
 const messages: Record<Locale, Record<MessageKey, string>> = {
@@ -278,7 +284,10 @@ type StageMessageKey =
   | "stage.stage2.description"
   | "stage.stage3.name"
   | "stage.stage3.tag"
-  | "stage.stage3.description";
+  | "stage.stage3.description"
+  | "stage.stage4.name"
+  | "stage.stage4.tag"
+  | "stage.stage4.description";
 
 const stageMessageKeys = {
   stage1: {
@@ -295,6 +304,11 @@ const stageMessageKeys = {
     name: "stage.stage3.name",
     tag: "stage.stage3.tag",
     description: "stage.stage3.description",
+  },
+  stage4: {
+    name: "stage.stage4.name",
+    tag: "stage.stage4.tag",
+    description: "stage.stage4.description",
   },
 } as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 

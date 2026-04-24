@@ -65,9 +65,13 @@ describe("stage helpers", () => {
       "1桁どうしの引き算 (0-9 - 0-9)",
     );
     expect(getStageTag("en", "stage3")).toBe("Subtraction+");
+    expect(getStageTag("ja", "stage4")).toBe("かけ算");
     expect(getStageLabel("en", "stage2")).toBe("Stage 2");
     expect(getStageDescription("en", "stage3")).toBe(
       "1-2 digits minus 1 digit (result 0-9)",
+    );
+    expect(getStageDescription("en", "stage4")).toBe(
+      "Single-digit multiplication (0-9 × 0-9)",
     );
   });
 

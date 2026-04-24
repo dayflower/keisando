@@ -3,6 +3,7 @@ import type { StageDefinition } from "./types";
 const STAGE1_ZERO_RETRY_RATE = 0.7;
 const STAGE2_ZERO_RETRY_RATE = 0.7;
 const STAGE3_ZERO_RETRY_RATE = 0.8;
+const STAGE4_ZERO_RETRY_RATE = 0.7;
 const MAX_ZERO_RETRIES = 3;
 
 const retryZeroWeightedExpression = <T>(
@@ -101,6 +102,32 @@ export const STAGES: StageDefinition[] = [
         },
         (expression) => expression.answer === 0,
         STAGE3_ZERO_RETRY_RATE,
+      );
+    },
+  },
+  {
+    id: "stage4",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 81,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
+    createExpression: () => {
+      return retryZeroWeightedExpression(
+        () => {
+          const left = Math.floor(Math.random() * 10);
+          const right = Math.floor(Math.random() * 10);
+          return {
+            left,
+            right,
+            operator: "×" as const,
+            answer: left * right,
+          };
+        },
+        (expression) => expression.left === 0 || expression.right === 0,
+        STAGE4_ZERO_RETRY_RATE,
       );
     },
   },
