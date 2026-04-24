@@ -8,7 +8,7 @@ import type {
 } from "../../shared/types";
 import type {
   AnswerResolvedPayload,
-  StageClearPayload,
+  StageFinishedPayload,
 } from "./useGameSession";
 
 type HookSlot =
@@ -257,12 +257,12 @@ const renderHook = async ({
   activePlayer = createPlayer(),
   records = [createRecord(2400)],
   onAnswerResolved = vi.fn(),
-  onStageClear = vi.fn(),
+  onStageFinished = vi.fn(),
 }: {
   activePlayer?: Player | null;
   records?: StageRunRecord[];
   onAnswerResolved?: (payload: AnswerResolvedPayload) => void;
-  onStageClear?: (payload: StageClearPayload) => void;
+  onStageFinished?: (payload: StageFinishedPayload) => void;
 } = {}) => {
   const runtime = createHookRuntime();
   const module = await loadUseGameSessionModule();
@@ -273,7 +273,7 @@ const renderHook = async ({
         activePlayer,
         records,
         onAnswerResolved,
-        onStageClear,
+        onStageFinished,
       }),
     );
 
@@ -326,11 +326,11 @@ describe("useGameSession", () => {
     Object.assign(globalThis, { window });
 
     const onAnswerResolved = vi.fn();
-    const onStageClear = vi.fn();
+    const onStageFinished = vi.fn();
     const stage = createTestStage();
     const { runtime, render } = await renderHook({
       onAnswerResolved,
-      onStageClear,
+      onStageFinished,
     });
 
     nowSpy.mockReturnValue(1_000);
@@ -359,9 +359,9 @@ describe("useGameSession", () => {
       isCorrect: true,
     });
     expect(onAnswerResolved.mock.invocationCallOrder[0]).toBeLessThan(
-      onStageClear.mock.invocationCallOrder[0],
+      onStageFinished.mock.invocationCallOrder[0],
     );
-    expect(onStageClear).toHaveBeenCalledTimes(1);
+    expect(onStageFinished).toHaveBeenCalledTimes(1);
 
     nowSpy.mockReturnValue(9_000);
     game.resetStage();
@@ -387,11 +387,11 @@ describe("useGameSession", () => {
     Object.assign(globalThis, { window });
 
     const onAnswerResolved = vi.fn();
-    const onStageClear = vi.fn();
+    const onStageFinished = vi.fn();
     const stage = createTestStage();
     const { runtime, render } = await renderHook({
       onAnswerResolved,
-      onStageClear,
+      onStageFinished,
     });
 
     nowSpy.mockReturnValue(1_000);
@@ -415,7 +415,7 @@ describe("useGameSession", () => {
       playerId: "player-1",
       isCorrect: false,
     });
-    expect(onStageClear).not.toHaveBeenCalled();
+    expect(onStageFinished).not.toHaveBeenCalled();
 
     runtime.dispose();
   });

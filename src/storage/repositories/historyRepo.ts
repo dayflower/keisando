@@ -18,7 +18,6 @@ export const createDefaultLifetimeSummary = (
 ): PlayerLifetimeSummary => ({
   playerId,
   totalPlays: 0,
-  totalClears: 0,
   lastPlayedAt: null,
   currentCorrectStreak: 0,
   bestCorrectStreak: 0,
@@ -39,7 +38,6 @@ export const loadPlayerHistory = (playerId: string): PlayHistoryRecord[] => {
       record.playerId === playerId &&
       isFiniteNumber(record.playedAt) &&
       typeof record.stageId === "string" &&
-      (record.result === "clear" || record.result === "fail") &&
       isFiniteNumber(record.durationMs) &&
       record.durationMs >= 0 &&
       isFiniteNumber(record.mistakeCount) &&
@@ -70,9 +68,7 @@ export const loadLifetimeSummary = (
   if (
     parsed.playerId !== playerId ||
     !isFiniteNumber(parsed.totalPlays) ||
-    parsed.totalPlays < 0 ||
-    !isFiniteNumber(parsed.totalClears) ||
-    parsed.totalClears < 0
+    parsed.totalPlays < 0
   ) {
     return createDefaultLifetimeSummary(playerId);
   }
@@ -95,7 +91,6 @@ export const loadLifetimeSummary = (
   return {
     playerId,
     totalPlays: parsed.totalPlays,
-    totalClears: parsed.totalClears,
     lastPlayedAt:
       parsed.lastPlayedAt === null || isFiniteNumber(parsed.lastPlayedAt)
         ? (parsed.lastPlayedAt ?? null)
@@ -131,8 +126,6 @@ export const loadStageSummaries = (
       typeof summary.stageId === "string" &&
       isFiniteNumber(summary.attempts) &&
       summary.attempts >= 0 &&
-      isFiniteNumber(summary.clears) &&
-      summary.clears >= 0 &&
       (summary.bestDurationMs === null ||
         isFiniteNumber(summary.bestDurationMs))
     );

@@ -16,8 +16,8 @@ import type {
 import { getPlayerBestTime } from "../ranking/logic";
 import { createQuestion } from "./logic";
 
-export type StageClearPayload = {
-  clearRecord: StageRunRecord;
+export type StageFinishedPayload = {
+  record: StageRunRecord;
   playerId: string;
   stageId: string;
   durationMs: number;
@@ -39,7 +39,7 @@ type UseGameSessionInput = {
   activePlayer: Player | null;
   records: StageRunRecord[];
   onAnswerResolved: (payload: AnswerResolvedPayload) => void;
-  onStageClear: (payload: StageClearPayload) => void;
+  onStageFinished: (payload: StageFinishedPayload) => void;
 };
 
 type RoundSessionState = {
@@ -128,7 +128,7 @@ export const useGameSession = ({
   activePlayer,
   records,
   onAnswerResolved,
-  onStageClear,
+  onStageFinished,
 }: UseGameSessionInput) => {
   const usedExpressionsRef = useRef(new Set<string>());
   const [selectedStage, setSelectedStage] = useState<StageDefinition | null>(
@@ -280,8 +280,8 @@ export const useGameSession = ({
         recordedAt: finishedAtMs,
       };
 
-      onStageClear({
-        clearRecord,
+      onStageFinished({
+        record: clearRecord,
         playerId: playingPlayerId,
         stageId: selectedStage.id,
         durationMs: elapsedAtClear,

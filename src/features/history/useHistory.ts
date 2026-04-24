@@ -63,7 +63,7 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
     [historySummary],
   );
 
-  const appendClearRecord = useCallback(
+  const appendPlayRecord = useCallback(
     (args: {
       playerId: string;
       stageId: string;
@@ -77,7 +77,6 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
         playerId,
         playedAt,
         stageId,
-        result: "clear",
         durationMs,
         mistakeCount,
         appVersion: APP_VERSION,
@@ -150,7 +149,7 @@ export const useHistory = ({ activePlayerId }: UseHistoryInput) => {
     historyRecords,
     historySummary,
     stageSummaries,
-    appendClearRecord,
+    appendPlayRecord,
     recordAnsweredQuestion,
     initializePlayerHistory,
     resetHistory,

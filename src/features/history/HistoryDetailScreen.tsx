@@ -1,9 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import {
-  formatElapsedTime,
-  formatRate,
-  formatRecordedAt,
-} from "../../shared/formatters";
+import { formatElapsedTime, formatRecordedAt } from "../../shared/formatters";
 import { getStageLabel, useI18n } from "../../shared/i18n";
 import type {
   Player,
@@ -84,13 +80,6 @@ export const HistoryDetailScreen = ({
             {t("history.totalPlays")}: {historySummary.totalPlays}
           </p>
           <p className="history-item">
-            {t("history.totalClears")}: {historySummary.totalClears}
-          </p>
-          <p className="history-item">
-            {t("history.lifetimeClearRate")}:{" "}
-            {formatRate(historySummary.totalClears, historySummary.totalPlays)}
-          </p>
-          <p className="history-item">
             {t("history.currentCorrectStreak")}:{" "}
             {historySummary.currentCorrectStreak}
           </p>
@@ -114,7 +103,6 @@ export const HistoryDetailScreen = ({
                   <tr>
                     <th scope="col">{t("history.columnPlayedAt")}</th>
                     <th scope="col">{t("history.columnStage")}</th>
-                    <th scope="col">{t("history.columnResult")}</th>
                     <th scope="col">{t("history.columnDuration")}</th>
                     <th scope="col">{t("history.columnMistakes")}</th>
                   </tr>
@@ -124,7 +112,6 @@ export const HistoryDetailScreen = ({
                     <tr key={record.id}>
                       <td>{formatRecordedAt(record.playedAt, locale)}</td>
                       <td>{getStageLabel(locale, record.stageId)}</td>
-                      <td>{record.result}</td>
                       <td>{formatElapsedTime(record.durationMs)}</td>
                       <td>{record.mistakeCount}</td>
                     </tr>
@@ -149,8 +136,7 @@ export const HistoryDetailScreen = ({
                 <thead>
                   <tr>
                     <th scope="col">{t("history.columnStage")}</th>
-                    <th scope="col">{t("history.columnAttempts")}</th>
-                    <th scope="col">{t("history.columnClears")}</th>
+                    <th scope="col">{t("history.columnPlayCount")}</th>
                     <th scope="col">{t("history.columnBestClearTime")}</th>
                   </tr>
                 </thead>
@@ -159,7 +145,6 @@ export const HistoryDetailScreen = ({
                     <tr key={summary.stageId}>
                       <td>{getStageLabel(locale, summary.stageId)}</td>
                       <td>{summary.attempts}</td>
-                      <td>{summary.clears}</td>
                       <td>
                         {summary.bestDurationMs !== null
                           ? formatElapsedTime(summary.bestDurationMs)

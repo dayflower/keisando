@@ -15,7 +15,6 @@ const buildProps = (
   historySummary: {
     playerId: "player1",
     totalPlays: 12,
-    totalClears: 9,
     lastPlayedAt: new Date(2025, 0, 2, 3, 4).getTime(),
     currentCorrectStreak: 3,
     bestCorrectStreak: 7,
@@ -26,7 +25,6 @@ const buildProps = (
       playerId: "player1",
       playedAt: new Date(2025, 0, 2, 3, 4).getTime(),
       stageId: "stage1",
-      result: "clear",
       durationMs: 2134,
       mistakeCount: 1,
       appVersion: "0.0.0",
@@ -37,7 +35,6 @@ const buildProps = (
       playerId: "player1",
       stageId: "stage1",
       attempts: 5,
-      clears: 4,
       bestDurationMs: 1800,
     },
   ],

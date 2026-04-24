@@ -91,7 +91,7 @@ function App() {
     historyRecords,
     historySummary,
     stageSummaries,
-    appendClearRecord,
+    appendPlayRecord,
     recordAnsweredQuestion,
     initializePlayerHistory,
     resetHistory,
@@ -125,14 +125,14 @@ function App() {
     unlockedStageIdsByPlayer,
     setUnlockedStageIdsByPlayer,
     addRecord,
-    appendClearRecord,
+    appendPlayRecord,
     stageClearConditionById,
   });
   const game = useGameSession({
     activePlayer,
     records,
     onAnswerResolved: recordAnsweredQuestion,
-    onStageClear: clearFlow.handleStageClear,
+    onStageFinished: clearFlow.handleStageFinish,
   });
 
   const canStartStage = activePlayer !== null;

@@ -14,7 +14,6 @@ describe("updateLifetimeSummary", () => {
     const current: PlayerLifetimeSummary = {
       playerId: "p1",
       totalPlays: 3,
-      totalClears: 2,
       lastPlayedAt: 1000,
       currentCorrectStreak: 4,
       bestCorrectStreak: 7,
@@ -23,7 +22,6 @@ describe("updateLifetimeSummary", () => {
     expect(updateLifetimeSummary(current, 2000)).toEqual({
       playerId: "p1",
       totalPlays: 4,
-      totalClears: 3,
       lastPlayedAt: 2000,
       currentCorrectStreak: 4,
       bestCorrectStreak: 7,
@@ -36,7 +34,6 @@ describe("updateLifetimeStreak", () => {
     const current: PlayerLifetimeSummary = {
       playerId: "p1",
       totalPlays: 3,
-      totalClears: 2,
       lastPlayedAt: 1000,
       currentCorrectStreak: 4,
       bestCorrectStreak: 4,
@@ -45,7 +42,6 @@ describe("updateLifetimeStreak", () => {
     expect(updateLifetimeStreak(current, true)).toEqual({
       playerId: "p1",
       totalPlays: 3,
-      totalClears: 2,
       lastPlayedAt: 1000,
       currentCorrectStreak: 5,
       bestCorrectStreak: 5,
@@ -56,7 +52,6 @@ describe("updateLifetimeStreak", () => {
     const current: PlayerLifetimeSummary = {
       playerId: "p1",
       totalPlays: 3,
-      totalClears: 2,
       lastPlayedAt: 1000,
       currentCorrectStreak: 4,
       bestCorrectStreak: 7,
@@ -65,7 +60,6 @@ describe("updateLifetimeStreak", () => {
     expect(updateLifetimeStreak(current, false)).toEqual({
       playerId: "p1",
       totalPlays: 3,
-      totalClears: 2,
       lastPlayedAt: 1000,
       currentCorrectStreak: 0,
       bestCorrectStreak: 7,
@@ -82,7 +76,6 @@ describe("updateStageLifetimeSummaries", () => {
         playerId: "p1",
         stageId: "s1",
         attempts: 1,
-        clears: 1,
         bestDurationMs: 3500,
       },
     ]);
@@ -94,14 +87,12 @@ describe("updateStageLifetimeSummaries", () => {
         playerId: "p1",
         stageId: "s1",
         attempts: 2,
-        clears: 2,
         bestDurationMs: 3000,
       },
       {
         playerId: "p1",
         stageId: "s2",
         attempts: 1,
-        clears: 1,
         bestDurationMs: 4000,
       },
     ];
@@ -113,14 +104,12 @@ describe("updateStageLifetimeSummaries", () => {
         playerId: "p1",
         stageId: "s1",
         attempts: 3,
-        clears: 3,
         bestDurationMs: 3000,
       },
       {
         playerId: "p1",
         stageId: "s2",
         attempts: 1,
-        clears: 1,
         bestDurationMs: 4000,
       },
     ]);

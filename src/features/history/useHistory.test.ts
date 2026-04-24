@@ -12,7 +12,6 @@ let mockHistoryRecords: PlayHistoryRecord[] = [];
 let mockLifetimeSummary: PlayerLifetimeSummary = {
   playerId: "player-1",
   totalPlays: 0,
-  totalClears: 0,
   lastPlayedAt: null,
   currentCorrectStreak: 0,
   bestCorrectStreak: 0,
@@ -47,7 +46,6 @@ vi.mock("../../storage/repositories/historyRepo", () => ({
   createDefaultLifetimeSummary: (playerId: string): PlayerLifetimeSummary => ({
     playerId,
     totalPlays: 0,
-    totalClears: 0,
     lastPlayedAt: null,
     currentCorrectStreak: 0,
     bestCorrectStreak: 0,
@@ -130,7 +128,6 @@ describe("useHistory", () => {
     mockLifetimeSummary = {
       playerId: "player-1",
       totalPlays: 0,
-      totalClears: 0,
       lastPlayedAt: null,
       currentCorrectStreak: 0,
       bestCorrectStreak: 0,
@@ -149,7 +146,7 @@ describe("useHistory", () => {
     );
 
     hook.recordAnsweredQuestion({ playerId: "player-1", isCorrect: true });
-    hook.appendClearRecord({
+    hook.appendPlayRecord({
       playerId: "player-1",
       stageId: "stage1",
       durationMs: 1_000,
@@ -160,7 +157,6 @@ describe("useHistory", () => {
     expect(mockLifetimeSummary).toEqual({
       playerId: "player-1",
       totalPlays: 1,
-      totalClears: 1,
       lastPlayedAt: 2_000,
       currentCorrectStreak: 1,
       bestCorrectStreak: 1,

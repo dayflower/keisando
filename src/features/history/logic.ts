@@ -19,7 +19,6 @@ export const updateLifetimeSummary = (
 ): PlayerLifetimeSummary => ({
   ...current,
   totalPlays: current.totalPlays + 1,
-  totalClears: current.totalClears + 1,
   lastPlayedAt: playedAt,
 });
 
@@ -60,7 +59,6 @@ export const updateStageLifetimeSummaries = (
         playerId,
         stageId,
         attempts: 1,
-        clears: 1,
         bestDurationMs: durationMs,
       },
     ];
@@ -70,7 +68,6 @@ export const updateStageLifetimeSummaries = (
   const updated: StageLifetimeSummary = {
     ...target,
     attempts: target.attempts + 1,
-    clears: target.clears + 1,
     bestDurationMs:
       target.bestDurationMs === null
         ? durationMs

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { STAGES } from "../../shared/stages";
 import type { StageClearCondition, StageRunRecord } from "../../shared/types";
-import type { StageClearPayload } from "./useGameSession";
+import type { StageFinishedPayload } from "./useGameSession";
 import { resolveStageClear } from "./useStageClearFlow";
 
 const createRecord = (
@@ -20,15 +20,15 @@ const createRecord = (
 });
 
 const createPayload = (
-  clearRecord: StageRunRecord,
-  mistakeCount = clearRecord.wrongCount,
-): StageClearPayload => ({
-  clearRecord,
-  playerId: clearRecord.playerId,
-  stageId: clearRecord.stageId,
-  durationMs: clearRecord.elapsedMs,
+  record: StageRunRecord,
+  mistakeCount = record.wrongCount,
+): StageFinishedPayload => ({
+  record,
+  playerId: record.playerId,
+  stageId: record.stageId,
+  durationMs: record.elapsedMs,
   mistakeCount,
-  playedAt: clearRecord.recordedAt,
+  playedAt: record.recordedAt,
 });
 
 const createStageClearConditionById = () =>

@@ -9,7 +9,7 @@ import {
   mapClearSoundVariantToCelebration,
 } from "./clearCelebration";
 import { isStageConditionClear } from "./clearConditions";
-import type { StageClearPayload } from "./useGameSession";
+import type { StageFinishedPayload } from "./useGameSession";
 
 type AppendClearRecordInput = {
   playerId: string;
@@ -26,7 +26,7 @@ type UseStageClearFlowInput = {
     SetStateAction<Record<string, string[]>>
   >;
   addRecord: (record: StageRunRecord) => void;
-  appendClearRecord: (input: AppendClearRecordInput) => void;
+  appendPlayRecord: (input: AppendClearRecordInput) => void;
   stageClearConditionById: Map<string, StageClearCondition>;
 };
 
@@ -37,7 +37,7 @@ export type StageClearResolution = {
 };
 
 export const resolveStageClear = (
-  payload: StageClearPayload,
+  payload: StageFinishedPayload,
   records: StageRunRecord[],
   unlockedStageIdsByPlayer: Record<string, string[]>,
   stageClearConditionById: Map<string, StageClearCondition>,
@@ -54,8 +54,8 @@ export const resolveStageClear = (
     stageCondition === undefined
       ? false
       : isStageConditionClear(
-          payload.clearRecord.elapsedMs,
-          payload.clearRecord.wrongCount,
+          payload.record.elapsedMs,
+          payload.record.wrongCount,
           stageCondition,
         );
 
@@ -68,8 +68,8 @@ export const resolveStageClear = (
 
   const globalBest = selectBestRecord(records, payload.stageId);
   const myBest = selectBestRecord(records, payload.stageId, payload.playerId);
-  const isGlobalBestUpdated = isNewBestRecord(payload.clearRecord, globalBest);
-  const isMyBestUpdated = isNewBestRecord(payload.clearRecord, myBest);
+  const isGlobalBestUpdated = isNewBestRecord(payload.record, globalBest);
+  const isMyBestUpdated = isNewBestRecord(payload.record, myBest);
 
   let clearSoundVariant: ClearSoundVariant;
   if (isGlobalBestUpdated) {
@@ -94,7 +94,7 @@ export const useStageClearFlow = ({
   unlockedStageIdsByPlayer,
   setUnlockedStageIdsByPlayer,
   addRecord,
-  appendClearRecord,
+  appendPlayRecord,
   stageClearConditionById,
 }: UseStageClearFlowInput) => {
   const clearSoundVariantRef = useRef<ClearSoundVariant>("withMistake");
@@ -102,8 +102,8 @@ export const useStageClearFlow = ({
   const [didUnlockNextStageOnClear, setDidUnlockNextStageOnClear] =
     useState(false);
 
-  const handleStageClear = useCallback(
-    (payload: StageClearPayload) => {
+  const handleStageFinish = useCallback(
+    (payload: StageFinishedPayload) => {
       const resolution = resolveStageClear(
         payload,
         records,
@@ -126,8 +126,8 @@ export const useStageClearFlow = ({
       setDidUnlockNextStageOnClear(resolution.didUnlockNextStageOnClear);
       setClearCelebrationTick((prev) => prev + 1);
 
-      addRecord(payload.clearRecord);
-      appendClearRecord({
+      addRecord(payload.record);
+      appendPlayRecord({
         playerId: payload.playerId,
         stageId: payload.stageId,
         durationMs: payload.durationMs,
@@ -137,7 +137,7 @@ export const useStageClearFlow = ({
     },
     [
       addRecord,
-      appendClearRecord,
+      appendPlayRecord,
       records,
       setUnlockedStageIdsByPlayer,
       stageClearConditionById,
@@ -152,7 +152,7 @@ export const useStageClearFlow = ({
   }, []);
 
   return {
-    handleStageClear,
+    handleStageFinish,
     clearSoundVariant: clearSoundVariantRef.current,
     clearCelebration: mapClearSoundVariantToCelebration(
       clearSoundVariantRef.current,
