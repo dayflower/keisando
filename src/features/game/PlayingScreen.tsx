@@ -232,9 +232,7 @@ export const PlayingScreen = ({
           {!isCleared ? (
             isRoundActive ? (
               <>
-                <p className="expression">
-                  {question.left} {question.operator} {question.right} = ?
-                </p>
+                <p className="expression">{question.prompt}</p>
 
                 <div className="diamond-grid">
                   <button
@@ -244,10 +242,13 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[0] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(question.options[0], resolveEffectOrigin(event))
+                      onAnswer(
+                        question.options[0].value,
+                        resolveEffectOrigin(event),
+                      )
                     }
                   >
-                    {question.options[0]}
+                    {question.options[0].label}
                   </button>
                   <button
                     className="choice choice-left"
@@ -256,10 +257,13 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[1] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(question.options[1], resolveEffectOrigin(event))
+                      onAnswer(
+                        question.options[1].value,
+                        resolveEffectOrigin(event),
+                      )
                     }
                   >
-                    {question.options[1]}
+                    {question.options[1].label}
                   </button>
                   <button
                     className="choice choice-right"
@@ -268,10 +272,13 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[2] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(question.options[2], resolveEffectOrigin(event))
+                      onAnswer(
+                        question.options[2].value,
+                        resolveEffectOrigin(event),
+                      )
                     }
                   >
-                    {question.options[2]}
+                    {question.options[2].label}
                   </button>
                   <button
                     className="choice choice-bottom"
@@ -280,10 +287,13 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[3] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(question.options[3], resolveEffectOrigin(event))
+                      onAnswer(
+                        question.options[3].value,
+                        resolveEffectOrigin(event),
+                      )
                     }
                   >
-                    {question.options[3]}
+                    {question.options[3].label}
                   </button>
                 </div>
 

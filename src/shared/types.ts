@@ -5,6 +5,11 @@ export type StageExpression = {
   answer: number;
 };
 
+export type QuestionOption = {
+  value: number;
+  label: string;
+};
+
 export type StageDefinition = {
   id: string;
   baseQuestionCount: number;
@@ -12,6 +17,8 @@ export type StageDefinition = {
   answerMax: number;
   defaultClearCondition: StageClearCondition;
   createExpression: () => StageExpression;
+  formatQuestion?: (expression: StageExpression) => string;
+  formatOptionLabel?: (value: number, expression: StageExpression) => string;
 };
 
 export type PlayerRegisterErrorCode =
@@ -28,7 +35,8 @@ export type Question = {
   right: number;
   operator: "+" | "-" | "×" | "÷";
   answer: number;
-  options: number[];
+  prompt: string;
+  options: QuestionOption[];
 };
 
 export type Player = {

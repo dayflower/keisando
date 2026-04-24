@@ -28,7 +28,13 @@ const buildProps = (
     right: 1,
     operator: "+",
     answer: 2,
-    options: [2, 3, 4, 5],
+    prompt: "1 + 1 = ?",
+    options: [
+      { value: 2, label: "2" },
+      { value: 3, label: "3" },
+      { value: 4, label: "4" },
+      { value: 5, label: "5" },
+    ],
   },
   answeredCount: 10,
   requiredCount: 10,
@@ -167,6 +173,7 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("回答数: 3 / 10");
     expect(html).toContain("残り: 7");
     expect(html).toContain("問題進捗");
+    expect(html).toContain("1 + 1 = ?");
     expect(html).toContain("正しい答えを選んで");
   });
 

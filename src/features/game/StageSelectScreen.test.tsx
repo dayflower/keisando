@@ -28,7 +28,14 @@ const buildProps = (
   },
   historySummary,
   canStartStage: true,
-  unlockedStageIds: new Set(["stage1", "stage2", "stage3", "stage4", "stage5"]),
+  unlockedStageIds: new Set([
+    "stage1",
+    "stage2",
+    "stage3",
+    "stage4",
+    "stage5",
+    "stage6",
+  ]),
   playerNameById: new Map([
     ["player1", "Alice"],
     ["player2", "Bob"],

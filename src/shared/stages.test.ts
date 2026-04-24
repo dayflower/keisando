@@ -12,6 +12,7 @@ describe("STAGES", () => {
     const stage3 = STAGES[2];
     const stage4 = STAGES[3];
     const stage5 = STAGES[4];
+    const stage6 = STAGES[5];
 
     expect(stage1?.id).toBe("stage1");
     expect(stage1?.answerMin).toBe(0);
@@ -28,6 +29,9 @@ describe("STAGES", () => {
     expect(stage5?.id).toBe("stage5");
     expect(stage5?.answerMin).toBe(0);
     expect(stage5?.answerMax).toBe(9);
+    expect(stage6?.id).toBe("stage6");
+    expect(stage6?.answerMin).toBe(0);
+    expect(stage6?.answerMax).toBe(9);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -171,7 +175,7 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage5 retries zero dividends when the retry gate allows it", () => {
+  it("stage5 retries zero answers when the retry gate allows it", () => {
     const stage5 = STAGES[4];
     const randomSpy = vi.spyOn(Math, "random");
 
@@ -187,7 +191,7 @@ describe("STAGES", () => {
     expect(expression).toEqual({
       left: 15,
       right: 5,
-      operator: "÷",
+      operator: "×",
       answer: 3,
     });
   });
@@ -208,12 +212,12 @@ describe("STAGES", () => {
     expect(expression).toEqual({
       left: 20,
       right: 5,
-      operator: "÷",
+      operator: "×",
       answer: 4,
     });
   });
 
-  it("stage5 can still return zero dividends", () => {
+  it("stage5 can still return zero answers", () => {
     const stage5 = STAGES[4];
     const randomSpy = vi.spyOn(Math, "random");
 
@@ -227,7 +231,7 @@ describe("STAGES", () => {
     expect(expression).toEqual({
       left: 0,
       right: 4,
-      operator: "÷",
+      operator: "×",
       answer: 0,
     });
   });
@@ -242,6 +246,106 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.95);
 
     const expression = stage5.createExpression();
+
+    expect(expression).toEqual({
+      left: 3,
+      right: 3,
+      operator: "×",
+      answer: 1,
+    });
+  });
+
+  it("stage5 formats fill-in prompts and option labels", () => {
+    const stage5 = STAGES[4];
+
+    const prompt = stage5.formatQuestion?.({
+      left: 56,
+      right: 8,
+      operator: "×",
+      answer: 7,
+    });
+    const optionLabel = stage5.formatOptionLabel?.(7, {
+      left: 56,
+      right: 8,
+      operator: "×",
+      answer: 7,
+    });
+
+    expect(prompt).toBe("56 = 8 × ?");
+    expect(optionLabel).toBe("8 × 7");
+  });
+
+  it("stage6 retries zero dividends when the retry gate allows it", () => {
+    const stage6 = STAGES[5];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.5);
+
+    const expression = stage6.createExpression();
+
+    expect(expression).toEqual({
+      left: 15,
+      right: 5,
+      operator: "÷",
+      answer: 3,
+    });
+  });
+
+  it("stage6 retries answer 1 when the retry gate allows it", () => {
+    const stage6 = STAGES[5];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.5);
+
+    const expression = stage6.createExpression();
+
+    expect(expression).toEqual({
+      left: 20,
+      right: 5,
+      operator: "÷",
+      answer: 4,
+    });
+  });
+
+  it("stage6 can still return zero dividends", () => {
+    const stage6 = STAGES[5];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage6.createExpression();
+
+    expect(expression).toEqual({
+      left: 0,
+      right: 4,
+      operator: "÷",
+      answer: 0,
+    });
+  });
+
+  it("stage6 can still return answer 1", () => {
+    const stage6 = STAGES[5];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage6.createExpression();
 
     expect(expression).toEqual({
       left: 3,

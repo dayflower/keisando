@@ -135,8 +135,12 @@ const enMessages = {
   "stage.stage4.tag": "Multiplication",
   "stage.stage4.description": "Single-digit multiplication (0-9 × 0-9)",
   "stage.stage5.name": "Stage 5",
-  "stage.stage5.tag": "Division",
+  "stage.stage5.tag": "Multiplication Fill-in",
   "stage.stage5.description":
+    "Multiplication fill-in like 56 = 8 × ? (answer 0-9)",
+  "stage.stage6.name": "Stage 6",
+  "stage.stage6.tag": "Division",
+  "stage.stage6.description":
     "2-digit or less division (result 0-9, divisor 1-9)",
 } as const;
 
@@ -268,8 +272,11 @@ const jaMessages: Record<MessageKey, string> = {
   "stage.stage4.tag": "かけ算",
   "stage.stage4.description": "1桁どうしのかけ算 (0-9 × 0-9)",
   "stage.stage5.name": "Stage 5",
-  "stage.stage5.tag": "わり算",
-  "stage.stage5.description": "2桁以下のわり算 (答えは0-9, 割る数は1-9)",
+  "stage.stage5.tag": "かけ算あなうめ",
+  "stage.stage5.description": "56 = 8 × ? のようなかけ算あなうめ (答えは0-9)",
+  "stage.stage6.name": "Stage 6",
+  "stage.stage6.tag": "わり算",
+  "stage.stage6.description": "2桁以下のわり算 (答えは0-9, 割る数は1-9)",
 };
 
 const messages: Record<Locale, Record<MessageKey, string>> = {
@@ -293,7 +300,10 @@ type StageMessageKey =
   | "stage.stage4.description"
   | "stage.stage5.name"
   | "stage.stage5.tag"
-  | "stage.stage5.description";
+  | "stage.stage5.description"
+  | "stage.stage6.name"
+  | "stage.stage6.tag"
+  | "stage.stage6.description";
 
 const stageMessageKeys = {
   stage1: {
@@ -320,6 +330,11 @@ const stageMessageKeys = {
     name: "stage.stage5.name",
     tag: "stage.stage5.tag",
     description: "stage.stage5.description",
+  },
+  stage6: {
+    name: "stage.stage6.name",
+    tag: "stage.stage6.tag",
+    description: "stage.stage6.description",
   },
 } as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 

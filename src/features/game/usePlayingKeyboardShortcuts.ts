@@ -1,4 +1,5 @@
 import { type RefObject, useEffect, useEffectEvent } from "react";
+import type { QuestionOption } from "../../shared/types";
 import {
   getAnswerChoiceIndexByArrowKey,
   getPlayingShortcutAction,
@@ -8,7 +9,7 @@ import type { EffectOrigin } from "./useGameSession";
 type UsePlayingKeyboardShortcutsInput = {
   isCleared: boolean;
   isRoundActive: boolean;
-  options: number[];
+  options: QuestionOption[];
   choiceButtonRefs: RefObject<Array<HTMLButtonElement | null>>;
   onAnswer: (selected: number, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
@@ -75,7 +76,7 @@ export const usePlayingKeyboardShortcuts = ({
     }
 
     onAnswer(
-      selected,
+      selected.value,
       getChoiceEffectOriginByIndex(choiceButtonRefs, choiceIndex),
     );
   });

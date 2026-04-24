@@ -1,5 +1,6 @@
 import type {
   Question,
+  QuestionOption,
   StageDefinition,
   StageExpression,
 } from "../../shared/types";
@@ -43,6 +44,24 @@ export const createOptions = (
   return shuffle([...candidates]);
 };
 
+const formatQuestion = (
+  stage: StageDefinition,
+  expression: StageExpression,
+): string =>
+  stage.formatQuestion?.(expression) ??
+  `${expression.left} ${expression.operator} ${expression.right} = ?`;
+
+const createQuestionOptions = (
+  stage: StageDefinition,
+  expression: StageExpression,
+): QuestionOption[] =>
+  createOptions(expression.answer, stage.answerMin, stage.answerMax).map(
+    (value) => ({
+      value,
+      label: stage.formatOptionLabel?.(value, expression) ?? String(value),
+    }),
+  );
+
 export const createQuestion = (
   stage: StageDefinition,
   usedExpressions: Set<string>,
@@ -63,6 +82,7 @@ export const createQuestion = (
 
   return {
     ...expression,
-    options: createOptions(expression.answer, stage.answerMin, stage.answerMax),
+    prompt: formatQuestion(stage, expression),
+    options: createQuestionOptions(stage, expression),
   };
 };

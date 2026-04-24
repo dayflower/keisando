@@ -66,7 +66,8 @@ describe("stage helpers", () => {
     );
     expect(getStageTag("en", "stage3")).toBe("Subtraction+");
     expect(getStageTag("ja", "stage4")).toBe("かけ算");
-    expect(getStageTag("ja", "stage5")).toBe("わり算");
+    expect(getStageTag("ja", "stage5")).toBe("かけ算あなうめ");
+    expect(getStageTag("ja", "stage6")).toBe("わり算");
     expect(getStageLabel("en", "stage2")).toBe("Stage 2");
     expect(getStageDescription("en", "stage3")).toBe(
       "1-2 digits minus 1 digit (result 0-9)",
@@ -75,6 +76,9 @@ describe("stage helpers", () => {
       "Single-digit multiplication (0-9 × 0-9)",
     );
     expect(getStageDescription("en", "stage5")).toBe(
+      "Multiplication fill-in like 56 = 8 × ? (answer 0-9)",
+    );
+    expect(getStageDescription("en", "stage6")).toBe(
       "2-digit or less division (result 0-9, divisor 1-9)",
     );
   });
