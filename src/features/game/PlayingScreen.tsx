@@ -2,7 +2,9 @@ import { ArrowLeft } from "lucide-react";
 import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
+  useEffect,
   useRef,
+  useState,
 } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import { getStageName, getStageTag, useI18n } from "../../shared/i18n";
@@ -55,6 +57,8 @@ export type PlayingScreenProps = {
   onUiTap?: () => void;
 };
 
+const RESULT_FEEDBACK_DURATION_MS = 720;
+
 export const PlayingScreen = ({
   selectedStage,
   playingPlayer,
@@ -87,6 +91,12 @@ export const PlayingScreen = ({
   onToggleMute,
   onUiTap,
 }: PlayingScreenProps) => {
+  const [visibleResult, setVisibleResult] = useState<
+    "correct" | "wrong" | null
+  >(lastResult);
+  const [resultDisplayKey, setResultDisplayKey] = useState(0);
+  const handledResultSignatureRef = useRef<string | null>(null);
+  const resultHideTimeoutRef = useRef<number | null>(null);
   const { locale, t } = useI18n();
   const correctCount = Math.max(answeredCount - wrongAnswerCount, 0);
   const stageName = getStageName(locale, selectedStage.id);
@@ -131,6 +141,45 @@ export const PlayingScreen = ({
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   };
   const choiceButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
+    return () => {
+      if (resultHideTimeoutRef.current !== null) {
+        window.clearTimeout(resultHideTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const resultSignature = `${answeredCount}:${lastResult ?? "idle"}`;
+
+    if (!isRoundActive || isCleared || lastResult === null) {
+      if (resultHideTimeoutRef.current !== null) {
+        window.clearTimeout(resultHideTimeoutRef.current);
+        resultHideTimeoutRef.current = null;
+      }
+      handledResultSignatureRef.current = resultSignature;
+      setVisibleResult(null);
+      return;
+    }
+
+    if (handledResultSignatureRef.current === resultSignature) {
+      return;
+    }
+
+    handledResultSignatureRef.current = resultSignature;
+    if (resultHideTimeoutRef.current !== null) {
+      window.clearTimeout(resultHideTimeoutRef.current);
+      resultHideTimeoutRef.current = null;
+    }
+    setVisibleResult(lastResult);
+    setResultDisplayKey((prev) => prev + 1);
+    resultHideTimeoutRef.current = window.setTimeout(() => {
+      setVisibleResult(null);
+      resultHideTimeoutRef.current = null;
+    }, RESULT_FEEDBACK_DURATION_MS);
+  }, [answeredCount, isCleared, isRoundActive, lastResult]);
+
   usePlayingKeyboardShortcuts({
     isCleared,
     canAdvanceToNextStage,
@@ -297,13 +346,18 @@ export const PlayingScreen = ({
                 </div>
 
                 <p
-                  className={`result-text ${
-                    lastResult === "correct" ? "result-correct" : "result-wrong"
-                  }`}
+                  key={resultDisplayKey}
+                  className={[
+                    "result-text",
+                    visibleResult !== null ? "result-text-active" : null,
+                    visibleResult === "correct" ? "result-correct" : null,
+                    visibleResult === "wrong" ? "result-wrong" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
-                  {lastResult === "correct" && t("playing.resultCorrect")}
-                  {lastResult === "wrong" && t("playing.resultWrong")}
-                  {lastResult === null && t("playing.resultIdle")}
+                  {visibleResult === "correct" && t("playing.resultCorrect")}
+                  {visibleResult === "wrong" && t("playing.resultWrong")}
                 </p>
               </>
             ) : (

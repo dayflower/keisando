@@ -179,7 +179,35 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("残り: 7");
     expect(html).toContain("問題進捗");
     expect(html).toContain("1 + 1 = ?");
-    expect(html).toContain("正しい答えを選んで");
+    expect(html).not.toContain("正しい答えを選んで");
+  });
+
+  it("renders the correct result feedback during an active round", () => {
+    const html = renderScreen(
+      {
+        isCleared: false,
+        isRoundActive: true,
+        lastResult: "correct",
+      },
+      "ja",
+    );
+
+    expect(html).toContain("result-text result-text-active result-correct");
+    expect(html).toContain("正解!");
+  });
+
+  it("renders the wrong result feedback during an active round", () => {
+    const html = renderScreen(
+      {
+        isCleared: false,
+        isRoundActive: true,
+        lastResult: "wrong",
+      },
+      "ja",
+    );
+
+    expect(html).toContain("result-text result-text-active result-wrong");
+    expect(html).toContain("不正解! +1問");
   });
 
   it("renders translated clear-summary labels", () => {
