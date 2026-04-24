@@ -95,6 +95,11 @@ See [package.json](../package.json) for exact scripts and versions.
   - Expression range: single-digit multiplication, `0-9 × 0-9`
   - Answer range: `0-81`
   - Zero-valued operands remain possible, but generation retries probabilistically to reduce over-frequency.
+- `stage5`
+  - Theme: division
+  - Expression range: exact division, dividend up to `2` digits, divisor `1-9`, result `0-9`
+  - Answer range: `0-9`
+  - Dividends containing `0` remain possible, but generation retries probabilistically to reduce over-frequency.
 
 ### Default Stage Parameters
 - All current stages use:

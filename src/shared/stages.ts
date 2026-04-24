@@ -4,6 +4,8 @@ const STAGE1_ZERO_RETRY_RATE = 0.7;
 const STAGE2_ZERO_RETRY_RATE = 0.7;
 const STAGE3_ZERO_RETRY_RATE = 0.8;
 const STAGE4_ZERO_RETRY_RATE = 0.7;
+const STAGE5_ZERO_RETRY_RATE = 0.9;
+const STAGE5_ONE_RETRY_RATE = 0.6;
 const MAX_ZERO_RETRIES = 3;
 
 const retryZeroWeightedExpression = <T>(
@@ -20,6 +22,29 @@ const retryZeroWeightedExpression = <T>(
     Math.random() < retryRate;
     retry += 1
   ) {
+    expression = createExpression();
+  }
+
+  return expression;
+};
+
+const retryStage5WeightedExpression = <T extends { answer: number }>(
+  createExpression: () => T,
+): T => {
+  let expression = createExpression();
+
+  for (let retry = 0; retry < MAX_ZERO_RETRIES; retry += 1) {
+    const retryRate =
+      expression.answer === 0
+        ? STAGE5_ZERO_RETRY_RATE
+        : expression.answer === 1
+          ? STAGE5_ONE_RETRY_RATE
+          : null;
+
+    if (retryRate === null || Math.random() >= retryRate) {
+      return expression;
+    }
+
     expression = createExpression();
   }
 
@@ -129,6 +154,28 @@ export const STAGES: StageDefinition[] = [
         (expression) => expression.left === 0 || expression.right === 0,
         STAGE4_ZERO_RETRY_RATE,
       );
+    },
+  },
+  {
+    id: "stage5",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 9,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      requireNoMistake: true,
+    },
+    createExpression: () => {
+      return retryStage5WeightedExpression(() => {
+        const answer = Math.floor(Math.random() * 10);
+        const right = Math.floor(Math.random() * 9) + 1;
+        return {
+          left: answer * right,
+          right,
+          operator: "÷" as const,
+          answer,
+        };
+      });
     },
   },
 ];

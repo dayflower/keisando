@@ -11,6 +11,7 @@ describe("STAGES", () => {
     const stage2 = STAGES[1];
     const stage3 = STAGES[2];
     const stage4 = STAGES[3];
+    const stage5 = STAGES[4];
 
     expect(stage1?.id).toBe("stage1");
     expect(stage1?.answerMin).toBe(0);
@@ -24,6 +25,9 @@ describe("STAGES", () => {
     expect(stage4?.id).toBe("stage4");
     expect(stage4?.answerMin).toBe(0);
     expect(stage4?.answerMax).toBe(81);
+    expect(stage5?.id).toBe("stage5");
+    expect(stage5?.answerMin).toBe(0);
+    expect(stage5?.answerMax).toBe(9);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -164,6 +168,86 @@ describe("STAGES", () => {
       right: 6,
       operator: "×",
       answer: 0,
+    });
+  });
+
+  it("stage5 retries zero dividends when the retry gate allows it", () => {
+    const stage5 = STAGES[4];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.5);
+
+    const expression = stage5.createExpression();
+
+    expect(expression).toEqual({
+      left: 15,
+      right: 5,
+      operator: "÷",
+      answer: 3,
+    });
+  });
+
+  it("stage5 retries answer 1 when the retry gate allows it", () => {
+    const stage5 = STAGES[4];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.5);
+
+    const expression = stage5.createExpression();
+
+    expect(expression).toEqual({
+      left: 20,
+      right: 5,
+      operator: "÷",
+      answer: 4,
+    });
+  });
+
+  it("stage5 can still return zero dividends", () => {
+    const stage5 = STAGES[4];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage5.createExpression();
+
+    expect(expression).toEqual({
+      left: 0,
+      right: 4,
+      operator: "÷",
+      answer: 0,
+    });
+  });
+
+  it("stage5 can still return answer 1", () => {
+    const stage5 = STAGES[4];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage5.createExpression();
+
+    expect(expression).toEqual({
+      left: 3,
+      right: 3,
+      operator: "÷",
+      answer: 1,
     });
   });
 });
