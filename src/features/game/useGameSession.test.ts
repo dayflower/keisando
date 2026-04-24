@@ -193,8 +193,6 @@ const createTestStage = () => {
   const stage: StageDefinition = {
     id: "test-stage",
     baseQuestionCount: 1,
-    answerMin: 10,
-    answerMax: 99,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -208,6 +206,12 @@ const createTestStage = () => {
         answer: expressionId + 10,
       };
     },
+    createOptions: (expression) => [
+      { label: String(expression.answer), isCorrect: true },
+      { label: String(expression.answer - 1), isCorrect: false },
+      { label: String(expression.answer + 1), isCorrect: false },
+      { label: String(expression.answer + 2), isCorrect: false },
+    ],
   };
 
   return stage;

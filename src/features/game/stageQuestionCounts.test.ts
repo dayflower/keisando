@@ -8,8 +8,6 @@ import {
 const stage: StageDefinition = {
   id: "stage1",
   baseQuestionCount: 10,
-  answerMin: 0,
-  answerMax: 9,
   defaultClearCondition: {
     maxElapsedMs: 10_000,
     maxMistakes: 0,
@@ -20,6 +18,12 @@ const stage: StageDefinition = {
     operator: "+",
     answer: 3,
   }),
+  createOptions: () => [
+    { label: "3", isCorrect: true },
+    { label: "2", isCorrect: false },
+    { label: "4", isCorrect: false },
+    { label: "5", isCorrect: false },
+  ],
 };
 
 describe("stageQuestionCounts", () => {

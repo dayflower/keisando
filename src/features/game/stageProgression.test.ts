@@ -6,35 +6,47 @@ const buildStages = (): StageDefinition[] => [
   {
     id: "stage1",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 10_000,
       maxMistakes: -1,
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
+    createOptions: () => [
+      { label: "2", isCorrect: true },
+      { label: "1", isCorrect: false },
+      { label: "3", isCorrect: false },
+      { label: "4", isCorrect: false },
+    ],
   },
   {
     id: "stage2",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 10_000,
       maxMistakes: -1,
     },
     createExpression: () => ({ left: 2, right: 1, operator: "+", answer: 3 }),
+    createOptions: () => [
+      { label: "3", isCorrect: true },
+      { label: "2", isCorrect: false },
+      { label: "4", isCorrect: false },
+      { label: "5", isCorrect: false },
+    ],
   },
   {
     id: "stage3",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 10_000,
       maxMistakes: -1,
     },
     createExpression: () => ({ left: 3, right: 1, operator: "+", answer: 4 }),
+    createOptions: () => [
+      { label: "4", isCorrect: true },
+      { label: "3", isCorrect: false },
+      { label: "5", isCorrect: false },
+      { label: "6", isCorrect: false },
+    ],
   },
 ];
 

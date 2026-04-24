@@ -14,13 +14,11 @@ export type QuestionOption = {
 export type StageDefinition = {
   id: string;
   baseQuestionCount: number;
-  answerMin: number;
-  answerMax: number;
   defaultClearCondition: StageClearCondition;
   createExpression: () => StageExpression;
   formatQuestion?: (expression: StageExpression) => string;
   formatOptionLabel?: (value: number, expression: StageExpression) => string;
-  createOptions?: (
+  createOptions: (
     expression: StageExpression,
     locale: "ja" | "en",
   ) => QuestionOption[];

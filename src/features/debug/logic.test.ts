@@ -5,8 +5,6 @@ import { unlockAllStagesForPlayer } from "./logic";
 const createStage = (id: string): StageDefinition => ({
   id,
   baseQuestionCount: 10,
-  answerMin: 0,
-  answerMax: 9,
   defaultClearCondition: {
     maxElapsedMs: 15_000,
     maxMistakes: 0,
@@ -17,6 +15,12 @@ const createStage = (id: string): StageDefinition => ({
     operator: "+",
     answer: 2,
   }),
+  createOptions: () => [
+    { label: "2", isCorrect: true },
+    { label: "1", isCorrect: false },
+    { label: "3", isCorrect: false },
+    { label: "4", isCorrect: false },
+  ],
 });
 
 describe("unlockAllStagesForPlayer", () => {

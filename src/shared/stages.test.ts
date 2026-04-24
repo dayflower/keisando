@@ -6,44 +6,45 @@ describe("STAGES", () => {
     vi.restoreAllMocks();
   });
 
-  it("restores zero-inclusive answer ranges", () => {
-    const stage1 = STAGES[0];
-    const stage2 = STAGES[1];
-    const stage3 = STAGES[2];
-    const stage4 = STAGES[3];
-    const stage5 = STAGES[4];
-    const stage6 = STAGES[5];
-    const stage7 = STAGES[6];
-    const stage8 = STAGES[7];
-    const stage9 = STAGES[8];
+  it("provides createOptions for every stage", () => {
+    expect(STAGES.map((stage) => stage.id)).toEqual([
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5",
+      "stage6",
+      "stage7",
+      "stage8",
+      "stage9",
+    ]);
+    expect(
+      STAGES.every((stage) => typeof stage.createOptions === "function"),
+    ).toBe(true);
+  });
 
-    expect(stage1?.id).toBe("stage1");
-    expect(stage1?.answerMin).toBe(0);
-    expect(stage1?.answerMax).toBe(18);
-    expect(stage2?.id).toBe("stage2");
-    expect(stage2?.answerMin).toBe(0);
-    expect(stage2?.answerMax).toBe(9);
-    expect(stage3?.id).toBe("stage3");
-    expect(stage3?.answerMin).toBe(0);
-    expect(stage3?.answerMax).toBe(9);
-    expect(stage4?.id).toBe("stage4");
-    expect(stage4?.answerMin).toBe(0);
-    expect(stage4?.answerMax).toBe(81);
-    expect(stage5?.id).toBe("stage5");
-    expect(stage5?.answerMin).toBe(0);
-    expect(stage5?.answerMax).toBe(9);
-    expect(stage6?.id).toBe("stage6");
-    expect(stage6?.answerMin).toBe(0);
-    expect(stage6?.answerMax).toBe(9);
-    expect(stage7?.id).toBe("stage7");
-    expect(stage7?.answerMin).toBe(0);
-    expect(stage7?.answerMax).toBe(9);
-    expect(stage8?.id).toBe("stage8");
-    expect(stage8?.answerMin).toBe(0);
-    expect(stage8?.answerMax).toBe(9);
-    expect(stage9?.id).toBe("stage9");
-    expect(stage9?.answerMin).toBe(0);
-    expect(stage9?.answerMax).toBe(81);
+  it("numeric stages return four options including the correct answer", () => {
+    const stage1Options = STAGES[0].createOptions(
+      { left: 9, right: 9, operator: "+", answer: 18 },
+      "en",
+    );
+    const stage5Options = STAGES[4].createOptions(
+      { left: 56, right: 8, operator: "×", answer: 7 },
+      "en",
+    );
+    const stage7Options = STAGES[6].createOptions(
+      { left: 58, right: 7, operator: "×", answer: 8, remainder: 2 },
+      "en",
+    );
+
+    expect(stage1Options).toHaveLength(4);
+    expect(stage1Options.some((option) => option.label === "18")).toBe(true);
+    expect(stage5Options).toHaveLength(4);
+    expect(stage5Options.some((option) => option.label === "8 × 7")).toBe(true);
+    expect(stage7Options).toHaveLength(4);
+    expect(stage7Options.some((option) => option.label === "8 (56)")).toBe(
+      true,
+    );
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -572,7 +573,7 @@ describe("STAGES", () => {
       answer: 8,
       remainder: 1,
     });
-    const optionsJa = stage8.createOptions?.(
+    const optionsJa = stage8.createOptions(
       {
         left: 73,
         right: 9,
@@ -582,7 +583,7 @@ describe("STAGES", () => {
       },
       "ja",
     );
-    const optionsEn = stage8.createOptions?.(
+    const optionsEn = stage8.createOptions(
       {
         left: 73,
         right: 9,
@@ -615,7 +616,7 @@ describe("STAGES", () => {
   it("stage8 keeps distractor remainders within the divisor range", () => {
     const stage8 = STAGES[7];
 
-    const options = stage8.createOptions?.(
+    const options = stage8.createOptions(
       {
         left: 73,
         right: 9,
@@ -648,7 +649,7 @@ describe("STAGES", () => {
   it("stage8 includes a distractor with the correct quotient and wrong remainder", () => {
     const stage8 = STAGES[7];
 
-    const options = stage8.createOptions?.(
+    const options = stage8.createOptions(
       {
         left: 73,
         right: 9,
@@ -688,7 +689,7 @@ describe("STAGES", () => {
   it("stage9 uses remainder-aware division options for stage8-style questions", () => {
     const stage9 = STAGES[8];
 
-    const options = stage9.createOptions?.(
+    const options = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -706,7 +707,7 @@ describe("STAGES", () => {
   it("stage9 uses numeric options for non-division questions", () => {
     const stage9 = STAGES[8];
 
-    const options = stage9.createOptions?.(
+    const options = stage9.createOptions(
       {
         left: 6,
         right: 7,

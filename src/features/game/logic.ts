@@ -1,49 +1,9 @@
 import type { Locale } from "../../shared/i18n";
 import type {
   Question,
-  QuestionOption,
   StageDefinition,
   StageExpression,
 } from "../../shared/types";
-
-const shuffle = <T>(items: T[]): T[] => {
-  const next = [...items];
-  for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [next[i], next[j]] = [next[j], next[i]];
-  }
-  return next;
-};
-
-export const createOptions = (
-  answer: number,
-  answerMin: number,
-  answerMax: number,
-): number[] => {
-  const candidates = new Set<number>([answer]);
-  let guard = 0;
-
-  while (candidates.size < 4 && guard < 200) {
-    const offset = Math.floor(Math.random() * 9) - 4;
-    const value = Math.max(answerMin, Math.min(answerMax, answer + offset));
-    if (value !== answer) {
-      candidates.add(value);
-    }
-    guard += 1;
-  }
-
-  for (
-    let value = answerMin;
-    candidates.size < 4 && value <= answerMax;
-    value += 1
-  ) {
-    if (value !== answer) {
-      candidates.add(value);
-    }
-  }
-
-  return shuffle([...candidates]);
-};
 
 const formatQuestion = (
   stage: StageDefinition,
@@ -56,14 +16,7 @@ const createQuestionOptions = (
   stage: StageDefinition,
   expression: StageExpression,
   locale: Locale,
-): QuestionOption[] =>
-  stage.createOptions?.(expression, locale) ??
-  createOptions(expression.answer, stage.answerMin, stage.answerMax).map(
-    (value) => ({
-      label: stage.formatOptionLabel?.(value, expression) ?? String(value),
-      isCorrect: value === expression.answer,
-    }),
-  );
+) => stage.createOptions(expression, locale);
 
 export const createQuestion = (
   stage: StageDefinition,

@@ -1,25 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { StageDefinition } from "../../shared/types";
-import { createOptions, createQuestion } from "./logic";
-
-describe("createOptions", () => {
-  it("returns 4 unique options including answer within range", () => {
-    const options = createOptions(5, 1, 20);
-
-    expect(options).toHaveLength(4);
-    expect(new Set(options).size).toBe(4);
-    expect(options).toContain(5);
-    expect(options.every((value) => value >= 1 && value <= 20)).toBe(true);
-  });
-});
+import { createQuestion } from "./logic";
 
 describe("createQuestion", () => {
   it("supports structured option labels and custom prompts", () => {
     const stage: StageDefinition = {
       id: "stage5",
       baseQuestionCount: 10,
-      answerMin: 0,
-      answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
         maxMistakes: 0,
@@ -34,6 +21,12 @@ describe("createQuestion", () => {
         `${expression.left} = ${expression.right} × ?`,
       formatOptionLabel: (value, expression) =>
         `${expression.right} × ${value}`,
+      createOptions: (expression) => [
+        { label: `${expression.right} × 6`, isCorrect: false },
+        { label: `${expression.right} × 7`, isCorrect: true },
+        { label: `${expression.right} × 8`, isCorrect: false },
+        { label: `${expression.right} × 9`, isCorrect: false },
+      ],
     };
 
     const question = createQuestion(stage, new Set());
@@ -52,8 +45,6 @@ describe("createQuestion", () => {
     const stage: StageDefinition = {
       id: "stage7",
       baseQuestionCount: 10,
-      answerMin: 0,
-      answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
         maxMistakes: 0,
@@ -69,6 +60,12 @@ describe("createQuestion", () => {
         `${expression.left} = ${expression.right} × ? + ${expression.remainder ?? 0}`,
       formatOptionLabel: (value, expression) =>
         `${value} (${expression.right * value})`,
+      createOptions: (expression) => [
+        { label: `7 (${expression.right * 7})`, isCorrect: false },
+        { label: `8 (${expression.right * 8})`, isCorrect: true },
+        { label: `9 (${expression.right * 9})`, isCorrect: false },
+        { label: `6 (${expression.right * 6})`, isCorrect: false },
+      ],
     };
 
     const question = createQuestion(stage, new Set());
@@ -83,8 +80,6 @@ describe("createQuestion", () => {
     const stage: StageDefinition = {
       id: "stage8",
       baseQuestionCount: 10,
-      answerMin: 0,
-      answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
         maxMistakes: 0,
@@ -128,8 +123,6 @@ describe("createQuestion", () => {
     const stage: StageDefinition = {
       id: "stage8",
       baseQuestionCount: 10,
-      answerMin: 0,
-      answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
         maxMistakes: 0,

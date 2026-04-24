@@ -10,13 +10,17 @@ const buildProps = (
   rankingStage: {
     id: "stage1",
     baseQuestionCount: 10,
-    answerMin: 1,
-    answerMax: 20,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
+    createOptions: () => [
+      { label: "2", isCorrect: true },
+      { label: "3", isCorrect: false },
+      { label: "4", isCorrect: false },
+      { label: "5", isCorrect: false },
+    ],
   },
   rankingTab: "global",
   activePlayer: null,

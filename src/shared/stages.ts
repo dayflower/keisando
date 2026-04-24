@@ -235,6 +235,7 @@ const buildNumericOptions = (
   answer: number,
   answerMin: number,
   answerMax: number,
+  formatOptionLabel?: (value: number) => string,
 ): QuestionOption[] => {
   const candidates = new Set<number>([answer]);
   let guard = 0;
@@ -259,7 +260,7 @@ const buildNumericOptions = (
   }
 
   return shuffleItems([...candidates]).map((value) => ({
-    label: String(value),
+    label: formatOptionLabel?.(value) ?? String(value),
     isCorrect: value === answer,
   }));
 };
@@ -270,8 +271,6 @@ export const STAGES: StageDefinition[] = [
   {
     id: "stage1",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 18,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -292,12 +291,12 @@ export const STAGES: StageDefinition[] = [
         STAGE1_ZERO_RETRY_RATE,
       );
     },
+    createOptions: (expression) =>
+      buildNumericOptions(expression.answer, 0, 18),
   },
   {
     id: "stage2",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -318,12 +317,11 @@ export const STAGES: StageDefinition[] = [
         STAGE2_ZERO_RETRY_RATE,
       );
     },
+    createOptions: (expression) => buildNumericOptions(expression.answer, 0, 9),
   },
   {
     id: "stage3",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -344,12 +342,11 @@ export const STAGES: StageDefinition[] = [
         STAGE3_ZERO_RETRY_RATE,
       );
     },
+    createOptions: (expression) => buildNumericOptions(expression.answer, 0, 9),
   },
   {
     id: "stage4",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 81,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -370,12 +367,12 @@ export const STAGES: StageDefinition[] = [
         STAGE4_ZERO_RETRY_RATE,
       );
     },
+    createOptions: (expression) =>
+      buildNumericOptions(expression.answer, 0, 81),
   },
   {
     id: "stage5",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -399,12 +396,17 @@ export const STAGES: StageDefinition[] = [
     formatQuestion: (expression) =>
       `${expression.left} = ${expression.right} × ?`,
     formatOptionLabel: (value, expression) => `${expression.right} × ${value}`,
+    createOptions: (expression) =>
+      buildNumericOptions(
+        expression.answer,
+        0,
+        9,
+        (value) => `${expression.right} × ${value}`,
+      ),
   },
   {
     id: "stage6",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -425,12 +427,11 @@ export const STAGES: StageDefinition[] = [
         STAGE6_ONE_RETRY_RATE,
       );
     },
+    createOptions: (expression) => buildNumericOptions(expression.answer, 0, 9),
   },
   {
     id: "stage7",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -457,12 +458,17 @@ export const STAGES: StageDefinition[] = [
       `${expression.left} = ${expression.right} × ? + ${expression.remainder ?? 0}`,
     formatOptionLabel: (value, expression) =>
       `${value} (${expression.right * value})`,
+    createOptions: (expression) =>
+      buildNumericOptions(
+        expression.answer,
+        0,
+        9,
+        (value) => `${value} (${expression.right * value})`,
+      ),
   },
   {
     id: "stage8",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
@@ -512,8 +518,6 @@ export const STAGES: StageDefinition[] = [
   {
     id: "stage9",
     baseQuestionCount: 10,
-    answerMin: 0,
-    answerMax: 81,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
       maxMistakes: 0,
