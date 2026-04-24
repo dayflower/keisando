@@ -352,6 +352,7 @@ function App() {
     content = (
       <StageSelectScreen
         activePlayer={activePlayer}
+        historySummary={historySummary}
         canStartStage={canStartStage}
         unlockedStageIds={unlockedStageIds}
         playerNameById={playerNameById}

@@ -9,6 +9,7 @@ import { getStageName, getStageTag, useI18n } from "../../shared/i18n";
 import { STAGES } from "../../shared/stages";
 import type {
   Player,
+  PlayerLifetimeSummary,
   StageDefinition,
   StageRunRecord,
 } from "../../shared/types";
@@ -17,6 +18,7 @@ import { useStageSelectKeyboardNavigation } from "./useStageSelectKeyboardNaviga
 
 type StageSelectScreenProps = {
   activePlayer: Player | null;
+  historySummary: PlayerLifetimeSummary | null;
   canStartStage: boolean;
   unlockedStageIds: Set<string>;
   playerNameById: Map<string, string>;
@@ -42,6 +44,7 @@ const stageOperatorById: Record<string, string> = {
 
 export const StageSelectScreen = ({
   activePlayer,
+  historySummary,
   canStartStage,
   unlockedStageIds,
   playerNameById,
@@ -63,6 +66,15 @@ export const StageSelectScreen = ({
     [],
   );
   useStageSelectKeyboardNavigation({ canStartStage, stageButtonRefs });
+
+  const lifetimeSummaryLine =
+    activePlayer && historySummary
+      ? t("stageSelect.lifetimeSummaryInline", {
+          totalPlays: historySummary.totalPlays,
+          currentStreak: historySummary.currentCorrectStreak,
+          bestStreak: historySummary.bestCorrectStreak,
+        })
+      : null;
 
   const renderBestRecord = (
     label: string,
@@ -140,6 +152,9 @@ export const StageSelectScreen = ({
             {t("stageSelect.selectPlayerHint")}
           </p>
         )}
+        {lifetimeSummaryLine ? (
+          <p className="stage-select-inline-summary">{lifetimeSummaryLine}</p>
+        ) : null}
 
         <div className="stage-list">
           {STAGES.map((stage, index) => {

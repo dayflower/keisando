@@ -3,12 +3,20 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatRecordedAt } from "../../shared/formatters";
 import { I18nProvider, type Locale } from "../../shared/i18n";
+import type { PlayerLifetimeSummary } from "../../shared/types";
 import { StageSelectScreen } from "./StageSelectScreen";
 
 type StageSelectScreenProps = ComponentProps<typeof StageSelectScreen>;
 
 const stage1RecordedAt = new Date(2025, 0, 2, 3, 4).getTime();
 const stage2RecordedAt = new Date(2025, 0, 3, 4, 5).getTime();
+const historySummary: PlayerLifetimeSummary = {
+  playerId: "player1",
+  totalPlays: 12,
+  lastPlayedAt: stage2RecordedAt,
+  currentCorrectStreak: 8,
+  bestCorrectStreak: 21,
+};
 
 const buildProps = (
   overrides: Partial<StageSelectScreenProps> = {},
@@ -18,6 +26,7 @@ const buildProps = (
     name: "Alice",
     createdAt: new Date(2025, 0, 1, 2, 3).getTime(),
   },
+  historySummary,
   canStartStage: true,
   unlockedStageIds: new Set(["stage1", "stage2", "stage3", "stage4", "stage5"]),
   playerNameById: new Map([
@@ -93,6 +102,24 @@ describe("StageSelectScreen", () => {
     expect(html).toContain(formatRecordedAt(stage2RecordedAt, "ja"));
   });
 
+  it("renders compact lifetime summary above the stage list", () => {
+    const html = renderScreen({}, "ja");
+
+    expect(html).toContain("12回プレイ / 連続正解 8 / 最高連続 21");
+  });
+
+  it("does not render lifetime summary without an active player", () => {
+    const html = renderScreen(
+      {
+        activePlayer: null,
+        historySummary: null,
+      },
+      "ja",
+    );
+
+    expect(html).not.toContain("12回プレイ / 連続正解 8 / 最高連続 21");
+  });
+
   it("does not render achieved dates when no best record exists", () => {
     const html = renderScreen(
       {
@@ -113,6 +140,7 @@ describe("StageSelectScreen", () => {
 
     expect(html).toContain(formatRecordedAt(stage1RecordedAt, "en"));
     expect(html).toContain(formatRecordedAt(stage2RecordedAt, "en"));
+    expect(html).toContain("12 plays / streak 8 / best streak 21");
   });
 
   it("underlines dates recorded today", () => {
