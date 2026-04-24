@@ -274,28 +274,6 @@ textarea {
   font-weight: 600;
 }
 
-.debug-entry-button {
-  border: none;
-  border-radius: 999px;
-  align-self: flex-start;
-  padding: 0.42rem 0.82rem;
-  background: #e7f0ff;
-  color: #1e4f93;
-  font-size: 0.8rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition:
-    transform 120ms ease,
-    filter 120ms ease,
-    background-color 120ms ease;
-}
-
-.debug-entry-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  background: #dbe9ff;
-}
-
 .stage-select-hint {
   margin: 0 0 0.95rem;
   color: #1f4f91;
@@ -943,7 +921,6 @@ textarea {
 .ranking-tab:focus-visible,
 .history-icon-button:focus-visible,
 .sound-icon-button:focus-visible,
-.debug-entry-button:focus-visible,
 .debug-button:focus-visible,
 .debug-danger-button:focus-visible {
   outline: 3px solid #225eb5;

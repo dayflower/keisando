@@ -25,7 +25,6 @@ const enMessages = {
   "stageSelect.ranking": "Ranking",
   "stageSelect.lifetimeSummaryInline":
     "{totalPlays} plays / streak {currentStreak} / best streak {bestStreak}",
-  "stageSelect.openDebug": "Open Debug",
   "playerSelect.screenTag": "Select Player",
   "playerSelect.description": "Choose your active player.",
   "playerSelect.active": "Active",
@@ -165,7 +164,6 @@ const jaMessages: Record<MessageKey, string> = {
   "stageSelect.ranking": "ランキング",
   "stageSelect.lifetimeSummaryInline":
     "{totalPlays}回プレイ / 連続正解 {currentStreak} / 最高連続 {bestStreak}",
-  "stageSelect.openDebug": "デバッグ",
   "playerSelect.screenTag": "プレイヤー選択",
   "playerSelect.description": "使用するプレイヤーを選択",
   "playerSelect.active": "選択中",

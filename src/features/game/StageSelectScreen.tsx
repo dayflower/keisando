@@ -1,4 +1,4 @@
-import { CircleUserRound, History, Trophy } from "lucide-react";
+import { CircleUserRound, History, ScanEye, Trophy } from "lucide-react";
 import { useMemo, useRef } from "react";
 import {
   formatElapsedTime,
@@ -118,6 +118,20 @@ export const StageSelectScreen = ({
           <div className="stage-head-row">
             <p className="stage-tag">{t("stageSelect.screenTag")}</p>
             <div className="stage-head-actions">
+              {import.meta.env.DEV ? (
+                <button
+                  className="history-icon-button"
+                  type="button"
+                  onClick={() => {
+                    onUiTap?.();
+                    onOpenDebug();
+                  }}
+                  aria-label="Open debug"
+                  title="Open debug"
+                >
+                  <ScanEye size={16} aria-hidden="true" />
+                </button>
+              ) : null}
               <SoundToggleButton
                 isMuted={isMuted}
                 onToggleMute={onToggleMute}
@@ -227,20 +241,6 @@ export const StageSelectScreen = ({
               );
             })}
           </div>
-          {import.meta.env.DEV ? (
-            <div className="stage-select-footer">
-              <button
-                className="debug-entry-button"
-                type="button"
-                onClick={() => {
-                  onUiTap?.();
-                  onOpenDebug();
-                }}
-              >
-                {t("stageSelect.openDebug")}
-              </button>
-            </div>
-          ) : null}
         </div>
       </section>
     </main>

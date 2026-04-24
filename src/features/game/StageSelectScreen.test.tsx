@@ -126,6 +126,13 @@ describe("StageSelectScreen", () => {
     );
   });
 
+  it("renders the debug entry as a header icon button in development", () => {
+    const html = renderScreen({}, "ja");
+
+    expect(html).toContain('aria-label="Open debug"');
+    expect(html).not.toContain(">デバッグ</button>");
+  });
+
   it("does not render lifetime summary without an active player", () => {
     const html = renderScreen(
       {
