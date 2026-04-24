@@ -6,7 +6,12 @@ import {
 } from "react";
 import { formatElapsedTime } from "../../shared/formatters";
 import { getStageName, getStageTag, useI18n } from "../../shared/i18n";
-import type { Player, Question, StageDefinition } from "../../shared/types";
+import type {
+  Player,
+  Question,
+  QuestionOption,
+  StageDefinition,
+} from "../../shared/types";
 import { SoundToggleButton } from "../sound/SoundToggleButton";
 import type { ClearBestBadge, ClearCelebrationTier } from "./clearCelebration";
 import {
@@ -40,7 +45,7 @@ export type PlayingScreenProps = {
   clearBestBadge: ClearBestBadge;
   clearCelebrationTick: number;
   didUnlockNextStageOnClear: boolean;
-  onAnswer: (selected: number, effectOrigin?: EffectOrigin) => void;
+  onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
   isMuted: boolean;
@@ -242,10 +247,7 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[0] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(
-                        question.options[0].value,
-                        resolveEffectOrigin(event),
-                      )
+                      onAnswer(question.options[0], resolveEffectOrigin(event))
                     }
                   >
                     {question.options[0].label}
@@ -257,10 +259,7 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[1] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(
-                        question.options[1].value,
-                        resolveEffectOrigin(event),
-                      )
+                      onAnswer(question.options[1], resolveEffectOrigin(event))
                     }
                   >
                     {question.options[1].label}
@@ -272,10 +271,7 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[2] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(
-                        question.options[2].value,
-                        resolveEffectOrigin(event),
-                      )
+                      onAnswer(question.options[2], resolveEffectOrigin(event))
                     }
                   >
                     {question.options[2].label}
@@ -287,10 +283,7 @@ export const PlayingScreen = ({
                       choiceButtonRefs.current[3] = element;
                     }}
                     onClick={(event) =>
-                      onAnswer(
-                        question.options[3].value,
-                        resolveEffectOrigin(event),
-                      )
+                      onAnswer(question.options[3], resolveEffectOrigin(event))
                     }
                   >
                     {question.options[3].label}

@@ -40,7 +40,9 @@ describe("createQuestion", () => {
 
     expect(question.prompt).toBe("56 = 8 × ?");
     expect(question.options).toHaveLength(4);
-    expect(question.options.some((option) => option.value === 7)).toBe(true);
+    expect(question.options.filter((option) => option.isCorrect)).toHaveLength(
+      1,
+    );
     expect(
       question.options.every((option) => option.label.includes("8 ×")),
     ).toBe(true);

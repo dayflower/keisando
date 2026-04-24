@@ -11,7 +11,7 @@ type UsePlayingKeyboardShortcutsInput = {
   isRoundActive: boolean;
   options: QuestionOption[];
   choiceButtonRefs: RefObject<Array<HTMLButtonElement | null>>;
-  onAnswer: (selected: number, effectOrigin?: EffectOrigin) => void;
+  onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
   onUiTap?: () => void;
@@ -76,7 +76,7 @@ export const usePlayingKeyboardShortcuts = ({
     }
 
     onAnswer(
-      selected.value,
+      selected,
       getChoiceEffectOriginByIndex(choiceButtonRefs, choiceIndex),
     );
   });

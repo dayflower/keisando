@@ -10,6 +10,7 @@ import { createRecordId } from "../../shared/ids";
 import type {
   Player,
   Question,
+  QuestionOption,
   StageDefinition,
   StageRunRecord,
 } from "../../shared/types";
@@ -230,7 +231,10 @@ export const useGameSession = ({
     return true;
   };
 
-  const handleAnswer = (selected: number, effectOrigin?: EffectOrigin) => {
+  const handleAnswer = (
+    selected: QuestionOption,
+    effectOrigin?: EffectOrigin,
+  ) => {
     if (
       !selectedStage ||
       !question ||
@@ -241,7 +245,7 @@ export const useGameSession = ({
       return;
     }
 
-    const isCorrect = selected === question.answer;
+    const isCorrect = selected.isCorrect;
     const nextAnsweredCount = answeredCount + 1;
     const nextRequiredCount = requiredCount + (isCorrect ? 0 : 1);
     const nextCombo = isCorrect ? currentCombo + 1 : 0;

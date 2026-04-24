@@ -347,7 +347,12 @@ describe("useGameSession", () => {
     expect(game.isRoundActive).toBe(true);
 
     nowSpy.mockReturnValue(8_000);
-    game.handleAnswer(game.question?.answer ?? -1);
+    game.handleAnswer(
+      game.question?.options.find((option) => option.isCorrect) ?? {
+        label: "",
+        isCorrect: false,
+      },
+    );
     game = render();
 
     expect(game.isCleared).toBe(true);
@@ -404,7 +409,7 @@ describe("useGameSession", () => {
     game = render();
     game = render();
 
-    game.handleAnswer(-1);
+    game.handleAnswer({ label: "", isCorrect: false });
     game = render();
 
     expect(game.lastResult).toBe("wrong");

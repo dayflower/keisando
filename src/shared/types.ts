@@ -6,8 +6,8 @@ export type StageExpression = {
 };
 
 export type QuestionOption = {
-  value: number;
   label: string;
+  isCorrect: boolean;
 };
 
 export type StageDefinition = {
@@ -34,7 +34,6 @@ export type Question = {
   left: number;
   right: number;
   operator: "+" | "-" | "×" | "÷";
-  answer: number;
   prompt: string;
   options: QuestionOption[];
 };

@@ -57,8 +57,8 @@ const createQuestionOptions = (
 ): QuestionOption[] =>
   createOptions(expression.answer, stage.answerMin, stage.answerMax).map(
     (value) => ({
-      value,
       label: stage.formatOptionLabel?.(value, expression) ?? String(value),
+      isCorrect: value === expression.answer,
     }),
   );
 
@@ -81,7 +81,9 @@ export const createQuestion = (
   usedExpressions.add(key);
 
   return {
-    ...expression,
+    left: expression.left,
+    right: expression.right,
+    operator: expression.operator,
     prompt: formatQuestion(stage, expression),
     options: createQuestionOptions(stage, expression),
   };
