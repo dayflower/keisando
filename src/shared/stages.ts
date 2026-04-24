@@ -1,5 +1,5 @@
 import { type Locale, translate } from "./i18n";
-import type { StageDefinition } from "./types";
+import type { QuestionOption, StageDefinition } from "./types";
 
 const STAGE1_ZERO_RETRY_RATE = 0.7;
 const STAGE2_ZERO_RETRY_RATE = 0.7;
@@ -230,6 +230,41 @@ const buildStage8Options = (
     })),
   ]);
 };
+
+const buildNumericOptions = (
+  answer: number,
+  answerMin: number,
+  answerMax: number,
+): QuestionOption[] => {
+  const candidates = new Set<number>([answer]);
+  let guard = 0;
+
+  while (candidates.size < 4 && guard < 200) {
+    const offset = Math.floor(Math.random() * 9) - 4;
+    const value = Math.max(answerMin, Math.min(answerMax, answer + offset));
+    if (value !== answer) {
+      candidates.add(value);
+    }
+    guard += 1;
+  }
+
+  for (
+    let value = answerMin;
+    candidates.size < 4 && value <= answerMax;
+    value += 1
+  ) {
+    if (value !== answer) {
+      candidates.add(value);
+    }
+  }
+
+  return shuffleItems([...candidates]).map((value) => ({
+    label: String(value),
+    isCorrect: value === answer,
+  }));
+};
+
+const stage9SourceStages: StageDefinition[] = [];
 
 export const STAGES: StageDefinition[] = [
   {
@@ -474,4 +509,42 @@ export const STAGES: StageDefinition[] = [
       );
     },
   },
+  {
+    id: "stage9",
+    baseQuestionCount: 10,
+    answerMin: 0,
+    answerMax: 81,
+    defaultClearCondition: {
+      maxElapsedMs: 15_000,
+      maxMistakes: 0,
+    },
+    createExpression: () => {
+      const selectedStage =
+        stage9SourceStages[
+          Math.floor(Math.random() * stage9SourceStages.length)
+        ];
+
+      if (!selectedStage) {
+        throw new Error("Stage 9 source stages are not configured.");
+      }
+
+      return selectedStage.createExpression();
+    },
+    createOptions: (expression, locale) => {
+      if (expression.operator === "÷" && expression.remainder !== undefined) {
+        return buildStage8Options(
+          {
+            quotient: expression.answer,
+            remainder: expression.remainder,
+          },
+          expression.right,
+          locale,
+        );
+      }
+
+      return buildNumericOptions(expression.answer, 0, 81);
+    },
+  },
 ];
+
+stage9SourceStages.push(STAGES[0], STAGES[2], STAGES[3], STAGES[7]);

@@ -70,6 +70,7 @@ describe("stage helpers", () => {
     expect(getStageTag("ja", "stage6")).toBe("わり算");
     expect(getStageTag("ja", "stage7")).toBe("かけ算あなうめ+");
     expect(getStageTag("ja", "stage8")).toBe("わり算+");
+    expect(getStageTag("ja", "stage9")).toBe("四則MIX");
     expect(getStageLabel("en", "stage2")).toBe("Stage 2");
     expect(getStageDescription("en", "stage3")).toBe(
       "1-2 digits minus 1 digit (result 0-9)",
@@ -88,6 +89,9 @@ describe("stage helpers", () => {
     );
     expect(getStageDescription("en", "stage8")).toBe(
       "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
+    );
+    expect(getStageDescription("en", "stage9")).toBe(
+      "A mixed stage with random addition, subtraction, multiplication, and division questions",
     );
   });
 

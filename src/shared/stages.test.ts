@@ -15,6 +15,7 @@ describe("STAGES", () => {
     const stage6 = STAGES[5];
     const stage7 = STAGES[6];
     const stage8 = STAGES[7];
+    const stage9 = STAGES[8];
 
     expect(stage1?.id).toBe("stage1");
     expect(stage1?.answerMin).toBe(0);
@@ -40,6 +41,9 @@ describe("STAGES", () => {
     expect(stage8?.id).toBe("stage8");
     expect(stage8?.answerMin).toBe(0);
     expect(stage8?.answerMax).toBe(9);
+    expect(stage9?.id).toBe("stage9");
+    expect(stage9?.answerMin).toBe(0);
+    expect(stage9?.answerMax).toBe(81);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -660,5 +664,60 @@ describe("STAGES", () => {
         (option) => option.label.startsWith("8 R ") && option.label !== "8 R 1",
       ),
     ).toBe(true);
+  });
+
+  it("stage9 can delegate to stage1 expressions", () => {
+    const stage9 = STAGES[8];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.5);
+
+    const expression = stage9.createExpression();
+
+    expect(expression).toEqual({
+      left: 4,
+      right: 5,
+      operator: "+",
+      answer: 9,
+    });
+  });
+
+  it("stage9 uses remainder-aware division options for stage8-style questions", () => {
+    const stage9 = STAGES[8];
+
+    const options = stage9.createOptions?.(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+
+    expect(options).toHaveLength(4);
+    expect(options?.some((option) => option.label === "8 R 1")).toBe(true);
+  });
+
+  it("stage9 uses numeric options for non-division questions", () => {
+    const stage9 = STAGES[8];
+
+    const options = stage9.createOptions?.(
+      {
+        left: 6,
+        right: 7,
+        operator: "×",
+        answer: 42,
+      },
+      "en",
+    );
+
+    expect(options).toHaveLength(4);
+    expect(options?.filter((option) => option.isCorrect)).toHaveLength(1);
+    expect(options?.some((option) => option.label === "42")).toBe(true);
   });
 });

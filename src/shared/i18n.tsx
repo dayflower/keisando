@@ -152,6 +152,10 @@ const enMessages = {
   "stage.stage8.tag": "Division+",
   "stage.stage8.description":
     "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
+  "stage.stage9.name": "Stage 9",
+  "stage.stage9.tag": "Mixed Arithmetic",
+  "stage.stage9.description":
+    "A mixed stage with random addition, subtraction, multiplication, and division questions",
 } as const;
 
 export type MessageKey = keyof typeof enMessages;
@@ -297,6 +301,10 @@ const jaMessages: Record<MessageKey, string> = {
   "stage.stage8.tag": "わり算+",
   "stage.stage8.description":
     "73 ÷ 9 = ? のようなあまりつきわり算 (選択肢は 8 … 1 の形式)",
+  "stage.stage9.name": "Stage 9",
+  "stage.stage9.tag": "四則MIX",
+  "stage.stage9.description":
+    "足し算・引き算・かけ算・わり算の問題がランダムに出るミックスステージ",
 };
 
 const messages: Record<Locale, Record<MessageKey, string>> = {
@@ -329,7 +337,10 @@ type StageMessageKey =
   | "stage.stage7.description"
   | "stage.stage8.name"
   | "stage.stage8.tag"
-  | "stage.stage8.description";
+  | "stage.stage8.description"
+  | "stage.stage9.name"
+  | "stage.stage9.tag"
+  | "stage.stage9.description";
 
 const stageMessageKeys = {
   stage1: {
@@ -371,6 +382,11 @@ const stageMessageKeys = {
     name: "stage.stage8.name",
     tag: "stage.stage8.tag",
     description: "stage.stage8.description",
+  },
+  stage9: {
+    name: "stage.stage9.name",
+    tag: "stage.stage9.tag",
+    description: "stage.stage9.description",
   },
 } as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 
