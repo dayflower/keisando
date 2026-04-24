@@ -32,7 +32,7 @@ export type PlayerRegisterErrorCode =
 
 export type StageClearCondition = {
   maxElapsedMs: number;
-  requireNoMistake: boolean;
+  maxMistakes: number;
 };
 
 export type Question = {

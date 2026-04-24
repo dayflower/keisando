@@ -18,16 +18,18 @@ describe("stageClearConditionsRepo", () => {
       [
         "keisando:stage-clear-conditions:v1",
         JSON.stringify({
-          stage1: { maxElapsedMs: 12_000, requireNoMistake: true },
-          stage2: { maxElapsedMs: 0, requireNoMistake: true },
-          stage3: { maxElapsedMs: 11_000, requireNoMistake: "yes" },
+          stage1: { maxElapsedMs: 12_000, maxMistakes: 0 },
+          stage2: { maxElapsedMs: 0, maxMistakes: 1 },
+          stage3: { maxElapsedMs: 11_000, maxMistakes: "3" },
+          stage4: { maxElapsedMs: 13_000, maxMistakes: -5 },
         }),
       ],
     ]);
     installTestLocalStorage(store);
 
     expect(loadStageClearConditionOverrides()).toEqual({
-      stage1: { maxElapsedMs: 12_000, requireNoMistake: true },
+      stage1: { maxElapsedMs: 12_000, maxMistakes: 0 },
+      stage4: { maxElapsedMs: 13_000, maxMistakes: -5 },
     });
   });
 
@@ -36,12 +38,12 @@ describe("stageClearConditionsRepo", () => {
     installTestLocalStorage(store);
 
     saveStageClearConditionOverrides({
-      stage1: { maxElapsedMs: 15_000, requireNoMistake: true },
+      stage1: { maxElapsedMs: 15_000, maxMistakes: 0 },
     });
 
     expect(store.get("keisando:stage-clear-conditions:v1")).toBe(
       JSON.stringify({
-        stage1: { maxElapsedMs: 15_000, requireNoMistake: true },
+        stage1: { maxElapsedMs: 15_000, maxMistakes: 0 },
       }),
     );
   });

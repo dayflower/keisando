@@ -7,17 +7,17 @@ export const normalizeClearCondition = (
   fallback: StageClearCondition,
 ): StageClearCondition => {
   const maxElapsedMs = candidate?.maxElapsedMs;
-  const requireNoMistake = candidate?.requireNoMistake;
+  const maxMistakes = candidate?.maxMistakes;
 
   return {
     maxElapsedMs:
       typeof maxElapsedMs === "number" && Number.isFinite(maxElapsedMs)
         ? Math.max(Math.round(maxElapsedMs), MIN_CLEAR_TIME_MS)
         : fallback.maxElapsedMs,
-    requireNoMistake:
-      typeof requireNoMistake === "boolean"
-        ? requireNoMistake
-        : fallback.requireNoMistake,
+    maxMistakes:
+      typeof maxMistakes === "number" && Number.isFinite(maxMistakes)
+        ? Math.round(maxMistakes)
+        : fallback.maxMistakes,
   };
 };
 
@@ -30,7 +30,7 @@ export const isStageConditionClear = (
     return false;
   }
 
-  if (condition.requireNoMistake && wrongCount > 0) {
+  if (condition.maxMistakes >= 0 && wrongCount > condition.maxMistakes) {
     return false;
   }
 

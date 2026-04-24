@@ -10,7 +10,7 @@ const buildStages = (): StageDefinition[] => [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 10_000,
-      requireNoMistake: false,
+      maxMistakes: -1,
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
   },
@@ -21,7 +21,7 @@ const buildStages = (): StageDefinition[] => [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 10_000,
-      requireNoMistake: false,
+      maxMistakes: -1,
     },
     createExpression: () => ({ left: 2, right: 1, operator: "+", answer: 3 }),
   },
@@ -32,7 +32,7 @@ const buildStages = (): StageDefinition[] => [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 10_000,
-      requireNoMistake: false,
+      maxMistakes: -1,
     },
     createExpression: () => ({ left: 3, right: 1, operator: "+", answer: 4 }),
   },

@@ -197,7 +197,7 @@ const createTestStage = () => {
     answerMax: 99,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: (): StageExpression => {
       expressionId += 1;

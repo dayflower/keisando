@@ -9,7 +9,7 @@ const createStage = (id: string): StageDefinition => ({
   answerMax: 9,
   defaultClearCondition: {
     maxElapsedMs: 15_000,
-    requireNoMistake: true,
+    maxMistakes: 0,
   },
   createExpression: () => ({
     left: 1,

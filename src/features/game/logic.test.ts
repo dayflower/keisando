@@ -22,7 +22,7 @@ describe("createQuestion", () => {
       answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
-        requireNoMistake: true,
+        maxMistakes: 0,
       },
       createExpression: () => ({
         left: 56,
@@ -56,7 +56,7 @@ describe("createQuestion", () => {
       answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
-        requireNoMistake: true,
+        maxMistakes: 0,
       },
       createExpression: () => ({
         left: 58,
@@ -87,7 +87,7 @@ describe("createQuestion", () => {
       answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
-        requireNoMistake: true,
+        maxMistakes: 0,
       },
       createExpression: () => ({
         left: 73,
@@ -132,7 +132,7 @@ describe("createQuestion", () => {
       answerMax: 9,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
-        requireNoMistake: true,
+        maxMistakes: 0,
       },
       createExpression: () => ({
         left: 73,

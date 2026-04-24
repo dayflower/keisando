@@ -286,23 +286,37 @@ export const DebugScreen = ({
                             Math.round(nextSeconds * 1000),
                             100,
                           ),
-                          requireNoMistake: condition.requireNoMistake,
+                          maxMistakes: condition.maxMistakes,
                         });
                       }}
                     />
-                    <label className="debug-condition-check-label">
-                      <input
-                        type="checkbox"
-                        checked={condition.requireNoMistake}
-                        onChange={(event) => {
-                          onUpdateStageClearCondition(stage.id, {
-                            maxElapsedMs: condition.maxElapsedMs,
-                            requireNoMistake: event.target.checked,
-                          });
-                        }}
-                      />
-                      {t("debug.noMistakesRequired")}
+                    <label
+                      className="debug-condition-label"
+                      htmlFor={`${stage.id}-mistakes`}
+                    >
+                      {t("debug.maxMistakesAllowed")}
                     </label>
+                    <input
+                      id={`${stage.id}-mistakes`}
+                      className="debug-condition-input"
+                      type="number"
+                      step={1}
+                      value={condition.maxMistakes}
+                      onChange={(event) => {
+                        const nextMaxMistakes = Number.parseInt(
+                          event.target.value,
+                          10,
+                        );
+                        if (!Number.isFinite(nextMaxMistakes)) {
+                          return;
+                        }
+
+                        onUpdateStageClearCondition(stage.id, {
+                          maxElapsedMs: condition.maxElapsedMs,
+                          maxMistakes: nextMaxMistakes,
+                        });
+                      }}
+                    />
                   </div>
                 );
               })}

@@ -15,7 +15,8 @@ const isValidClearCondition = (
     typeof condition.maxElapsedMs === "number" &&
     Number.isFinite(condition.maxElapsedMs) &&
     condition.maxElapsedMs >= 100 &&
-    typeof condition.requireNoMistake === "boolean"
+    typeof condition.maxMistakes === "number" &&
+    Number.isFinite(condition.maxMistakes)
   );
 };
 

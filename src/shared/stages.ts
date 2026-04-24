@@ -239,7 +239,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 18,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryZeroWeightedExpression(
@@ -265,7 +265,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryZeroWeightedExpression(
@@ -291,7 +291,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryZeroWeightedExpression(
@@ -317,7 +317,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 81,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryZeroWeightedExpression(
@@ -343,7 +343,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryWeightedAnswerExpression(
@@ -372,7 +372,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryWeightedAnswerExpression(
@@ -398,7 +398,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryWeightedAnswerExpression(
@@ -430,7 +430,7 @@ export const STAGES: StageDefinition[] = [
     answerMax: 9,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => {
       return retryPredicateExpression(

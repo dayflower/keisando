@@ -14,7 +14,7 @@ const buildProps = (
     answerMax: 20,
     defaultClearCondition: {
       maxElapsedMs: 15_000,
-      requireNoMistake: true,
+      maxMistakes: 0,
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
   },
