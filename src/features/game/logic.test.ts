@@ -78,4 +78,93 @@ describe("createQuestion", () => {
       true,
     );
   });
+
+  it("supports remainder-aware division option labels", () => {
+    const stage: StageDefinition = {
+      id: "stage8",
+      baseQuestionCount: 10,
+      answerMin: 0,
+      answerMax: 9,
+      defaultClearCondition: {
+        maxElapsedMs: 15_000,
+        requireNoMistake: true,
+      },
+      createExpression: () => ({
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      }),
+      createOptions: (_expression, locale) => [
+        {
+          label: locale === "ja" ? "8 … 1" : "8 R 1",
+          isCorrect: true,
+        },
+        {
+          label: locale === "ja" ? "7 … 2" : "7 R 2",
+          isCorrect: false,
+        },
+        {
+          label: locale === "ja" ? "6 … 3" : "6 R 3",
+          isCorrect: false,
+        },
+        {
+          label: locale === "ja" ? "5 … 4" : "5 R 4",
+          isCorrect: false,
+        },
+      ],
+    };
+
+    const question = createQuestion(stage, new Set(), "en");
+
+    expect(question.prompt).toBe("73 ÷ 9 = ?");
+    expect(question.options.some((option) => option.label === "8 R 1")).toBe(
+      true,
+    );
+  });
+
+  it("supports locale-specific remainder division option labels", () => {
+    const stage: StageDefinition = {
+      id: "stage8",
+      baseQuestionCount: 10,
+      answerMin: 0,
+      answerMax: 9,
+      defaultClearCondition: {
+        maxElapsedMs: 15_000,
+        requireNoMistake: true,
+      },
+      createExpression: () => ({
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      }),
+      createOptions: (_expression, locale) => [
+        {
+          label: locale === "ja" ? "8 … 1" : "8 R 1",
+          isCorrect: true,
+        },
+        {
+          label: locale === "ja" ? "7 … 2" : "7 R 2",
+          isCorrect: false,
+        },
+        {
+          label: locale === "ja" ? "6 … 3" : "6 R 3",
+          isCorrect: false,
+        },
+        {
+          label: locale === "ja" ? "5 … 4" : "5 R 4",
+          isCorrect: false,
+        },
+      ],
+    };
+
+    const question = createQuestion(stage, new Set(), "ja");
+
+    expect(question.options.some((option) => option.label === "8 … 1")).toBe(
+      true,
+    );
+  });
 });

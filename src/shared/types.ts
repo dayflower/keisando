@@ -20,6 +20,10 @@ export type StageDefinition = {
   createExpression: () => StageExpression;
   formatQuestion?: (expression: StageExpression) => string;
   formatOptionLabel?: (value: number, expression: StageExpression) => string;
+  createOptions?: (
+    expression: StageExpression,
+    locale: "ja" | "en",
+  ) => QuestionOption[];
 };
 
 export type PlayerRegisterErrorCode =

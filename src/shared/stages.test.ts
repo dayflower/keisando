@@ -14,6 +14,7 @@ describe("STAGES", () => {
     const stage5 = STAGES[4];
     const stage6 = STAGES[5];
     const stage7 = STAGES[6];
+    const stage8 = STAGES[7];
 
     expect(stage1?.id).toBe("stage1");
     expect(stage1?.answerMin).toBe(0);
@@ -36,6 +37,9 @@ describe("STAGES", () => {
     expect(stage7?.id).toBe("stage7");
     expect(stage7?.answerMin).toBe(0);
     expect(stage7?.answerMax).toBe(9);
+    expect(stage8?.id).toBe("stage8");
+    expect(stage8?.answerMin).toBe(0);
+    expect(stage8?.answerMax).toBe(9);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -438,5 +442,223 @@ describe("STAGES", () => {
 
     expect(prompt).toBe("58 = 7 × ? + 2");
     expect(optionLabel).toBe("8 (56)");
+  });
+
+  it("stage8 retries remainder 0 when the retry gate allows it", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.8)
+      .mockReturnValueOnce(0.875)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.9);
+
+    const expression = stage8.createExpression();
+
+    expect(expression).toEqual({
+      left: 23,
+      right: 6,
+      operator: "÷",
+      answer: 3,
+      remainder: 5,
+    });
+  });
+
+  it("stage8 retries answer 0 when the retry gate allows it", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.25)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.9);
+
+    const expression = stage8.createExpression();
+
+    expect(expression).toEqual({
+      left: 23,
+      right: 6,
+      operator: "÷",
+      answer: 3,
+      remainder: 5,
+    });
+  });
+
+  it("stage8 can still return answer 0", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.25)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage8.createExpression();
+
+    expect(expression).toEqual({
+      left: 1,
+      right: 4,
+      operator: "÷",
+      answer: 0,
+      remainder: 1,
+    });
+  });
+
+  it("stage8 can still return remainder 0", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.8)
+      .mockReturnValueOnce(0.875)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.95);
+
+    const expression = stage8.createExpression();
+
+    expect(expression).toEqual({
+      left: 72,
+      right: 9,
+      operator: "÷",
+      answer: 8,
+      remainder: 0,
+    });
+  });
+
+  it("stage8 retries answer 1 when the retry gate allows it", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.3)
+      .mockReturnValueOnce(0.6)
+      .mockReturnValueOnce(0.2)
+      .mockReturnValueOnce(0.4)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.9);
+
+    const expression = stage8.createExpression();
+
+    expect(expression).toEqual({
+      left: 29,
+      right: 6,
+      operator: "÷",
+      answer: 4,
+      remainder: 5,
+    });
+  });
+
+  it("stage8 formats remainder division option labels", () => {
+    const stage8 = STAGES[7];
+
+    const prompt = stage8.formatQuestion?.({
+      left: 73,
+      right: 9,
+      operator: "÷",
+      answer: 8,
+      remainder: 1,
+    });
+    const optionsJa = stage8.createOptions?.(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "ja",
+    );
+    const optionsEn = stage8.createOptions?.(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+
+    expect(prompt).toBeUndefined();
+    expect(optionsJa?.some((option) => option.label === "8 … 1")).toBe(true);
+    expect(optionsEn?.some((option) => option.label === "8 R 1")).toBe(true);
+    expect(
+      optionsJa?.every((option) => {
+        const [quotientText, remainderText] = option.label.split(" … ");
+        const quotient = Number(quotientText);
+        const remainder = Number(remainderText);
+
+        return (
+          Number.isInteger(quotient) &&
+          Number.isInteger(remainder) &&
+          remainder >= 0 &&
+          remainder < 9
+        );
+      }),
+    ).toBe(true);
+  });
+
+  it("stage8 keeps distractor remainders within the divisor range", () => {
+    const stage8 = STAGES[7];
+
+    const options = stage8.createOptions?.(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+
+    expect(options).toHaveLength(4);
+    expect(
+      options?.every((option) => {
+        const [quotientText, remainderText] = option.label.split(" R ");
+        const quotient = Number(quotientText);
+        const remainder = Number(remainderText);
+
+        return (
+          Number.isInteger(quotient) &&
+          quotient >= 0 &&
+          quotient <= 9 &&
+          Number.isInteger(remainder) &&
+          remainder >= 0 &&
+          remainder < 9
+        );
+      }),
+    ).toBe(true);
+  });
+
+  it("stage8 includes a distractor with the correct quotient and wrong remainder", () => {
+    const stage8 = STAGES[7];
+
+    const options = stage8.createOptions?.(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+
+    expect(
+      options?.some(
+        (option) => option.label.startsWith("8 R ") && option.label !== "8 R 1",
+      ),
+    ).toBe(true);
   });
 });

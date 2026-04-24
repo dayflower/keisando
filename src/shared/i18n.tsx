@@ -17,6 +17,7 @@ const enMessages = {
   "common.backToStageSelect": "Back to stage select",
   "common.openPlayHistory": "Open play history",
   "common.openPlayerSelect": "Open player selection",
+  "common.remainderOption": "{quotient} R {remainder}",
   "stageSelect.screenTag": "Select Stage",
   "stageSelect.noPlayer": "No Player",
   "stageSelect.selectPlayerHint": "Select a player before starting a stage.",
@@ -145,6 +146,10 @@ const enMessages = {
   "stage.stage7.tag": "Multiplication Fill-in+",
   "stage.stage7.description":
     "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
+  "stage.stage8.name": "Stage 8",
+  "stage.stage8.tag": "Division+",
+  "stage.stage8.description":
+    "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
 } as const;
 
 export type MessageKey = keyof typeof enMessages;
@@ -155,6 +160,7 @@ const jaMessages: Record<MessageKey, string> = {
   "common.backToStageSelect": "ステージ選択に戻る",
   "common.openPlayHistory": "プレイ履歴を開く",
   "common.openPlayerSelect": "プレイヤー選択を開く",
+  "common.remainderOption": "{quotient} … {remainder}",
   "stageSelect.screenTag": "ステージ選択",
   "stageSelect.noPlayer": "プレイヤー未選択",
   "stageSelect.selectPlayerHint":
@@ -283,6 +289,10 @@ const jaMessages: Record<MessageKey, string> = {
   "stage.stage7.tag": "かけ算あなうめ+",
   "stage.stage7.description":
     "58 = 7 × ? + 2 のようなかけ算あなうめ (答えは0-9, あまりは1以上)",
+  "stage.stage8.name": "Stage 8",
+  "stage.stage8.tag": "わり算+",
+  "stage.stage8.description":
+    "73 ÷ 9 = ? のようなあまりつきわり算 (選択肢は 8 … 1 の形式)",
 };
 
 const messages: Record<Locale, Record<MessageKey, string>> = {
@@ -312,7 +322,10 @@ type StageMessageKey =
   | "stage.stage6.description"
   | "stage.stage7.name"
   | "stage.stage7.tag"
-  | "stage.stage7.description";
+  | "stage.stage7.description"
+  | "stage.stage8.name"
+  | "stage.stage8.tag"
+  | "stage.stage8.description";
 
 const stageMessageKeys = {
   stage1: {
@@ -349,6 +362,11 @@ const stageMessageKeys = {
     name: "stage.stage7.name",
     tag: "stage.stage7.tag",
     description: "stage.stage7.description",
+  },
+  stage8: {
+    name: "stage.stage8.name",
+    tag: "stage.stage8.tag",
+    description: "stage.stage8.description",
   },
 } as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 

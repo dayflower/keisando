@@ -128,13 +128,14 @@ function App() {
     appendPlayRecord,
     stageClearConditionById,
   });
+  const locale = localeOverride ?? detectedLocale;
   const game = useGameSession({
     activePlayer,
     records,
+    locale,
     onAnswerResolved: recordAnsweredQuestion,
     onStageFinished: clearFlow.handleStageFinish,
   });
-
   const canStartStage = activePlayer !== null;
   const playingPlayer = useMemo(
     () => players.find((player) => player.id === game.playingPlayerId) ?? null,
@@ -167,7 +168,6 @@ function App() {
 
     return unlocked;
   }, [activePlayerId, unlockedStageIdsByPlayer]);
-  const locale = localeOverride ?? detectedLocale;
 
   useEffect(() => {
     saveStageClearConditionOverrides(stageClearConditionOverrides);

@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { ROUND_COUNTDOWN_MS } from "../../shared/constants";
+import type { Locale } from "../../shared/i18n";
 import { createRecordId } from "../../shared/ids";
 import type {
   Player,
@@ -39,6 +40,7 @@ export type EffectOrigin = {
 type UseGameSessionInput = {
   activePlayer: Player | null;
   records: StageRunRecord[];
+  locale?: Locale;
   onAnswerResolved: (payload: AnswerResolvedPayload) => void;
   onStageFinished: (payload: StageFinishedPayload) => void;
 };
@@ -83,11 +85,12 @@ const createRoundSessionState = (
   stage: StageDefinition,
   startedAtMs: number,
   usedExpressionsRef: MutableRefObject<Set<string>>,
+  locale: Locale,
 ): RoundSessionState => {
   usedExpressionsRef.current = new Set<string>();
 
   return {
-    question: createQuestion(stage, usedExpressionsRef.current),
+    question: createQuestion(stage, usedExpressionsRef.current, locale),
     answeredCount: 0,
     requiredCount: stage.baseQuestionCount,
     currentCombo: 0,
@@ -128,6 +131,7 @@ const createStoppedSessionState = (
 export const useGameSession = ({
   activePlayer,
   records,
+  locale = "en",
   onAnswerResolved,
   onStageFinished,
 }: UseGameSessionInput) => {
@@ -208,6 +212,7 @@ export const useGameSession = ({
       stage,
       startAtMs,
       usedExpressionsRef,
+      locale,
     );
 
     setSelectedStage(stage);
@@ -301,7 +306,9 @@ export const useGameSession = ({
       return;
     }
 
-    setQuestion(createQuestion(selectedStage, usedExpressionsRef.current));
+    setQuestion(
+      createQuestion(selectedStage, usedExpressionsRef.current, locale),
+    );
   };
 
   const resetStage = () => {
@@ -310,6 +317,7 @@ export const useGameSession = ({
       selectedStage,
       Date.now(),
       usedExpressionsRef,
+      locale,
     );
 
     setQuestion(roundState.question);

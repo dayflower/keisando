@@ -1,3 +1,4 @@
+import type { Locale } from "../../shared/i18n";
 import type {
   Question,
   QuestionOption,
@@ -54,7 +55,9 @@ const formatQuestion = (
 const createQuestionOptions = (
   stage: StageDefinition,
   expression: StageExpression,
+  locale: Locale,
 ): QuestionOption[] =>
+  stage.createOptions?.(expression, locale) ??
   createOptions(expression.answer, stage.answerMin, stage.answerMax).map(
     (value) => ({
       label: stage.formatOptionLabel?.(value, expression) ?? String(value),
@@ -65,6 +68,7 @@ const createQuestionOptions = (
 export const createQuestion = (
   stage: StageDefinition,
   usedExpressions: Set<string>,
+  locale: Locale = "en",
 ): Question => {
   const maxUnique = 200;
   if (usedExpressions.size >= maxUnique) {
@@ -85,6 +89,6 @@ export const createQuestion = (
     right: expression.right,
     operator: expression.operator,
     prompt: formatQuestion(stage, expression),
-    options: createQuestionOptions(stage, expression),
+    options: createQuestionOptions(stage, expression, locale),
   };
 };
