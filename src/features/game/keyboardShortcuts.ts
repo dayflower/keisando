@@ -4,7 +4,8 @@ export type PlayingShortcutAction =
   | "answerRight"
   | "answerBottom"
   | "back"
-  | "retry";
+  | "retry"
+  | "nextStage";
 
 export const getStageFocusMoveTarget = (
   currentIndex: number,
@@ -48,10 +49,24 @@ export const getAnswerChoiceIndexByArrowKey = (key: string): number | null => {
 export const getPlayingShortcutAction = (
   key: string,
   isCleared: boolean,
+  canAdvanceToNextStage = false,
 ): PlayingShortcutAction | null => {
   if (isCleared) {
     if (key === "Escape" || key === "Esc" || key === "Backspace") {
       return "back";
+    }
+    if (
+      canAdvanceToNextStage &&
+      (key === "Enter" ||
+        key === " " ||
+        key === "Spacebar" ||
+        key === "n" ||
+        key === "N")
+    ) {
+      return "nextStage";
+    }
+    if (key === "r" || key === "R") {
+      return "retry";
     }
     if (key === "Enter" || key === " " || key === "Spacebar") {
       return "retry";

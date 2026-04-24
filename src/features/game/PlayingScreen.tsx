@@ -45,9 +45,11 @@ export type PlayingScreenProps = {
   clearBestBadge: ClearBestBadge;
   clearCelebrationTick: number;
   didUnlockNextStageOnClear: boolean;
+  canAdvanceToNextStage: boolean;
   onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
+  onStartNextStage: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
   onUiTap?: () => void;
@@ -76,9 +78,11 @@ export const PlayingScreen = ({
   clearBestBadge,
   clearCelebrationTick,
   didUnlockNextStageOnClear,
+  canAdvanceToNextStage,
   onAnswer,
   onBackToStageSelect,
   onResetStage,
+  onStartNextStage,
   isMuted,
   onToggleMute,
   onUiTap,
@@ -129,12 +133,14 @@ export const PlayingScreen = ({
   const choiceButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   usePlayingKeyboardShortcuts({
     isCleared,
+    canAdvanceToNextStage,
     isRoundActive,
     options: question.options,
     choiceButtonRefs,
     onAnswer,
     onBackToStageSelect,
     onResetStage,
+    onStartNextStage,
     onUiTap,
   });
 
@@ -356,7 +362,7 @@ export const PlayingScreen = ({
         {isCleared && (
           <div className="clear-actions">
             <button
-              className="primary-back-button"
+              className="clear-back-button"
               type="button"
               onClick={() => {
                 onUiTap?.();
@@ -366,6 +372,20 @@ export const PlayingScreen = ({
               <ArrowLeft size={16} aria-hidden="true" />
               <span>{t("playing.back")}</span>
             </button>
+            {canAdvanceToNextStage ? (
+              <button
+                className="primary-action-button clear-next-button"
+                type="button"
+                onClick={() => {
+                  onUiTap?.();
+                  onStartNextStage();
+                }}
+              >
+                {t("playing.nextStage")}
+              </button>
+            ) : (
+              <div className="clear-next-stage-blank" aria-hidden="true" />
+            )}
             <button
               className="clear-retry-button"
               type="button"

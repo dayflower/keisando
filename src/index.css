@@ -911,6 +911,7 @@ textarea {
 .choice:focus-visible,
 .back-icon-button:focus-visible,
 .primary-back-button:focus-visible,
+.clear-back-button:focus-visible,
 .primary-action-button:focus-visible,
 .clear-retry-button:focus-visible,
 .player-trigger:focus-visible,
@@ -1220,7 +1221,8 @@ textarea {
 .clear-actions {
   margin-top: 0.75rem;
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(0, 0.9fr);
+  align-items: stretch;
   gap: 0.6rem;
 }
 
@@ -1430,6 +1432,7 @@ textarea {
 }
 
 .primary-back-button,
+.clear-back-button,
 .primary-action-button,
 .clear-retry-button {
   border: none;
@@ -1438,6 +1441,16 @@ textarea {
   font-size: 0.98rem;
   font-weight: 800;
   cursor: pointer;
+}
+
+.clear-back-button,
+.clear-retry-button {
+  padding: 0.72rem 0.82rem;
+  font-size: 0.88rem;
+}
+
+.clear-next-button {
+  min-height: 100%;
 }
 
 .primary-back-button,
@@ -1453,9 +1466,21 @@ textarea {
   gap: 0.35rem;
 }
 
+.clear-back-button,
 .clear-retry-button {
   background: #f3e6cf;
   color: #3d2500;
+}
+
+.clear-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.clear-next-stage-blank {
+  min-height: 100%;
 }
 
 .history-section {

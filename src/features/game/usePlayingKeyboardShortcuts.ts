@@ -8,12 +8,14 @@ import type { EffectOrigin } from "./useGameSession";
 
 type UsePlayingKeyboardShortcutsInput = {
   isCleared: boolean;
+  canAdvanceToNextStage: boolean;
   isRoundActive: boolean;
   options: QuestionOption[];
   choiceButtonRefs: RefObject<Array<HTMLButtonElement | null>>;
   onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
+  onStartNextStage: () => void;
   onUiTap?: () => void;
 };
 
@@ -32,12 +34,14 @@ const getChoiceEffectOriginByIndex = (
 
 export const usePlayingKeyboardShortcuts = ({
   isCleared,
+  canAdvanceToNextStage,
   isRoundActive,
   options,
   choiceButtonRefs,
   onAnswer,
   onBackToStageSelect,
   onResetStage,
+  onStartNextStage,
   onUiTap,
 }: UsePlayingKeyboardShortcutsInput) => {
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
@@ -45,7 +49,11 @@ export const usePlayingKeyboardShortcuts = ({
       return;
     }
 
-    const action = getPlayingShortcutAction(event.key, isCleared);
+    const action = getPlayingShortcutAction(
+      event.key,
+      isCleared,
+      canAdvanceToNextStage,
+    );
     if (action === null) {
       return;
     }
@@ -59,6 +67,11 @@ export const usePlayingKeyboardShortcuts = ({
     if (action === "retry") {
       onUiTap?.();
       onResetStage();
+      return;
+    }
+    if (action === "nextStage") {
+      onUiTap?.();
+      onStartNextStage();
       return;
     }
     if (!isRoundActive) {

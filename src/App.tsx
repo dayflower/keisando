@@ -10,6 +10,7 @@ import { unlockAllStagesForPlayer } from "./features/debug/logic";
 import { normalizeClearCondition } from "./features/game/clearConditions";
 import { PlayingScreen } from "./features/game/PlayingScreen";
 import { StageSelectScreen } from "./features/game/StageSelectScreen";
+import { getNextPlayableStage } from "./features/game/stageProgression";
 import { useGameSession } from "./features/game/useGameSession";
 import { useStageClearFlow } from "./features/game/useStageClearFlow";
 import { HistoryDetailScreen } from "./features/history/HistoryDetailScreen";
@@ -168,6 +169,17 @@ function App() {
 
     return unlocked;
   }, [activePlayerId, unlockedStageIdsByPlayer]);
+  const nextPlayableStage = useMemo(() => {
+    if (!game.selectedStage) {
+      return null;
+    }
+
+    return getNextPlayableStage(
+      game.selectedStage.id,
+      unlockedStageIds,
+      STAGES,
+    );
+  }, [game.selectedStage, unlockedStageIds]);
 
   useEffect(() => {
     saveStageClearConditionOverrides(stageClearConditionOverrides);
@@ -271,6 +283,17 @@ function App() {
       clearFlow.resetClearFlow();
 
       if (game.startStage(stage)) {
+        setScreen("playing");
+      }
+    },
+    startNextStage: () => {
+      if (!nextPlayableStage) {
+        return;
+      }
+
+      clearFlow.resetClearFlow();
+
+      if (game.startStage(nextPlayableStage)) {
         setScreen("playing");
       }
     },
@@ -495,9 +518,11 @@ function App() {
         clearBestBadge={clearFlow.clearCelebration.clearBestBadge}
         clearCelebrationTick={clearFlow.clearCelebrationTick}
         didUnlockNextStageOnClear={clearFlow.didUnlockNextStageOnClear}
+        canAdvanceToNextStage={nextPlayableStage !== null}
         onAnswer={game.handleAnswer}
         onBackToStageSelect={navigation.backToStageSelect}
         onResetStage={game.resetStage}
+        onStartNextStage={navigation.startNextStage}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onUiTap={playUiTap}

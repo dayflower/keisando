@@ -54,9 +54,11 @@ const buildProps = (
   clearBestBadge: "none",
   clearCelebrationTick: 1,
   didUnlockNextStageOnClear: true,
+  canAdvanceToNextStage: true,
   onAnswer: () => {},
   onBackToStageSelect: () => {},
   onResetStage: () => {},
+  onStartNextStage: () => {},
   isMuted: false,
   onToggleMute: () => {},
   ...overrides,
@@ -192,7 +194,16 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("クリアタイム");
     expect(html).toContain("最終問題数: 11");
     expect(html).toContain("ミス数: 2");
+    expect(html).toContain("次のステージ");
     expect(html).toContain("戻る");
     expect(html).toContain("リトライ");
+  });
+
+  it("hides next stage action when no next stage is available", () => {
+    const html = renderScreen({
+      canAdvanceToNextStage: false,
+    });
+
+    expect(html).not.toContain("Next Stage");
   });
 });

@@ -58,13 +58,23 @@ describe("getPlayingShortcutAction", () => {
     expect(getPlayingShortcutAction("Enter", false)).toBeNull();
   });
 
-  it("supports clear-screen shortcuts without ArrowLeft back navigation", () => {
+  it("supports clear-screen shortcuts without next stage", () => {
     expect(getPlayingShortcutAction("Escape", true)).toBe("back");
     expect(getPlayingShortcutAction("Backspace", true)).toBe("back");
     expect(getPlayingShortcutAction("ArrowLeft", true)).toBeNull();
     expect(getPlayingShortcutAction("Enter", true)).toBe("retry");
     expect(getPlayingShortcutAction(" ", true)).toBe("retry");
     expect(getPlayingShortcutAction("Spacebar", true)).toBe("retry");
+    expect(getPlayingShortcutAction("r", true)).toBe("retry");
     expect(getPlayingShortcutAction("ArrowUp", true)).toBeNull();
+  });
+
+  it("prioritizes next-stage shortcuts on the clear screen when available", () => {
+    expect(getPlayingShortcutAction("Enter", true, true)).toBe("nextStage");
+    expect(getPlayingShortcutAction(" ", true, true)).toBe("nextStage");
+    expect(getPlayingShortcutAction("Spacebar", true, true)).toBe("nextStage");
+    expect(getPlayingShortcutAction("n", true, true)).toBe("nextStage");
+    expect(getPlayingShortcutAction("N", true, true)).toBe("nextStage");
+    expect(getPlayingShortcutAction("r", true, true)).toBe("retry");
   });
 });
