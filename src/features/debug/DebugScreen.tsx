@@ -162,7 +162,8 @@ export const DebugScreen = ({
 
   return (
     <main className="app">
-      <section className="stage-card debug-card">
+      <div className="stage-frame">
+        <section className="stage-card debug-card">
         <div className="screen-fixed-panel">
           <div className="stage-head-row">
             <p className="stage-tag">{t("debug.screenTag")}</p>
@@ -590,7 +591,8 @@ export const DebugScreen = ({
             </div>
           </section>
         </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 };

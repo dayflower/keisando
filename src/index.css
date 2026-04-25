@@ -36,6 +36,15 @@ textarea {
 
 .app {
   --app-shell-padding: clamp(0.6rem, 2.5vmin, 1.2rem);
+  --stage-card-aspect-ratio: 0.6666666667;
+  --stage-card-base-width: 440px;
+  --stage-card-base-height: 660px;
+  --stage-card-max-inline-size: calc(100vw - (var(--app-shell-padding) * 2));
+  --stage-card-max-block-size: calc(100vh - (var(--app-shell-padding) * 2));
+  --stage-card-scale: min(
+    calc(var(--stage-card-max-inline-size) / var(--stage-card-base-width)),
+    calc(var(--stage-card-max-block-size) / var(--stage-card-base-height))
+  );
   min-height: 100vh;
   height: 100vh;
   display: grid;
@@ -190,11 +199,17 @@ textarea {
     alternate;
 }
 
+.stage-frame {
+  width: calc(var(--stage-card-base-width) * var(--stage-card-scale));
+  height: calc(var(--stage-card-base-height) * var(--stage-card-scale));
+  position: relative;
+  flex: none;
+}
+
 .stage-card {
-  width: min(100%, 440px);
-  height: calc(100vh - (var(--app-shell-padding) * 2));
-  min-height: min(560px, calc(100vh - (var(--app-shell-padding) * 2)));
-  max-height: 720px;
+  width: var(--stage-card-base-width);
+  height: var(--stage-card-base-height);
+  aspect-ratio: 2 / 3;
   border-radius: 24px;
   padding: 1.5rem 1.25rem 1.75rem;
   display: flex;
@@ -203,8 +218,12 @@ textarea {
   box-shadow:
     0 14px 30px rgb(203 143 64 / 22%),
     inset 0 0 0 2px #ffedcf;
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
   z-index: 1;
+  transform: translate(-50%, -50%) scale(var(--stage-card-scale));
+  transform-origin: center center;
 }
 
 @supports (height: 100dvh) {
@@ -217,13 +236,11 @@ textarea {
   }
 
   .app {
+    --stage-card-max-block-size: calc(
+      100dvh - (var(--app-shell-padding) * 2)
+    );
     min-height: 100dvh;
     height: 100dvh;
-  }
-
-  .stage-card {
-    height: calc(100dvh - (var(--app-shell-padding) * 2));
-    min-height: min(560px, calc(100dvh - (var(--app-shell-padding) * 2)));
   }
 }
 

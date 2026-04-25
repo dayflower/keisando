@@ -115,7 +115,8 @@ export const StageSelectScreen = ({
 
   return (
     <main className="app">
-      <section className="stage-card stage-select-card">
+      <div className="stage-frame">
+        <section className="stage-card stage-select-card">
         <div className="screen-fixed-panel">
           <div className="stage-head-row">
             <p className="stage-tag">{t("stageSelect.screenTag")}</p>
@@ -244,7 +245,8 @@ export const StageSelectScreen = ({
             })}
           </div>
         </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 };

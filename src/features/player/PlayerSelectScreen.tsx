@@ -42,7 +42,8 @@ export const PlayerSelectScreen = ({
 
   return (
     <main className="app">
-      <section className="stage-card">
+      <div className="stage-frame">
+        <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">{t("playerSelect.screenTag")}</p>
           <div className="stage-head-actions">
@@ -127,7 +128,8 @@ export const PlayerSelectScreen = ({
             </button>
           </div>
         </form>
-      </section>
+        </section>
+      </div>
     </main>
   );
 };

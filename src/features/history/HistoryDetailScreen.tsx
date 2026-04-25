@@ -34,7 +34,8 @@ export const HistoryDetailScreen = ({
 
   return (
     <main className="app">
-      <section className="stage-card">
+      <div className="stage-frame">
+        <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">{t("history.screenTag")}</p>
           <div className="stage-head-actions">
@@ -157,7 +158,8 @@ export const HistoryDetailScreen = ({
             )}
           </div>
         </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 };

@@ -46,7 +46,8 @@ export const RankingScreen = ({
 
   return (
     <main className="app">
-      <section className="stage-card">
+      <div className="stage-frame">
+        <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
             {stageName} {t("ranking.screenTagSuffix")}
@@ -146,7 +147,8 @@ export const RankingScreen = ({
             </table>
           )}
         </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 };

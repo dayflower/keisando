@@ -238,7 +238,8 @@ export const PlayingScreen = ({
           ))}
         </div>
       )}
-      <section className="stage-card">
+      <div className="stage-frame">
+        <section className="stage-card">
         <div className="stage-head-row">
           <p className="stage-tag">
             {stageName} / {stageTag}
@@ -505,7 +506,8 @@ export const PlayingScreen = ({
             </button>
           </div>
         )}
-      </section>
+        </section>
+      </div>
     </main>
   );
 };
