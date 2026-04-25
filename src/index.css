@@ -892,6 +892,10 @@ textarea {
   font-size: clamp(1.35rem, 6vw, 1.8rem);
   font-weight: 900;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
