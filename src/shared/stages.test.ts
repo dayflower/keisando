@@ -667,6 +667,87 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
+  it("stage8 can build same-quotient options when the divisor allows it", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+    const options = stage8.createOptions(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+
+    randomSpy.mockRestore();
+
+    expect(options).toHaveLength(4);
+    expect(options?.every((option) => option.label.startsWith("8 R "))).toBe(
+      true,
+    );
+  });
+
+  it("stage8 falls back to mixed options when same-quotient is unavailable", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+    const options = stage8.createOptions(
+      {
+        left: 17,
+        right: 3,
+        operator: "÷",
+        answer: 5,
+        remainder: 2,
+      },
+      "en",
+    );
+
+    randomSpy.mockRestore();
+
+    expect(options).toHaveLength(4);
+    expect(options?.some((option) => option.label === "5 R 2")).toBe(true);
+    expect(
+      options?.some(
+        (option) => option.label.startsWith("5 R ") && option.label !== "5 R 2",
+      ),
+    ).toBe(true);
+    expect(
+      options?.some(
+        (option) =>
+          !option.label.startsWith("5 R ") && option.label.endsWith("R 2"),
+      ),
+    ).toBe(true);
+  });
+
+  it("stage8 mixed options still include a same-remainder distractor", () => {
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.9);
+
+    const options = stage8.createOptions(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+
+    randomSpy.mockRestore();
+
+    expect(options).toHaveLength(4);
+    expect(
+      options?.some(
+        (option) =>
+          !option.label.startsWith("8 R ") && option.label.endsWith("R 1"),
+      ),
+    ).toBe(true);
+  });
+
   it("stage9 can delegate to stage1 expressions", () => {
     const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");

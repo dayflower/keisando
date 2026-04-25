@@ -14,6 +14,7 @@ const STAGE8_ANSWER_ZERO_RETRY_RATE = 0.8;
 const STAGE8_REMAINDER_ZERO_RETRY_RATE = 0.8;
 const STAGE8_ONE_RETRY_RATE = 0.6;
 const STAGE8_OPTION_SAMPLE_COUNT = 24;
+const STAGE8_SAME_QUOTIENT_OPTION_RATE = 0.25;
 const MAX_ZERO_RETRIES = 3;
 
 type Stage8OptionCandidate = {
@@ -132,6 +133,23 @@ const pickStage8Candidate = (
   return candidate;
 };
 
+const buildSameQuotientStage8Distractors = (
+  correct: Stage8OptionCandidate,
+  pool: Stage8OptionCandidate[],
+): Stage8OptionCandidate[] | null => {
+  const sameQuotientPool = pool.filter(
+    (item) =>
+      item.quotient === correct.quotient &&
+      item.remainder !== correct.remainder,
+  );
+
+  if (sameQuotientPool.length < 3) {
+    return null;
+  }
+
+  return shuffleItems(sameQuotientPool).slice(0, 3);
+};
+
 const buildGuaranteedStage8Distractors = (
   correct: Stage8OptionCandidate,
   pool: Stage8OptionCandidate[],
@@ -161,6 +179,24 @@ const buildGuaranteedStage8Distractors = (
   const optionalDistractor = pickStage8Candidate(remainingPool);
 
   return [...requiredDistractors, optionalDistractor];
+};
+
+const buildStage8Distractors = (
+  correct: Stage8OptionCandidate,
+  pool: Stage8OptionCandidate[],
+): Stage8OptionCandidate[] => {
+  if (Math.random() < STAGE8_SAME_QUOTIENT_OPTION_RATE) {
+    const sameQuotientDistractors = buildSameQuotientStage8Distractors(
+      correct,
+      pool,
+    );
+
+    if (sameQuotientDistractors) {
+      return sameQuotientDistractors;
+    }
+  }
+
+  return buildGuaranteedStage8Distractors(correct, pool);
 };
 
 const countDistinct = (values: number[]): number => new Set(values).size;
@@ -241,11 +277,11 @@ const buildStage8Options = (
   locale: Locale,
 ): Array<{ label: string; isCorrect: boolean }> => {
   const pool = buildStage8CandidatePool(correct, divisor);
-  let bestDistractors = buildGuaranteedStage8Distractors(correct, pool);
+  let bestDistractors = buildStage8Distractors(correct, pool);
   let bestScore = scoreStage8Distractors(correct, bestDistractors);
 
   for (let sample = 1; sample < STAGE8_OPTION_SAMPLE_COUNT; sample += 1) {
-    const distractors = buildGuaranteedStage8Distractors(correct, pool);
+    const distractors = buildStage8Distractors(correct, pool);
     const score = scoreStage8Distractors(correct, distractors);
 
     if (score > bestScore) {
