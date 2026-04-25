@@ -240,272 +240,286 @@ export const PlayingScreen = ({
       )}
       <div className="stage-frame">
         <section className="stage-card">
-        <div className="stage-head-row">
-          <p className="stage-tag">
-            {stageName} / {stageTag}
-            {playingPlayer && ` / ${playingPlayer.name}`}
-          </p>
-          <div className="stage-head-actions">
-            {!isCleared && (
+          <div className="stage-head-row">
+            <p className="stage-tag">
+              {stageName} / {stageTag}
+              {playingPlayer && ` / ${playingPlayer.name}`}
+            </p>
+            <div className="stage-head-actions">
+              {!isCleared && (
+                <button
+                  className="back-icon-button"
+                  type="button"
+                  onClick={() => {
+                    onUiTap?.();
+                    onBackToStageSelect();
+                  }}
+                  aria-label={t("common.backToStageSelect")}
+                >
+                  <ArrowLeft size={16} aria-hidden="true" />
+                </button>
+              )}
+              <SoundToggleButton
+                isMuted={isMuted}
+                onToggleMute={onToggleMute}
+                onUiTap={onUiTap}
+              />
+            </div>
+          </div>
+
+          <h1 className="title">Keisando</h1>
+          <div className="progress-row">
+            <p>
+              {t("playing.answered")}: {answeredCount} / {requiredCount}
+            </p>
+            <p>
+              {t("playing.remaining")}: {remainingCount}
+            </p>
+          </div>
+          <div className="progress-bar-block">
+            <div
+              className="progress-bar-track"
+              role="progressbar"
+              aria-label={t("playing.progress")}
+              aria-valuemin={0}
+              aria-valuemax={progressMax}
+              aria-valuenow={Math.min(correctCount, progressMax)}
+            >
+              <span
+                className="progress-bar-fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+              {comboEffect.milestoneLabel && (
+                <span
+                  key={comboMilestoneTick}
+                  className="combo-progress-overlay"
+                  aria-hidden="true"
+                >
+                  {comboEffect.milestoneLabel}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="timer-row">
+            <p className="timer-pill">
+              {t("playing.time")}: {formatElapsedTime(elapsedMs)}
+            </p>
+            <p className="timer-pill">
+              {t("playing.best")}:{" "}
+              {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
+            </p>
+          </div>
+
+          <div className="round-content" aria-live="polite">
+            {!isCleared ? (
+              isRoundActive ? (
+                <>
+                  <p className="expression">{question.prompt}</p>
+
+                  <div className="diamond-grid">
+                    <button
+                      className={[
+                        "choice",
+                        "choice-top",
+                        keyboardChoiceFeedbackIndex === 0
+                          ? "choice-keyboard-active"
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      type="button"
+                      ref={(element) => {
+                        choiceButtonRefs.current[0] = element;
+                      }}
+                      onClick={(event) =>
+                        onAnswer(
+                          question.options[0],
+                          resolveEffectOrigin(event),
+                        )
+                      }
+                    >
+                      {question.options[0].label}
+                    </button>
+                    <button
+                      className={[
+                        "choice",
+                        "choice-left",
+                        keyboardChoiceFeedbackIndex === 1
+                          ? "choice-keyboard-active"
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      type="button"
+                      ref={(element) => {
+                        choiceButtonRefs.current[1] = element;
+                      }}
+                      onClick={(event) =>
+                        onAnswer(
+                          question.options[1],
+                          resolveEffectOrigin(event),
+                        )
+                      }
+                    >
+                      {question.options[1].label}
+                    </button>
+                    <button
+                      className={[
+                        "choice",
+                        "choice-right",
+                        keyboardChoiceFeedbackIndex === 2
+                          ? "choice-keyboard-active"
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      type="button"
+                      ref={(element) => {
+                        choiceButtonRefs.current[2] = element;
+                      }}
+                      onClick={(event) =>
+                        onAnswer(
+                          question.options[2],
+                          resolveEffectOrigin(event),
+                        )
+                      }
+                    >
+                      {question.options[2].label}
+                    </button>
+                    <button
+                      className={[
+                        "choice",
+                        "choice-bottom",
+                        keyboardChoiceFeedbackIndex === 3
+                          ? "choice-keyboard-active"
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      type="button"
+                      ref={(element) => {
+                        choiceButtonRefs.current[3] = element;
+                      }}
+                      onClick={(event) =>
+                        onAnswer(
+                          question.options[3],
+                          resolveEffectOrigin(event),
+                        )
+                      }
+                    >
+                      {question.options[3].label}
+                    </button>
+                  </div>
+
+                  <p
+                    key={resultDisplayKey}
+                    className={[
+                      "result-text",
+                      visibleResult !== null ? "result-text-active" : null,
+                      visibleResult === "correct" ? "result-correct" : null,
+                      visibleResult === "wrong" ? "result-wrong" : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {visibleResult === "correct" && t("playing.resultCorrect")}
+                    {visibleResult === "wrong" && t("playing.resultWrong")}
+                  </p>
+                </>
+              ) : (
+                <div className="countdown-status" role="status">
+                  <p className="countdown-label">
+                    {t("playing.roundStartsIn")}
+                  </p>
+                  <p key={countdownDisplay} className="countdown-number">
+                    {countdownDisplay}
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="clear-summary" role="status" aria-live="polite">
+                <div
+                  key={clearCelebrationTick}
+                  className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
+                  aria-hidden="true"
+                >
+                  {clearEffect.burstSpecs.map((burstSpec) => (
+                    <span
+                      key={burstSpec.id}
+                      className={`clear-burst ${
+                        clearEffect.withShockwave ? "clear-burst-shockwave" : ""
+                      }`}
+                      style={
+                        {
+                          "--clear-burst-x": `${burstSpec.x}%`,
+                          "--clear-burst-y": `${burstSpec.y}%`,
+                          "--clear-burst-scale": burstSpec.scale,
+                          "--clear-burst-delay": `${burstSpec.delayMs}ms`,
+                          "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
+                        } as CSSProperties
+                      }
+                    />
+                  ))}
+                </div>
+                {clearEffect.badgeLabel && (
+                  <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
+                )}
+                <p className="clear-title">{t("playing.clearTitle")}</p>
+                {didUnlockNextStageOnClear && (
+                  <p className="clear-meta">{t("playing.nextStageUnlocked")}</p>
+                )}
+                <p className="clear-primary-time">
+                  {formatElapsedTime(elapsedMs)}
+                </p>
+                <p className="clear-primary-label">{t("playing.clearTime")}</p>
+                <p className="clear-meta">
+                  {t("playing.finalQuestions")}: {requiredCount}
+                </p>
+                <p className="clear-meta">
+                  {t("playing.wrongAnswers")}: {wrongAnswerCount}
+                </p>
+              </div>
+            )}
+          </div>
+          {isCleared && (
+            <div className="clear-actions">
               <button
-                className="back-icon-button"
+                className="clear-back-button"
                 type="button"
                 onClick={() => {
                   onUiTap?.();
                   onBackToStageSelect();
                 }}
-                aria-label={t("common.backToStageSelect")}
               >
                 <ArrowLeft size={16} aria-hidden="true" />
+                <span>{t("playing.back")}</span>
               </button>
-            )}
-            <SoundToggleButton
-              isMuted={isMuted}
-              onToggleMute={onToggleMute}
-              onUiTap={onUiTap}
-            />
-          </div>
-        </div>
-
-        <h1 className="title">Keisando</h1>
-        <div className="progress-row">
-          <p>
-            {t("playing.answered")}: {answeredCount} / {requiredCount}
-          </p>
-          <p>
-            {t("playing.remaining")}: {remainingCount}
-          </p>
-        </div>
-        <div className="progress-bar-block">
-          <div
-            className="progress-bar-track"
-            role="progressbar"
-            aria-label={t("playing.progress")}
-            aria-valuemin={0}
-            aria-valuemax={progressMax}
-            aria-valuenow={Math.min(correctCount, progressMax)}
-          >
-            <span
-              className="progress-bar-fill"
-              style={{ width: `${progressPercent}%` }}
-            />
-            {comboEffect.milestoneLabel && (
-              <span
-                key={comboMilestoneTick}
-                className="combo-progress-overlay"
-                aria-hidden="true"
-              >
-                {comboEffect.milestoneLabel}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="timer-row">
-          <p className="timer-pill">
-            {t("playing.time")}: {formatElapsedTime(elapsedMs)}
-          </p>
-          <p className="timer-pill">
-            {t("playing.best")}:{" "}
-            {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
-          </p>
-        </div>
-
-        <div className="round-content" aria-live="polite">
-          {!isCleared ? (
-            isRoundActive ? (
-              <>
-                <p className="expression">{question.prompt}</p>
-
-                <div className="diamond-grid">
-                  <button
-                    className={[
-                      "choice",
-                      "choice-top",
-                      keyboardChoiceFeedbackIndex === 0
-                        ? "choice-keyboard-active"
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    type="button"
-                    ref={(element) => {
-                      choiceButtonRefs.current[0] = element;
-                    }}
-                    onClick={(event) =>
-                      onAnswer(question.options[0], resolveEffectOrigin(event))
-                    }
-                  >
-                    {question.options[0].label}
-                  </button>
-                  <button
-                    className={[
-                      "choice",
-                      "choice-left",
-                      keyboardChoiceFeedbackIndex === 1
-                        ? "choice-keyboard-active"
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    type="button"
-                    ref={(element) => {
-                      choiceButtonRefs.current[1] = element;
-                    }}
-                    onClick={(event) =>
-                      onAnswer(question.options[1], resolveEffectOrigin(event))
-                    }
-                  >
-                    {question.options[1].label}
-                  </button>
-                  <button
-                    className={[
-                      "choice",
-                      "choice-right",
-                      keyboardChoiceFeedbackIndex === 2
-                        ? "choice-keyboard-active"
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    type="button"
-                    ref={(element) => {
-                      choiceButtonRefs.current[2] = element;
-                    }}
-                    onClick={(event) =>
-                      onAnswer(question.options[2], resolveEffectOrigin(event))
-                    }
-                  >
-                    {question.options[2].label}
-                  </button>
-                  <button
-                    className={[
-                      "choice",
-                      "choice-bottom",
-                      keyboardChoiceFeedbackIndex === 3
-                        ? "choice-keyboard-active"
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    type="button"
-                    ref={(element) => {
-                      choiceButtonRefs.current[3] = element;
-                    }}
-                    onClick={(event) =>
-                      onAnswer(question.options[3], resolveEffectOrigin(event))
-                    }
-                  >
-                    {question.options[3].label}
-                  </button>
-                </div>
-
-                <p
-                  key={resultDisplayKey}
-                  className={[
-                    "result-text",
-                    visibleResult !== null ? "result-text-active" : null,
-                    visibleResult === "correct" ? "result-correct" : null,
-                    visibleResult === "wrong" ? "result-wrong" : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
+              {canAdvanceToNextStage ? (
+                <button
+                  className="primary-action-button clear-next-button"
+                  type="button"
+                  onClick={() => {
+                    onUiTap?.();
+                    onStartNextStage();
+                  }}
                 >
-                  {visibleResult === "correct" && t("playing.resultCorrect")}
-                  {visibleResult === "wrong" && t("playing.resultWrong")}
-                </p>
-              </>
-            ) : (
-              <div className="countdown-status" role="status">
-                <p className="countdown-label">{t("playing.roundStartsIn")}</p>
-                <p key={countdownDisplay} className="countdown-number">
-                  {countdownDisplay}
-                </p>
-              </div>
-            )
-          ) : (
-            <div className="clear-summary" role="status" aria-live="polite">
-              <div
-                key={clearCelebrationTick}
-                className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
-                aria-hidden="true"
-              >
-                {clearEffect.burstSpecs.map((burstSpec) => (
-                  <span
-                    key={burstSpec.id}
-                    className={`clear-burst ${
-                      clearEffect.withShockwave ? "clear-burst-shockwave" : ""
-                    }`}
-                    style={
-                      {
-                        "--clear-burst-x": `${burstSpec.x}%`,
-                        "--clear-burst-y": `${burstSpec.y}%`,
-                        "--clear-burst-scale": burstSpec.scale,
-                        "--clear-burst-delay": `${burstSpec.delayMs}ms`,
-                        "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
-                      } as CSSProperties
-                    }
-                  />
-                ))}
-              </div>
-              {clearEffect.badgeLabel && (
-                <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
+                  {t("playing.nextStage")}
+                </button>
+              ) : (
+                <div className="clear-next-stage-blank" aria-hidden="true" />
               )}
-              <p className="clear-title">{t("playing.clearTitle")}</p>
-              {didUnlockNextStageOnClear && (
-                <p className="clear-meta">{t("playing.nextStageUnlocked")}</p>
-              )}
-              <p className="clear-primary-time">
-                {formatElapsedTime(elapsedMs)}
-              </p>
-              <p className="clear-primary-label">{t("playing.clearTime")}</p>
-              <p className="clear-meta">
-                {t("playing.finalQuestions")}: {requiredCount}
-              </p>
-              <p className="clear-meta">
-                {t("playing.wrongAnswers")}: {wrongAnswerCount}
-              </p>
-            </div>
-          )}
-        </div>
-        {isCleared && (
-          <div className="clear-actions">
-            <button
-              className="clear-back-button"
-              type="button"
-              onClick={() => {
-                onUiTap?.();
-                onBackToStageSelect();
-              }}
-            >
-              <ArrowLeft size={16} aria-hidden="true" />
-              <span>{t("playing.back")}</span>
-            </button>
-            {canAdvanceToNextStage ? (
               <button
-                className="primary-action-button clear-next-button"
+                className="clear-retry-button"
                 type="button"
                 onClick={() => {
                   onUiTap?.();
-                  onStartNextStage();
+                  onResetStage();
                 }}
               >
-                {t("playing.nextStage")}
+                {t("playing.retry")}
               </button>
-            ) : (
-              <div className="clear-next-stage-blank" aria-hidden="true" />
-            )}
-            <button
-              className="clear-retry-button"
-              type="button"
-              onClick={() => {
-                onUiTap?.();
-                onResetStage();
-              }}
-            >
-              {t("playing.retry")}
-            </button>
-          </div>
-        )}
+            </div>
+          )}
         </section>
       </div>
     </main>

@@ -164,433 +164,442 @@ export const DebugScreen = ({
     <main className="app">
       <div className="stage-frame">
         <section className="stage-card debug-card">
-        <div className="screen-fixed-panel">
-          <div className="stage-head-row">
-            <p className="stage-tag">{t("debug.screenTag")}</p>
-            <div className="stage-head-actions">
-              <button
-                className="back-icon-button"
-                type="button"
-                onClick={onBackToStageSelect}
-                aria-label={t("common.backToStageSelect")}
-              >
-                <ArrowLeft size={16} aria-hidden="true" />
-              </button>
-              <SoundToggleButton
-                isMuted={isMuted}
-                onToggleMute={onToggleMute}
-              />
+          <div className="screen-fixed-panel">
+            <div className="stage-head-row">
+              <p className="stage-tag">{t("debug.screenTag")}</p>
+              <div className="stage-head-actions">
+                <button
+                  className="back-icon-button"
+                  type="button"
+                  onClick={onBackToStageSelect}
+                  aria-label={t("common.backToStageSelect")}
+                >
+                  <ArrowLeft size={16} aria-hidden="true" />
+                </button>
+                <SoundToggleButton
+                  isMuted={isMuted}
+                  onToggleMute={onToggleMute}
+                />
+              </div>
             </div>
+
+            <h1 className="title">{t("common.appName")}</h1>
+            <p className="stage-select-description">{t("debug.description")}</p>
           </div>
 
-          <h1 className="title">{t("common.appName")}</h1>
-          <p className="stage-select-description">{t("debug.description")}</p>
-        </div>
-
-        <div className="screen-scroll-panel">
-          <section
-            className="debug-section"
-            aria-labelledby="debug-language-heading"
-          >
-            <h2 id="debug-language-heading" className="debug-section-title">
-              {t("debug.language")}
-            </h2>
-            <div className="debug-list debug-language-list">
-              {localeOptions.map((option) => (
-                <button
-                  key={option.key}
-                  className="debug-button"
-                  type="button"
-                  aria-pressed={localeOverride === option.value}
-                  onClick={() => setLocaleOverride(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section
-            className="debug-section"
-            aria-labelledby="debug-storage-heading"
-          >
-            <h2 id="debug-storage-heading" className="debug-section-title">
-              {t("debug.storage")}
-            </h2>
-            <div className="debug-storage-actions">
-              <button
-                className="debug-button debug-storage-button"
-                type="button"
-                onClick={onUnlockAllStages}
-                disabled={!canUnlockAllStages}
-              >
-                {t("debug.unlockAllStages")}
-              </button>
-              <button
-                className="debug-button debug-storage-button"
-                type="button"
-                onClick={onResetUnlockProgress}
-                disabled={!canResetUnlockProgress}
-              >
-                {t("debug.resetUnlockProgress")}
-              </button>
-              <button
-                className="debug-danger-button"
-                type="button"
-                onClick={onClearAllData}
-              >
-                {t("debug.clearAllData")}
-              </button>
-            </div>
-          </section>
-
-          <section
-            className="debug-section"
-            aria-labelledby="debug-clear-condition-heading"
-          >
-            <h2
-              id="debug-clear-condition-heading"
-              className="debug-section-title"
+          <div className="screen-scroll-panel">
+            <section
+              className="debug-section"
+              aria-labelledby="debug-language-heading"
             >
-              {t("debug.stageSettings")}
-            </h2>
-            <div className="debug-condition-list">
-              {stages.map((stage) => {
-                const condition =
-                  stageClearConditionById.get(stage.id) ??
-                  stage.defaultClearCondition;
-                const questionCount =
-                  stageQuestionCountById.get(stage.id) ??
-                  stage.baseQuestionCount;
-
-                return (
-                  <div key={stage.id} className="debug-condition-item">
-                    <p className="debug-condition-title">
-                      {getStageLabel(locale, stage.id)}
-                    </p>
-                    <label
-                      className="debug-condition-label"
-                      htmlFor={`${stage.id}-question-count`}
-                    >
-                      {t("debug.questionCount")}
-                    </label>
-                    <input
-                      id={`${stage.id}-question-count`}
-                      className="debug-condition-input"
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={questionCount}
-                      onChange={(event) => {
-                        const nextQuestionCount = Number.parseInt(
-                          event.target.value,
-                          10,
-                        );
-                        if (!Number.isFinite(nextQuestionCount)) {
-                          return;
-                        }
-
-                        onUpdateStageQuestionCount(stage.id, nextQuestionCount);
-                      }}
-                    />
-                    <label
-                      className="debug-condition-label"
-                      htmlFor={`${stage.id}-seconds`}
-                    >
-                      {t("debug.clearWithinSeconds")}
-                    </label>
-                    <input
-                      id={`${stage.id}-seconds`}
-                      className="debug-condition-input"
-                      type="number"
-                      min={0.1}
-                      step={0.1}
-                      value={(condition.maxElapsedMs / 1000).toFixed(1)}
-                      onChange={(event) => {
-                        const nextSeconds = Number.parseFloat(
-                          event.target.value,
-                        );
-                        if (!Number.isFinite(nextSeconds)) {
-                          return;
-                        }
-
-                        onUpdateStageClearCondition(stage.id, {
-                          maxElapsedMs: Math.max(
-                            Math.round(nextSeconds * 1000),
-                            100,
-                          ),
-                          maxMistakes: condition.maxMistakes,
-                        });
-                      }}
-                    />
-                    <label
-                      className="debug-condition-label"
-                      htmlFor={`${stage.id}-mistakes`}
-                    >
-                      {t("debug.maxMistakesAllowed")}
-                    </label>
-                    <input
-                      id={`${stage.id}-mistakes`}
-                      className="debug-condition-input"
-                      type="number"
-                      step={1}
-                      value={condition.maxMistakes}
-                      onChange={(event) => {
-                        const nextMaxMistakes = Number.parseInt(
-                          event.target.value,
-                          10,
-                        );
-                        if (!Number.isFinite(nextMaxMistakes)) {
-                          return;
-                        }
-
-                        onUpdateStageClearCondition(stage.id, {
-                          maxElapsedMs: condition.maxElapsedMs,
-                          maxMistakes: nextMaxMistakes,
-                        });
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-            <button
-              className="debug-button"
-              type="button"
-              onClick={onResetStageSettings}
-            >
-              {t("debug.resetStageSettings")}
-            </button>
-          </section>
-
-          <section
-            className="debug-section"
-            aria-labelledby="debug-effects-heading"
-          >
-            <h2 id="debug-effects-heading" className="debug-section-title">
-              {t("debug.effects")}
-            </h2>
-            <div className="debug-effects-preview" style={effectStyle}>
-              <div className="performance-bg" aria-hidden="true">
-                <span className="performance-bg-shape performance-bg-shape-a" />
-                <span className="performance-bg-shape performance-bg-shape-b" />
-                <span className="performance-bg-shape performance-bg-shape-c" />
+              <h2 id="debug-language-heading" className="debug-section-title">
+                {t("debug.language")}
+              </h2>
+              <div className="debug-list debug-language-list">
+                {localeOptions.map((option) => (
+                  <button
+                    key={option.key}
+                    className="debug-button"
+                    type="button"
+                    aria-pressed={localeOverride === option.value}
+                    onClick={() => setLocaleOverride(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
-              <div className="debug-effects-inner">
-                <div className="debug-effects-subsection">
-                  <p className="debug-effects-label">{t("debug.comboBurst")}</p>
-                  <div className="progress-bar-track">
-                    {comboMilestoneValue > 0 && (
-                      <span
-                        key={comboMilestoneTick}
-                        className="combo-progress-overlay"
-                        aria-hidden="true"
-                      >
-                        {comboEffect.milestoneLabel}
-                      </span>
-                    )}
-                  </div>
-                  {comboEffect.comboTier !== "none" && (
-                    <div
-                      key={comboEffectTick}
-                      className={`combo-effects combo-effects-active combo-tier-${comboEffect.comboTier}`}
-                      aria-hidden="true"
-                    >
-                      <span className="combo-ring" />
-                      {comboEffect.particleIndexes.map((particleIndex) => (
-                        <span
-                          key={`debug-combo-particle-${particleIndex}`}
-                          className="combo-particle"
-                          style={
-                            { "--combo-index": particleIndex } as CSSProperties
-                          }
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
+            </section>
 
-                <div className="debug-effects-subsection">
-                  <p className="debug-effects-label">
-                    {t("debug.clearCelebration")}
-                  </p>
-                  <div className="clear-summary debug-clear-summary">
-                    {hasTriggeredClearEffect && (
+            <section
+              className="debug-section"
+              aria-labelledby="debug-storage-heading"
+            >
+              <h2 id="debug-storage-heading" className="debug-section-title">
+                {t("debug.storage")}
+              </h2>
+              <div className="debug-storage-actions">
+                <button
+                  className="debug-button debug-storage-button"
+                  type="button"
+                  onClick={onUnlockAllStages}
+                  disabled={!canUnlockAllStages}
+                >
+                  {t("debug.unlockAllStages")}
+                </button>
+                <button
+                  className="debug-button debug-storage-button"
+                  type="button"
+                  onClick={onResetUnlockProgress}
+                  disabled={!canResetUnlockProgress}
+                >
+                  {t("debug.resetUnlockProgress")}
+                </button>
+                <button
+                  className="debug-danger-button"
+                  type="button"
+                  onClick={onClearAllData}
+                >
+                  {t("debug.clearAllData")}
+                </button>
+              </div>
+            </section>
+
+            <section
+              className="debug-section"
+              aria-labelledby="debug-clear-condition-heading"
+            >
+              <h2
+                id="debug-clear-condition-heading"
+                className="debug-section-title"
+              >
+                {t("debug.stageSettings")}
+              </h2>
+              <div className="debug-condition-list">
+                {stages.map((stage) => {
+                  const condition =
+                    stageClearConditionById.get(stage.id) ??
+                    stage.defaultClearCondition;
+                  const questionCount =
+                    stageQuestionCountById.get(stage.id) ??
+                    stage.baseQuestionCount;
+
+                  return (
+                    <div key={stage.id} className="debug-condition-item">
+                      <p className="debug-condition-title">
+                        {getStageLabel(locale, stage.id)}
+                      </p>
+                      <label
+                        className="debug-condition-label"
+                        htmlFor={`${stage.id}-question-count`}
+                      >
+                        {t("debug.questionCount")}
+                      </label>
+                      <input
+                        id={`${stage.id}-question-count`}
+                        className="debug-condition-input"
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={questionCount}
+                        onChange={(event) => {
+                          const nextQuestionCount = Number.parseInt(
+                            event.target.value,
+                            10,
+                          );
+                          if (!Number.isFinite(nextQuestionCount)) {
+                            return;
+                          }
+
+                          onUpdateStageQuestionCount(
+                            stage.id,
+                            nextQuestionCount,
+                          );
+                        }}
+                      />
+                      <label
+                        className="debug-condition-label"
+                        htmlFor={`${stage.id}-seconds`}
+                      >
+                        {t("debug.clearWithinSeconds")}
+                      </label>
+                      <input
+                        id={`${stage.id}-seconds`}
+                        className="debug-condition-input"
+                        type="number"
+                        min={0.1}
+                        step={0.1}
+                        value={(condition.maxElapsedMs / 1000).toFixed(1)}
+                        onChange={(event) => {
+                          const nextSeconds = Number.parseFloat(
+                            event.target.value,
+                          );
+                          if (!Number.isFinite(nextSeconds)) {
+                            return;
+                          }
+
+                          onUpdateStageClearCondition(stage.id, {
+                            maxElapsedMs: Math.max(
+                              Math.round(nextSeconds * 1000),
+                              100,
+                            ),
+                            maxMistakes: condition.maxMistakes,
+                          });
+                        }}
+                      />
+                      <label
+                        className="debug-condition-label"
+                        htmlFor={`${stage.id}-mistakes`}
+                      >
+                        {t("debug.maxMistakesAllowed")}
+                      </label>
+                      <input
+                        id={`${stage.id}-mistakes`}
+                        className="debug-condition-input"
+                        type="number"
+                        step={1}
+                        value={condition.maxMistakes}
+                        onChange={(event) => {
+                          const nextMaxMistakes = Number.parseInt(
+                            event.target.value,
+                            10,
+                          );
+                          if (!Number.isFinite(nextMaxMistakes)) {
+                            return;
+                          }
+
+                          onUpdateStageClearCondition(stage.id, {
+                            maxElapsedMs: condition.maxElapsedMs,
+                            maxMistakes: nextMaxMistakes,
+                          });
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                className="debug-button"
+                type="button"
+                onClick={onResetStageSettings}
+              >
+                {t("debug.resetStageSettings")}
+              </button>
+            </section>
+
+            <section
+              className="debug-section"
+              aria-labelledby="debug-effects-heading"
+            >
+              <h2 id="debug-effects-heading" className="debug-section-title">
+                {t("debug.effects")}
+              </h2>
+              <div className="debug-effects-preview" style={effectStyle}>
+                <div className="performance-bg" aria-hidden="true">
+                  <span className="performance-bg-shape performance-bg-shape-a" />
+                  <span className="performance-bg-shape performance-bg-shape-b" />
+                  <span className="performance-bg-shape performance-bg-shape-c" />
+                </div>
+                <div className="debug-effects-inner">
+                  <div className="debug-effects-subsection">
+                    <p className="debug-effects-label">
+                      {t("debug.comboBurst")}
+                    </p>
+                    <div className="progress-bar-track">
+                      {comboMilestoneValue > 0 && (
+                        <span
+                          key={comboMilestoneTick}
+                          className="combo-progress-overlay"
+                          aria-hidden="true"
+                        >
+                          {comboEffect.milestoneLabel}
+                        </span>
+                      )}
+                    </div>
+                    {comboEffect.comboTier !== "none" && (
                       <div
-                        key={clearCelebrationTick}
-                        className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
+                        key={comboEffectTick}
+                        className={`combo-effects combo-effects-active combo-tier-${comboEffect.comboTier}`}
                         aria-hidden="true"
                       >
-                        {clearEffect.burstSpecs.map((burstSpec) => (
+                        <span className="combo-ring" />
+                        {comboEffect.particleIndexes.map((particleIndex) => (
                           <span
-                            key={burstSpec.id}
-                            className={`clear-burst ${
-                              clearEffect.withShockwave
-                                ? "clear-burst-shockwave"
-                                : ""
-                            }`}
+                            key={`debug-combo-particle-${particleIndex}`}
+                            className="combo-particle"
                             style={
                               {
-                                "--clear-burst-x": `${burstSpec.x}%`,
-                                "--clear-burst-y": `${burstSpec.y}%`,
-                                "--clear-burst-scale": burstSpec.scale,
-                                "--clear-burst-delay": `${burstSpec.delayMs}ms`,
-                                "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
+                                "--combo-index": particleIndex,
                               } as CSSProperties
                             }
                           />
                         ))}
                       </div>
                     )}
-                    {hasTriggeredClearEffect && clearEffect.badgeLabel && (
-                      <p className="clear-best-badge">{clearBestBadgeLabel}</p>
-                    )}
-                    <p className="clear-title">{t("debug.clearTitle")}</p>
+                  </div>
+
+                  <div className="debug-effects-subsection">
+                    <p className="debug-effects-label">
+                      {t("debug.clearCelebration")}
+                    </p>
+                    <div className="clear-summary debug-clear-summary">
+                      {hasTriggeredClearEffect && (
+                        <div
+                          key={clearCelebrationTick}
+                          className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
+                          aria-hidden="true"
+                        >
+                          {clearEffect.burstSpecs.map((burstSpec) => (
+                            <span
+                              key={burstSpec.id}
+                              className={`clear-burst ${
+                                clearEffect.withShockwave
+                                  ? "clear-burst-shockwave"
+                                  : ""
+                              }`}
+                              style={
+                                {
+                                  "--clear-burst-x": `${burstSpec.x}%`,
+                                  "--clear-burst-y": `${burstSpec.y}%`,
+                                  "--clear-burst-scale": burstSpec.scale,
+                                  "--clear-burst-delay": `${burstSpec.delayMs}ms`,
+                                  "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
+                                } as CSSProperties
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {hasTriggeredClearEffect && clearEffect.badgeLabel && (
+                        <p className="clear-best-badge">
+                          {clearBestBadgeLabel}
+                        </p>
+                      )}
+                      <p className="clear-title">{t("debug.clearTitle")}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="debug-list">
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerCombo("low", 3)}
-              >
-                {t("debug.comboBurstX3")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerCombo("mid", 5)}
-              >
-                {t("debug.comboBurstX5")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerCombo("high", 10)}
-              >
-                {t("debug.comboBurstX10")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerClear("normal", "none")}
-              >
-                {t("debug.clearEffectNormal")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerClear("noMistake", "none")}
-              >
-                {t("debug.clearEffectNoMistake")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerClear("best", "my")}
-              >
-                {t("debug.clearEffectMyBest")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={() => triggerClear("best", "global")}
-              >
-                {t("debug.clearEffectGlobalBest")}
-              </button>
-            </div>
-          </section>
+              <div className="debug-list">
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerCombo("low", 3)}
+                >
+                  {t("debug.comboBurstX3")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerCombo("mid", 5)}
+                >
+                  {t("debug.comboBurstX5")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerCombo("high", 10)}
+                >
+                  {t("debug.comboBurstX10")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerClear("normal", "none")}
+                >
+                  {t("debug.clearEffectNormal")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerClear("noMistake", "none")}
+                >
+                  {t("debug.clearEffectNoMistake")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerClear("best", "my")}
+                >
+                  {t("debug.clearEffectMyBest")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={() => triggerClear("best", "global")}
+                >
+                  {t("debug.clearEffectGlobalBest")}
+                </button>
+              </div>
+            </section>
 
-          <section
-            className="debug-section"
-            aria-labelledby="debug-sound-heading"
-          >
-            <h2 id="debug-sound-heading" className="debug-section-title">
-              {t("debug.sound")}
-            </h2>
-            <div className="debug-list">
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onStartBgm}
-              >
-                {t("debug.bgmStart")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onStopBgm}
-              >
-                {t("debug.bgmStop")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayUiTap}
-              >
-                {t("debug.uiTap")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayCountdownTick}
-              >
-                {t("debug.countdownTick")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayRoundStart}
-              >
-                {t("debug.roundStart")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayCorrect}
-              >
-                {t("debug.correct")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayWrong}
-              >
-                {t("debug.wrong")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayClearGlobalBest}
-              >
-                {t("debug.clearSoundGlobalBest")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayClearMyBest}
-              >
-                {t("debug.clearSoundMyBest")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayClearNoMistake}
-              >
-                {t("debug.clearSoundNoMistake")}
-              </button>
-              <button
-                className="debug-button"
-                type="button"
-                onClick={onPlayClearWithMistake}
-              >
-                {t("debug.clearSoundWithMistake")}
-              </button>
-            </div>
-          </section>
-        </div>
+            <section
+              className="debug-section"
+              aria-labelledby="debug-sound-heading"
+            >
+              <h2 id="debug-sound-heading" className="debug-section-title">
+                {t("debug.sound")}
+              </h2>
+              <div className="debug-list">
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onStartBgm}
+                >
+                  {t("debug.bgmStart")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onStopBgm}
+                >
+                  {t("debug.bgmStop")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayUiTap}
+                >
+                  {t("debug.uiTap")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayCountdownTick}
+                >
+                  {t("debug.countdownTick")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayRoundStart}
+                >
+                  {t("debug.roundStart")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayCorrect}
+                >
+                  {t("debug.correct")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayWrong}
+                >
+                  {t("debug.wrong")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayClearGlobalBest}
+                >
+                  {t("debug.clearSoundGlobalBest")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayClearMyBest}
+                >
+                  {t("debug.clearSoundMyBest")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayClearNoMistake}
+                >
+                  {t("debug.clearSoundNoMistake")}
+                </button>
+                <button
+                  className="debug-button"
+                  type="button"
+                  onClick={onPlayClearWithMistake}
+                >
+                  {t("debug.clearSoundWithMistake")}
+                </button>
+              </div>
+            </section>
+          </div>
         </section>
       </div>
     </main>

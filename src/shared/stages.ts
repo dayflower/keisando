@@ -120,9 +120,48 @@ const buildStage8CandidatePool = (
   return pool;
 };
 
-const pickStage8Distractors = (
+const pickStage8Candidate = (
   pool: Stage8OptionCandidate[],
-): Stage8OptionCandidate[] => shuffleItems(pool).slice(0, 3);
+): Stage8OptionCandidate => {
+  const [candidate] = shuffleItems(pool);
+
+  if (!candidate) {
+    throw new Error("Stage 8 option pool is empty.");
+  }
+
+  return candidate;
+};
+
+const buildGuaranteedStage8Distractors = (
+  correct: Stage8OptionCandidate,
+  pool: Stage8OptionCandidate[],
+): Stage8OptionCandidate[] => {
+  const sameQuotientPool = pool.filter(
+    (item) =>
+      item.quotient === correct.quotient &&
+      item.remainder !== correct.remainder,
+  );
+  const sameRemainderPool = pool.filter(
+    (item) =>
+      item.quotient !== correct.quotient &&
+      item.remainder === correct.remainder,
+  );
+  const requiredDistractors = [
+    pickStage8Candidate(sameQuotientPool),
+    pickStage8Candidate(sameRemainderPool),
+  ];
+  const remainingPool = pool.filter(
+    (item) =>
+      !requiredDistractors.some(
+        (selected) =>
+          selected.quotient === item.quotient &&
+          selected.remainder === item.remainder,
+      ),
+  );
+  const optionalDistractor = pickStage8Candidate(remainingPool);
+
+  return [...requiredDistractors, optionalDistractor];
+};
 
 const countDistinct = (values: number[]): number => new Set(values).size;
 
@@ -202,11 +241,11 @@ const buildStage8Options = (
   locale: Locale,
 ): Array<{ label: string; isCorrect: boolean }> => {
   const pool = buildStage8CandidatePool(correct, divisor);
-  let bestDistractors = pickStage8Distractors(pool);
+  let bestDistractors = buildGuaranteedStage8Distractors(correct, pool);
   let bestScore = scoreStage8Distractors(correct, bestDistractors);
 
   for (let sample = 1; sample < STAGE8_OPTION_SAMPLE_COUNT; sample += 1) {
-    const distractors = pickStage8Distractors(pool);
+    const distractors = buildGuaranteedStage8Distractors(correct, pool);
     const score = scoreStage8Distractors(correct, distractors);
 
     if (score > bestScore) {

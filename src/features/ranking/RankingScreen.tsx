@@ -48,105 +48,105 @@ export const RankingScreen = ({
     <main className="app">
       <div className="stage-frame">
         <section className="stage-card">
-        <div className="stage-head-row">
-          <p className="stage-tag">
-            {stageName} {t("ranking.screenTagSuffix")}
+          <div className="stage-head-row">
+            <p className="stage-tag">
+              {stageName} {t("ranking.screenTagSuffix")}
+            </p>
+            <div className="stage-head-actions">
+              <button
+                className="back-icon-button"
+                type="button"
+                onClick={() => {
+                  onUiTap?.();
+                  onBackToStageSelect();
+                }}
+                aria-label={t("common.backToStageSelect")}
+              >
+                <ArrowLeft size={16} aria-hidden="true" />
+              </button>
+              <SoundToggleButton
+                isMuted={isMuted}
+                onToggleMute={onToggleMute}
+                onUiTap={onUiTap}
+              />
+            </div>
+          </div>
+          <h1 className="title">Keisando</h1>
+          <p className="stage-select-description">
+            {stageTag} / {stageDescription}
           </p>
-          <div className="stage-head-actions">
+
+          <div
+            className="ranking-tabs"
+            role="tablist"
+            aria-label={t("ranking.tabList")}
+          >
             <button
-              className="back-icon-button"
+              className={`ranking-tab ${rankingTab === "global" ? "ranking-tab-active" : ""}`}
               type="button"
+              role="tab"
+              aria-selected={rankingTab === "global"}
               onClick={() => {
                 onUiTap?.();
-                onBackToStageSelect();
+                onSetRankingTab("global");
               }}
-              aria-label={t("common.backToStageSelect")}
             >
-              <ArrowLeft size={16} aria-hidden="true" />
+              {t("ranking.globalTop10")}
             </button>
-            <SoundToggleButton
-              isMuted={isMuted}
-              onToggleMute={onToggleMute}
-              onUiTap={onUiTap}
-            />
+            <button
+              className={`ranking-tab ${rankingTab === "player" ? "ranking-tab-active" : ""}`}
+              type="button"
+              role="tab"
+              aria-selected={rankingTab === "player"}
+              onClick={() => {
+                onUiTap?.();
+                onSetRankingTab("player");
+              }}
+              disabled={activePlayer === null}
+            >
+              {t("ranking.myTop10")}
+            </button>
           </div>
-        </div>
-        <h1 className="title">Keisando</h1>
-        <p className="stage-select-description">
-          {stageTag} / {stageDescription}
-        </p>
 
-        <div
-          className="ranking-tabs"
-          role="tablist"
-          aria-label={t("ranking.tabList")}
-        >
-          <button
-            className={`ranking-tab ${rankingTab === "global" ? "ranking-tab-active" : ""}`}
-            type="button"
-            role="tab"
-            aria-selected={rankingTab === "global"}
-            onClick={() => {
-              onUiTap?.();
-              onSetRankingTab("global");
-            }}
-          >
-            {t("ranking.globalTop10")}
-          </button>
-          <button
-            className={`ranking-tab ${rankingTab === "player" ? "ranking-tab-active" : ""}`}
-            type="button"
-            role="tab"
-            aria-selected={rankingTab === "player"}
-            onClick={() => {
-              onUiTap?.();
-              onSetRankingTab("player");
-            }}
-            disabled={activePlayer === null}
-          >
-            {t("ranking.myTop10")}
-          </button>
-        </div>
-
-        <div className="ranking-table-wrap">
-          {rankingTab === "player" && activePlayer === null ? (
-            <p className="stage-select-hint ranking-empty-message">
-              {t("ranking.personalHint")}
-            </p>
-          ) : rows.length === 0 ? (
-            <p className="stage-select-hint ranking-empty-message">
-              {t("ranking.empty")}
-            </p>
-          ) : (
-            <table className="ranking-table">
-              <thead>
-                <tr>
-                  <th scope="col">{t("ranking.columnRank")}</th>
-                  <th scope="col">{t("ranking.columnTime")}</th>
-                  {rankingTab === "global" && (
-                    <th scope="col">{t("ranking.columnPlayer")}</th>
-                  )}
-                  <th scope="col">{t("ranking.columnDate")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((record, index) => (
-                  <tr key={record.id}>
-                    <td>{index + 1}</td>
-                    <td>{formatElapsedTime(record.elapsedMs)}</td>
+          <div className="ranking-table-wrap">
+            {rankingTab === "player" && activePlayer === null ? (
+              <p className="stage-select-hint ranking-empty-message">
+                {t("ranking.personalHint")}
+              </p>
+            ) : rows.length === 0 ? (
+              <p className="stage-select-hint ranking-empty-message">
+                {t("ranking.empty")}
+              </p>
+            ) : (
+              <table className="ranking-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{t("ranking.columnRank")}</th>
+                    <th scope="col">{t("ranking.columnTime")}</th>
                     {rankingTab === "global" && (
-                      <td>
-                        {playerNameById.get(record.playerId) ??
-                          t("common.unknownPlayer")}
-                      </td>
+                      <th scope="col">{t("ranking.columnPlayer")}</th>
                     )}
-                    <td>{formatRecordedAt(record.recordedAt, locale)}</td>
+                    <th scope="col">{t("ranking.columnDate")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {rows.map((record, index) => (
+                    <tr key={record.id}>
+                      <td>{index + 1}</td>
+                      <td>{formatElapsedTime(record.elapsedMs)}</td>
+                      {rankingTab === "global" && (
+                        <td>
+                          {playerNameById.get(record.playerId) ??
+                            t("common.unknownPlayer")}
+                        </td>
+                      )}
+                      <td>{formatRecordedAt(record.recordedAt, locale)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </section>
       </div>
     </main>

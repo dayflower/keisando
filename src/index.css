@@ -236,9 +236,7 @@ textarea {
   }
 
   .app {
-    --stage-card-max-block-size: calc(
-      100dvh - (var(--app-shell-padding) * 2)
-    );
+    --stage-card-max-block-size: calc(100dvh - (var(--app-shell-padding) * 2));
     min-height: 100dvh;
     height: 100dvh;
   }
