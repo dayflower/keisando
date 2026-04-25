@@ -124,8 +124,17 @@ See [package.json](../package.json) for exact scripts and versions.
 ### Default Stage Parameters
 - All current stages use:
   - `baseQuestionCount = 20`
-  - `maxElapsedMs = 30000`
   - `maxMistakes = 0`
+- Default `maxElapsedMs` varies by stage:
+  - `stage1 = 40000`
+  - `stage2 = 40000`
+  - `stage3 = 45000`
+  - `stage4 = 50000`
+  - `stage5 = 60000`
+  - `stage6 = 60000`
+  - `stage7 = 75000`
+  - `stage8 = 120000`
+  - `stage9 = 90000`
 
 ### Unlock Rules
 - The first stage is always available.
