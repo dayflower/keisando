@@ -661,6 +661,20 @@ textarea {
   position: relative;
 }
 
+.progress-bar-count {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 800;
+  color: #6f3e00;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .progress-bar-fill {
   display: block;
   height: 100%;

@@ -287,6 +287,9 @@ export const PlayingScreen = ({
               aria-valuemax={progressMax}
               aria-valuenow={Math.min(correctCount, progressMax)}
             >
+              <span className="progress-bar-count" aria-hidden="true">
+                {Math.min(correctCount, progressMax)}
+              </span>
               <span
                 className="progress-bar-fill"
                 style={{ width: `${progressPercent}%` }}

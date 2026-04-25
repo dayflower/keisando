@@ -178,6 +178,9 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("残り: 17 / 20");
     expect(html).not.toContain("回答数:");
     expect(html).toContain("問題進捗");
+    expect(html).toContain(
+      'class="progress-bar-count" aria-hidden="true">3</span>',
+    );
     expect(html).toContain("1 + 1 = ?");
     expect(html).toContain('class="result-text"');
     expect(html).not.toContain("正しい答えを選んで");
