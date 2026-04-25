@@ -270,11 +270,13 @@ export const PlayingScreen = ({
           <h1 className="title">Keisando</h1>
           <div className="progress-row">
             <p>
-              {t("playing.answered")}: {answeredCount} / {requiredCount}
+              {t("playing.remaining")}: {remainingCount} / {requiredCount}
             </p>
-            <p>
-              {t("playing.remaining")}: {remainingCount}
-            </p>
+            {wrongAnswerCount > 0 && (
+              <p>
+                {t("playing.wrongAnswers")}: {wrongAnswerCount}
+              </p>
+            )}
           </div>
           <div className="progress-bar-block">
             <div

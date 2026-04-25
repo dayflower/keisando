@@ -16,7 +16,6 @@ let activeRuntime: HookRuntime | null = null;
 let latestKeyboardShortcutsInput: KeyboardShortcutsInput | null = null;
 
 const messages = {
-  "playing.answered": "回答数",
   "playing.remaining": "残り",
   "playing.progress": "問題進捗",
   "playing.time": "タイム",

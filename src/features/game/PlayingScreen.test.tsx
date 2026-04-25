@@ -175,12 +175,37 @@ describe("PlayingScreen clear celebration", () => {
     );
 
     expect(html).toContain("Stage 1 / 足し算 / Alice");
-    expect(html).toContain("回答数: 3 / 20");
-    expect(html).toContain("残り: 17");
+    expect(html).toContain("残り: 17 / 20");
+    expect(html).not.toContain("回答数:");
     expect(html).toContain("問題進捗");
     expect(html).toContain("1 + 1 = ?");
     expect(html).toContain('class="result-text"');
     expect(html).not.toContain("正しい答えを選んで");
+  });
+
+  it("shows wrong-answer count during an active round only when it is positive", () => {
+    const withMistakes = renderScreen(
+      {
+        isCleared: false,
+        isRoundActive: true,
+        wrongAnswerCount: 2,
+      },
+      "ja",
+    );
+    const withoutMistakes = renderScreen(
+      {
+        isCleared: false,
+        isRoundActive: true,
+        wrongAnswerCount: 0,
+      },
+      "ja",
+    );
+
+    expect(withMistakes).toContain("ミス: 2");
+    expect(withMistakes.indexOf("残り: 0 / 10")).toBeLessThan(
+      withMistakes.indexOf("ミス: 2"),
+    );
+    expect(withoutMistakes).not.toContain("ミス:");
   });
 
   it("renders the correct result feedback during an active round", () => {
@@ -226,7 +251,7 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("次のステージを解放!");
     expect(html).toContain("クリアタイム");
     expect(html).toContain("最終問題数: 11");
-    expect(html).toContain("ミス数: 2");
+    expect(html).toContain("ミス: 2");
     expect(html).toContain("次のステージ");
     expect(html).toContain("戻る");
     expect(html).toContain("リトライ");
