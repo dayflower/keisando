@@ -896,10 +896,14 @@ textarea {
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 244 221 / 0.7),
+    0 6px 12px rgb(214 120 13 / 20%);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
-    filter 120ms ease;
+    filter 120ms ease,
+    background 120ms ease;
 }
 
 .choice:hover {
@@ -909,7 +913,21 @@ textarea {
 }
 
 .choice:active {
-  transform: translateY(0);
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 244 221 / 0.55),
+    0 2px 5px rgb(214 120 13 / 16%);
+  filter: brightness(0.97);
+}
+
+.choice-keyboard-active {
+  transform: translateY(2px) scale(0.965);
+  background: linear-gradient(140deg, #ffbf57, #ff9735);
+  box-shadow:
+    inset 0 2px 0 1px rgb(255 239 205 / 0.42),
+    0 1px 2px rgb(145 76 0 / 0.22),
+    0 0 0.75rem rgb(255 154 34 / 0.18);
+  filter: saturate(1.08) brightness(0.93) contrast(1.02);
 }
 
 .choice:focus-visible,

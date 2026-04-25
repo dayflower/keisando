@@ -13,6 +13,7 @@ type UsePlayingKeyboardShortcutsInput = {
   options: QuestionOption[];
   choiceButtonRefs: RefObject<Array<HTMLButtonElement | null>>;
   onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
+  onKeyboardChoiceTrigger?: (choiceIndex: number) => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
   onStartNextStage: () => void;
@@ -39,6 +40,7 @@ export const usePlayingKeyboardShortcuts = ({
   options,
   choiceButtonRefs,
   onAnswer,
+  onKeyboardChoiceTrigger,
   onBackToStageSelect,
   onResetStage,
   onStartNextStage,
@@ -88,6 +90,8 @@ export const usePlayingKeyboardShortcuts = ({
       return;
     }
 
+    choiceButtonRefs.current[choiceIndex]?.blur();
+    onKeyboardChoiceTrigger?.(choiceIndex);
     onAnswer(
       selected,
       getChoiceEffectOriginByIndex(choiceButtonRefs, choiceIndex),

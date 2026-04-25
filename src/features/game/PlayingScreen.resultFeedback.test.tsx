@@ -8,8 +8,12 @@ type HookSlot =
 
 type HookRuntime = ReturnType<typeof createHookRuntime>;
 type PlayingScreenModule = typeof import("./PlayingScreen");
+type KeyboardShortcutsInput = Parameters<
+  typeof import("./usePlayingKeyboardShortcuts").usePlayingKeyboardShortcuts
+>[0];
 
 let activeRuntime: HookRuntime | null = null;
+let latestKeyboardShortcutsInput: KeyboardShortcutsInput | null = null;
 
 const messages = {
   "playing.answered": "回答数",
@@ -256,7 +260,9 @@ const loadPlayingScreenModule = async (): Promise<PlayingScreenModule> => {
     SoundToggleButton: () => null,
   }));
   vi.doMock("./usePlayingKeyboardShortcuts", () => ({
-    usePlayingKeyboardShortcuts: () => {},
+    usePlayingKeyboardShortcuts: (input: KeyboardShortcutsInput) => {
+      latestKeyboardShortcutsInput = input;
+    },
   }));
 
   return import("./PlayingScreen");
@@ -341,6 +347,42 @@ const readResultClassName = (node: ReactNodeLike | null): string => {
   return "";
 };
 
+const findElementByClassName = (
+  node: ReactNodeLike | ReactNodeLike[],
+  className: string,
+): ReactNodeLike | null => {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const match = findElementByClassName(child, className);
+      if (match !== null) {
+        return match;
+      }
+    }
+    return null;
+  }
+
+  if (
+    node &&
+    typeof node === "object" &&
+    "props" in node &&
+    typeof node.props?.className === "string" &&
+    node.props.className.includes(className)
+  ) {
+    return node;
+  }
+
+  if (
+    node &&
+    typeof node === "object" &&
+    "props" in node &&
+    node.props?.children !== undefined
+  ) {
+    return findElementByClassName(node.props.children, className);
+  }
+
+  return null;
+};
+
 describe("PlayingScreen result feedback timing", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -349,6 +391,7 @@ describe("PlayingScreen result feedback timing", () => {
 
   afterEach(() => {
     activeRuntime = null;
+    latestKeyboardShortcutsInput = null;
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.resetModules();
@@ -419,6 +462,34 @@ describe("PlayingScreen result feedback timing", () => {
     tree = runtime.render(() => PlayingScreen(props));
     resultElement = findResultElement(tree);
     expect(readResultText(resultElement)).toBe("");
+
+    runtime.dispose();
+  });
+
+  it("shows transient keyboard choice feedback without relying on focus styling", async () => {
+    const runtime = createHookRuntime();
+    const { PlayingScreen } = await loadPlayingScreenModule();
+    const props = buildProps({
+      lastResult: null,
+      answeredCount: 1,
+    });
+
+    let tree = runtime.render(() => PlayingScreen(props));
+    expect(
+      readResultClassName(findElementByClassName(tree, "choice-right")),
+    ).not.toContain("choice-keyboard-active");
+
+    latestKeyboardShortcutsInput?.onKeyboardChoiceTrigger?.(2);
+    tree = runtime.render(() => PlayingScreen(props));
+    expect(
+      readResultClassName(findElementByClassName(tree, "choice-right")),
+    ).toContain("choice-keyboard-active");
+
+    vi.advanceTimersByTime(140);
+    tree = runtime.render(() => PlayingScreen(props));
+    expect(
+      readResultClassName(findElementByClassName(tree, "choice-right")),
+    ).not.toContain("choice-keyboard-active");
 
     runtime.dispose();
   });

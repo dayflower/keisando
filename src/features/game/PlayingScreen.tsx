@@ -58,6 +58,7 @@ export type PlayingScreenProps = {
 };
 
 const RESULT_FEEDBACK_DURATION_MS = 720;
+const KEYBOARD_CHOICE_FEEDBACK_DURATION_MS = 140;
 
 export const PlayingScreen = ({
   selectedStage,
@@ -94,9 +95,12 @@ export const PlayingScreen = ({
   const [visibleResult, setVisibleResult] = useState<
     "correct" | "wrong" | null
   >(lastResult);
+  const [keyboardChoiceFeedbackIndex, setKeyboardChoiceFeedbackIndex] =
+    useState<number | null>(null);
   const [resultDisplayKey, setResultDisplayKey] = useState(0);
   const handledResultSignatureRef = useRef<string | null>(null);
   const resultHideTimeoutRef = useRef<number | null>(null);
+  const keyboardChoiceFeedbackTimeoutRef = useRef<number | null>(null);
   const { locale, t } = useI18n();
   const correctCount = Math.max(answeredCount - wrongAnswerCount, 0);
   const stageName = getStageName(locale, selectedStage.id);
@@ -147,8 +151,24 @@ export const PlayingScreen = ({
       if (resultHideTimeoutRef.current !== null) {
         window.clearTimeout(resultHideTimeoutRef.current);
       }
+      if (keyboardChoiceFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(keyboardChoiceFeedbackTimeoutRef.current);
+      }
     };
   }, []);
+
+  const showKeyboardChoiceFeedback = (choiceIndex: number) => {
+    if (keyboardChoiceFeedbackTimeoutRef.current !== null) {
+      window.clearTimeout(keyboardChoiceFeedbackTimeoutRef.current);
+      keyboardChoiceFeedbackTimeoutRef.current = null;
+    }
+
+    setKeyboardChoiceFeedbackIndex(choiceIndex);
+    keyboardChoiceFeedbackTimeoutRef.current = window.setTimeout(() => {
+      setKeyboardChoiceFeedbackIndex(null);
+      keyboardChoiceFeedbackTimeoutRef.current = null;
+    }, KEYBOARD_CHOICE_FEEDBACK_DURATION_MS);
+  };
 
   useEffect(() => {
     const resultSignature = `${answeredCount}:${lastResult ?? "idle"}`;
@@ -187,6 +207,7 @@ export const PlayingScreen = ({
     options: question.options,
     choiceButtonRefs,
     onAnswer,
+    onKeyboardChoiceTrigger: showKeyboardChoiceFeedback,
     onBackToStageSelect,
     onResetStage,
     onStartNextStage,
@@ -296,7 +317,15 @@ export const PlayingScreen = ({
 
                 <div className="diamond-grid">
                   <button
-                    className="choice choice-top"
+                    className={[
+                      "choice",
+                      "choice-top",
+                      keyboardChoiceFeedbackIndex === 0
+                        ? "choice-keyboard-active"
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     type="button"
                     ref={(element) => {
                       choiceButtonRefs.current[0] = element;
@@ -308,7 +337,15 @@ export const PlayingScreen = ({
                     {question.options[0].label}
                   </button>
                   <button
-                    className="choice choice-left"
+                    className={[
+                      "choice",
+                      "choice-left",
+                      keyboardChoiceFeedbackIndex === 1
+                        ? "choice-keyboard-active"
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     type="button"
                     ref={(element) => {
                       choiceButtonRefs.current[1] = element;
@@ -320,7 +357,15 @@ export const PlayingScreen = ({
                     {question.options[1].label}
                   </button>
                   <button
-                    className="choice choice-right"
+                    className={[
+                      "choice",
+                      "choice-right",
+                      keyboardChoiceFeedbackIndex === 2
+                        ? "choice-keyboard-active"
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     type="button"
                     ref={(element) => {
                       choiceButtonRefs.current[2] = element;
@@ -332,7 +377,15 @@ export const PlayingScreen = ({
                     {question.options[2].label}
                   </button>
                   <button
-                    className="choice choice-bottom"
+                    className={[
+                      "choice",
+                      "choice-bottom",
+                      keyboardChoiceFeedbackIndex === 3
+                        ? "choice-keyboard-active"
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     type="button"
                     ref={(element) => {
                       choiceButtonRefs.current[3] = element;
