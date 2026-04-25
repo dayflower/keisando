@@ -20,15 +20,15 @@ const buildProps = (
     bestCorrectStreak: 7,
   },
   historyRecords: [
-    {
-      id: "history1",
+    ...Array.from({ length: 6 }, (_, index) => ({
+      id: `history${index + 1}`,
       playerId: "player1",
-      playedAt: new Date(2025, 0, 2, 3, 4).getTime(),
-      stageId: "stage1",
-      durationMs: 2134,
-      mistakeCount: 1,
+      playedAt: new Date(2025, 0, 2, 3, 4 + index).getTime(),
+      stageId: `stage${(index % 3) + 1}`,
+      durationMs: 2134 + index,
+      mistakeCount: index,
       appVersion: "0.0.0",
-    },
+    })),
   ],
   stageSummaries: [
     {
@@ -75,6 +75,17 @@ describe("HistoryDetailScreen", () => {
     expect(html).toContain("<td>Stage 1</td>");
   });
 
+  it("renders all recent records and fills all stage rows", () => {
+    const html = renderScreen({}, "en");
+
+    expect(html).toContain("01/02/2025, 03:08");
+    expect(html).toContain("01/02/2025, 03:09");
+    expect(html.match(/<tr>/g)).not.toBeNull();
+    expect(html).toContain("<td>Stage 9</td>");
+    expect(html).toContain("<td>0</td>");
+    expect(html).toContain("--:--.--");
+  });
+
   it("renders translated empty states", () => {
     const html = renderScreen(
       {
@@ -85,6 +96,6 @@ describe("HistoryDetailScreen", () => {
     );
 
     expect(html).toContain("最近の記録はありません");
-    expect(html).toContain("ステージ集計はまだありません");
+    expect(html).toContain("ステージ集計");
   });
 });

@@ -4,6 +4,7 @@ import type {
   StageLifetimeSummary,
 } from "../../shared/types";
 import {
+  buildCompleteStageLifetimeSummaries,
   updateLifetimeStreak,
   updateLifetimeSummary,
   updateStageLifetimeSummaries,
@@ -113,5 +114,42 @@ describe("updateStageLifetimeSummaries", () => {
         bestDurationMs: 4000,
       },
     ]);
+  });
+});
+
+describe("buildCompleteStageLifetimeSummaries", () => {
+  it("fills missing stages with empty summaries in stage order", () => {
+    const current: StageLifetimeSummary[] = [
+      {
+        playerId: "p1",
+        stageId: "stage2",
+        attempts: 3,
+        bestDurationMs: 2800,
+      },
+      {
+        playerId: "p1",
+        stageId: "stage5",
+        attempts: 1,
+        bestDurationMs: 5100,
+      },
+    ];
+
+    const next = buildCompleteStageLifetimeSummaries(current, "p1");
+
+    expect(next).toHaveLength(9);
+    expect(next[0]).toEqual({
+      playerId: "p1",
+      stageId: "stage1",
+      attempts: 0,
+      bestDurationMs: null,
+    });
+    expect(next[1]).toEqual(current[0]);
+    expect(next[4]).toEqual(current[1]);
+    expect(next[8]).toEqual({
+      playerId: "p1",
+      stageId: "stage9",
+      attempts: 0,
+      bestDurationMs: null,
+    });
   });
 });

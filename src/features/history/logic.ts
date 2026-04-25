@@ -1,4 +1,5 @@
 import { HISTORY_RETENTION_MS } from "../../shared/constants";
+import { STAGES } from "../../shared/stages";
 import type {
   PlayerLifetimeSummary,
   PlayHistoryRecord,
@@ -79,4 +80,23 @@ export const updateStageLifetimeSummaries = (
     updated,
     ...current.slice(targetIndex + 1),
   ];
+};
+
+export const buildCompleteStageLifetimeSummaries = (
+  stageSummaries: StageLifetimeSummary[],
+  playerId: string,
+): StageLifetimeSummary[] => {
+  const stageSummaryMap = new Map(
+    stageSummaries.map((summary) => [summary.stageId, summary]),
+  );
+
+  return STAGES.map(
+    (stage): StageLifetimeSummary =>
+      stageSummaryMap.get(stage.id) ?? {
+        playerId,
+        stageId: stage.id,
+        attempts: 0,
+        bestDurationMs: null,
+      },
+  );
 };
