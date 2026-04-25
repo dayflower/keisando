@@ -18,29 +18,34 @@ let mockLifetimeSummary: PlayerLifetimeSummary = {
 };
 let mockStageSummaries: StageLifetimeSummary[] = [];
 
-vi.mock("react", () => ({
-  useState: <T>(initial: T | (() => T)) => {
-    if (!activeRuntime) {
-      throw new Error("useState called outside of hook runtime");
-    }
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
 
-    return activeRuntime.useState(initial);
-  },
-  useEffect: (effect: () => undefined | (() => void)) => {
-    if (!activeRuntime) {
-      throw new Error("useEffect called outside of hook runtime");
-    }
+  return {
+    ...actual,
+    useState: <T>(initial: T | (() => T)) => {
+      if (!activeRuntime) {
+        throw new Error("useState called outside of hook runtime");
+      }
 
-    activeRuntime.useEffect(effect);
-  },
-  useCallback: <T extends (...args: never[]) => unknown>(callback: T) => {
-    if (!activeRuntime) {
-      throw new Error("useCallback called outside of hook runtime");
-    }
+      return activeRuntime.useState(initial);
+    },
+    useEffect: (effect: () => undefined | (() => void)) => {
+      if (!activeRuntime) {
+        throw new Error("useEffect called outside of hook runtime");
+      }
 
-    return activeRuntime.useCallback(callback);
-  },
-}));
+      activeRuntime.useEffect(effect);
+    },
+    useCallback: <T extends (...args: never[]) => unknown>(callback: T) => {
+      if (!activeRuntime) {
+        throw new Error("useCallback called outside of hook runtime");
+      }
+
+      return activeRuntime.useCallback(callback);
+    },
+  };
+});
 
 vi.mock("../../storage/repositories/historyRepo", () => ({
   createDefaultLifetimeSummary: (playerId: string): PlayerLifetimeSummary => ({
