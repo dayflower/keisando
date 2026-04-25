@@ -890,8 +890,9 @@ textarea {
 }
 
 .diamond-grid {
+  position: relative;
   width: min(100%, 320px);
-  margin: 1.4rem auto;
+  margin: 2rem auto 1.4rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
@@ -1002,11 +1003,16 @@ textarea {
 }
 
 .result-text {
-  margin: 0 auto;
-  width: min(100%, 420px);
-  height: 2.8rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  margin: 0;
+  width: min(78%, 220px);
+  min-height: 2.8rem;
   display: grid;
   place-items: center;
+  pointer-events: none;
   overflow: visible;
   font-size: clamp(1.5rem, 4vw, 2.4rem);
   text-align: center;
@@ -1015,6 +1021,7 @@ textarea {
   line-height: 1.1;
   text-shadow: 0 2px 10px rgb(255 255 255 / 0.35);
   white-space: nowrap;
+  transform: translate(-50%, -50%);
 }
 
 .result-text-active {
@@ -1034,19 +1041,19 @@ textarea {
 @keyframes result-feedback-fade {
   0% {
     opacity: 0;
-    transform: scale(0.78);
+    transform: translate(-50%, -50%) scale(0.78);
     filter: blur(0.3px);
   }
 
   18% {
     opacity: 1;
-    transform: scale(1.08);
+    transform: translate(-50%, -50%) scale(1.08);
     filter: blur(0);
   }
 
   100% {
     opacity: 0;
-    transform: scale(1.52);
+    transform: translate(-50%, -50%) scale(1.52);
     filter: blur(0.55px);
   }
 }

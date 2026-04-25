@@ -409,22 +409,22 @@ export const PlayingScreen = ({
                     >
                       {question.options[3].label}
                     </button>
+                    <p
+                      key={resultDisplayKey}
+                      className={[
+                        "result-text",
+                        visibleResult !== null ? "result-text-active" : null,
+                        visibleResult === "correct" ? "result-correct" : null,
+                        visibleResult === "wrong" ? "result-wrong" : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {visibleResult === "correct" &&
+                        t("playing.resultCorrect")}
+                      {visibleResult === "wrong" && t("playing.resultWrong")}
+                    </p>
                   </div>
-
-                  <p
-                    key={resultDisplayKey}
-                    className={[
-                      "result-text",
-                      visibleResult !== null ? "result-text-active" : null,
-                      visibleResult === "correct" ? "result-correct" : null,
-                      visibleResult === "wrong" ? "result-wrong" : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                  >
-                    {visibleResult === "correct" && t("playing.resultCorrect")}
-                    {visibleResult === "wrong" && t("playing.resultWrong")}
-                  </p>
                 </>
               ) : (
                 <div className="countdown-status" role="status">
