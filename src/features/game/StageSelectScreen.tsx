@@ -173,9 +173,17 @@ export const StageSelectScreen = ({
               </p>
             )}
             {lifetimeSummaryLine ? (
-              <p className="stage-select-inline-summary">
+              <button
+                className="stage-select-inline-summary"
+                type="button"
+                onClick={() => {
+                  onUiTap?.();
+                  onOpenPlayHistory();
+                }}
+                aria-label={t("common.openPlayHistory")}
+              >
                 {lifetimeSummaryLine}
-              </p>
+              </button>
             ) : null}
           </div>
 

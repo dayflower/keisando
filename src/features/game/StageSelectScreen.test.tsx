@@ -114,6 +114,8 @@ describe("StageSelectScreen", () => {
     const html = renderScreen({}, "ja");
 
     expect(html).toContain("12回プレイ / 連続正解 8 / 最高連続 21");
+    expect(html).toContain('class="stage-select-inline-summary"');
+    expect(html).toContain('aria-label="プレイ履歴を開く"');
   });
 
   it("renders fixed and scroll panels for the partial scroll layout", () => {
