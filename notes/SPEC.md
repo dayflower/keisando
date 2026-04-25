@@ -123,8 +123,8 @@ See [package.json](../package.json) for exact scripts and versions.
 
 ### Default Stage Parameters
 - All current stages use:
-  - `baseQuestionCount = 10`
-  - `maxElapsedMs = 15000`
+  - `baseQuestionCount = 20`
+  - `maxElapsedMs = 30000`
   - `maxMistakes = 0`
 
 ### Unlock Rules
@@ -244,6 +244,8 @@ These tools are development-facing and not part of the main player flow.
 
 ## 10. Non-Functional Requirements
 - Responsive layout for desktop and tablet play.
+- Primary game screens should scale to fit within the current viewport without clipping on supported desktop and tablet sizes.
+- The stage-card presentation should preserve its intended portrait aspect while shrinking to remain fully visible inside the viewport.
 - Fast stage restarts and low-latency answer input.
 - Deterministic validation and ranking behavior.
 - No backend dependency in the current version.
