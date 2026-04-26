@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keisando Icon Generator</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: #162033;
+      }
+
+      html {
+        min-height: 100%;
+        background:
+          radial-gradient(circle at top left, #dcecff 0, transparent 30%),
+          linear-gradient(180deg, #f7fbff 0%, #eef2f8 100%);
+        background-color: #f5f7fb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 32px 20px 48px;
+        background: transparent;
+      }
+
+      main {
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.05;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      .lead {
+        color: #4a566e;
+      }
+
+      .actions,
+      .grid {
+        margin-top: 28px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        font: inherit;
+        font-weight: 700;
+        color: white;
+        background: #1769ff;
+        cursor: pointer;
+        transition:
+          transform 120ms ease,
+          opacity 120ms ease,
+          box-shadow 120ms ease;
+        box-shadow: 0 10px 24px rgb(23 105 255 / 24%);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .secondary {
+        color: #1769ff;
+        background: white;
+        border: 1px solid #c7d7f8;
+        box-shadow: none;
+      }
+
+      .status {
+        min-height: 24px;
+        color: #4a566e;
+        font-size: 0.95rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 24px;
+        background: rgb(255 255 255 / 88%);
+        border: 1px solid #d9e2f2;
+        box-shadow: 0 14px 30px rgb(36 60 105 / 8%);
+      }
+
+      .preview {
+        display: grid;
+        place-items: center;
+        min-height: 160px;
+        margin-bottom: 14px;
+        border-radius: 18px;
+        background:
+          linear-gradient(45deg, #edf2fa 25%, transparent 25%),
+          linear-gradient(-45deg, #edf2fa 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #edf2fa 75%),
+          linear-gradient(-45deg, transparent 75%, #edf2fa 75%);
+        background-size: 20px 20px;
+        background-position:
+          0 0,
+          0 10px,
+          10px -10px,
+          -10px 0;
+      }
+
+      .preview img {
+        width: min(100%, 132px);
+        height: auto;
+        border-radius: 24px;
+      }
+
+      .meta {
+        margin-bottom: 14px;
+      }
+
+      .meta strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 1rem;
+      }
+
+      .meta span {
+        color: #56627a;
+        font-size: 0.95rem;
+      }
+
+      .source {
+        margin-top: 28px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgb(255 255 255 / 68%);
+        border: 1px solid #d9e2f2;
+        color: #4a566e;
+      }
+
+      code {
+        font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+        font-size: 0.92em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Icon Generator</h1>
+      <p class="lead">
+        Generate PNG icons from <code>../public/icon-source.svg</code>. Standard
+        icons are clipped to a circle, while the maskable icon stays square.
+      </p>
+
+      <section class="actions">
+        <button id="generate-all" type="button">Download all icons</button>
+        <button id="refresh" class="secondary" type="button">
+          Refresh previews
+        </button>
+        <div id="status" class="status" aria-live="polite"></div>
+      </section>
+
+      <section id="grid" class="grid"></section>
+
+      <section class="source">
+        <p>
+          Serve this directory first, for example with
+          <code>python -m http.server</code>, then open
+          <code>/tools/icon-generator.html</code> in a browser. Opening this
+          file directly with <code>file://</code> will not work. The source SVG
+          is loaded from
+          <code>../public/icon-source.svg</code>.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const iconSpecs = [
+        {
+          filename: "apple-touch-icon.png",
+          size: 180,
+          clip: "circle",
+          label: "Apple Touch Icon",
+        },
+        {
+          filename: "icon-192.png",
+          size: 192,
+          clip: "circle",
+          label: "PWA Icon 192",
+        },
+        {
+          filename: "icon-512.png",
+          size: 512,
+          clip: "circle",
+          label: "PWA Icon 512",
+        },
+        {
+          filename: "maskable-icon-512.png",
+          size: 512,
+          clip: "none",
+          label: "Maskable Icon 512",
+        },
+      ];
+
+      const iconSourcePath = "../public/icon-source.svg";
+      const circleScale = 0.9;
+      const statusElement = document.getElementById("status");
+      const gridElement = document.getElementById("grid");
+      const generateAllButton = document.getElementById("generate-all");
+      const refreshButton = document.getElementById("refresh");
+
+      let sourceImagePromise;
+
+      function setStatus(message, isError = false) {
+        statusElement.textContent = message;
+        statusElement.style.color = isError ? "#b42318" : "#4a566e";
+      }
+
+      function loadSourceImage() {
+        if (!sourceImagePromise) {
+          sourceImagePromise = new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () =>
+              reject(new Error("Failed to load icon-source.svg"));
+            image.src = iconSourcePath;
+          });
+        }
+
+        return sourceImagePromise;
+      }
+
+      function renderToCanvas(image, spec) {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        const size = spec.size;
+
+        canvas.width = size;
+        canvas.height = size;
+
+        if (!context) {
+          throw new Error("Canvas rendering context is not available");
+        }
+
+        if (spec.clip === "circle") {
+          context.save();
+          context.beginPath();
+          context.arc(
+            size / 2,
+            size / 2,
+            (size * circleScale) / 2,
+            0,
+            Math.PI * 2,
+          );
+          context.closePath();
+          context.clip();
+          context.drawImage(image, 0, 0, size, size);
+          context.restore();
+          return canvas;
+        }
+
+        context.drawImage(image, 0, 0, size, size);
+
+        return canvas;
+      }
+
+      function canvasToBlob(canvas) {
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("Failed to export PNG blob"));
+              return;
+            }
+
+            resolve(blob);
+          }, "image/png");
+        });
+      }
+
+      async function generateIcon(spec) {
+        const image = await loadSourceImage();
+        const canvas = renderToCanvas(image, spec);
+        const blob = await canvasToBlob(canvas);
+        const url = URL.createObjectURL(blob);
+
+        return { blob, url };
+      }
+
+      function triggerDownload(url, filename) {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+
+      async function refreshPreviews() {
+        generateAllButton.disabled = true;
+        refreshButton.disabled = true;
+        setStatus("Refreshing previews...");
+
+        try {
+          gridElement.replaceChildren();
+
+          for (const spec of iconSpecs) {
+            const { url } = await generateIcon(spec);
+            const article = document.createElement("article");
+            const preview = document.createElement("div");
+            const img = document.createElement("img");
+            const meta = document.createElement("div");
+            const title = document.createElement("strong");
+            const detail = document.createElement("span");
+            const button = document.createElement("button");
+
+            article.className = "card";
+            preview.className = "preview";
+            meta.className = "meta";
+
+            img.src = url;
+            img.alt = spec.filename;
+
+            title.textContent = spec.label;
+            detail.textContent = `${spec.filename} - ${spec.size}x${spec.size} - ${
+              spec.clip === "circle" ? "circle clipped" : "square"
+            }`;
+
+            button.type = "button";
+            button.textContent = `Download ${spec.size}`;
+            button.addEventListener("click", () => {
+              triggerDownload(url, spec.filename);
+            });
+
+            preview.appendChild(img);
+            meta.append(title, detail);
+            article.append(preview, meta, button);
+            gridElement.appendChild(article);
+          }
+
+          setStatus("Previews are ready");
+        } catch (error) {
+          setStatus(error.message, true);
+        } finally {
+          generateAllButton.disabled = false;
+          refreshButton.disabled = false;
+        }
+      }
+
+      async function downloadAll() {
+        generateAllButton.disabled = true;
+        refreshButton.disabled = true;
+        setStatus("Generating all icons...");
+
+        try {
+          for (const spec of iconSpecs) {
+            const { url } = await generateIcon(spec);
+            triggerDownload(url, spec.filename);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }
+
+          setStatus("Downloaded all icons");
+        } catch (error) {
+          setStatus(error.message, true);
+        } finally {
+          generateAllButton.disabled = false;
+          refreshButton.disabled = false;
+        }
+      }
+
+      generateAllButton.addEventListener("click", downloadAll);
+      refreshButton.addEventListener("click", refreshPreviews);
+
+      refreshPreviews();
+    </script>
+  </body>
+</html>
