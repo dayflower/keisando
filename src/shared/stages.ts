@@ -15,6 +15,7 @@ const STAGE8_REMAINDER_ZERO_RETRY_RATE = 0.8;
 const STAGE8_ONE_RETRY_RATE = 0.6;
 const STAGE8_OPTION_SAMPLE_COUNT = 24;
 const STAGE8_SAME_QUOTIENT_OPTION_RATE = 0.25;
+const STAGE9_BALANCED_SOURCE_REPEAT_COUNT = 5;
 const MAX_ZERO_RETRIES = 3;
 
 type Stage8OptionCandidate = {
@@ -341,6 +342,28 @@ const buildNumericOptions = (
 };
 
 const stage9SourceStages: StageDefinition[] = [];
+let stage9RoundQueue: StageDefinition[] = [];
+
+const initializeStage9RoundQueue = () => {
+  stage9RoundQueue = Array.from(
+    { length: STAGE9_BALANCED_SOURCE_REPEAT_COUNT },
+    () => shuffleItems(stage9SourceStages),
+  ).flat();
+};
+
+const shiftStage9SourceStage = (): StageDefinition => {
+  if (stage9RoundQueue.length === 0) {
+    initializeStage9RoundQueue();
+  }
+
+  const selectedStage = stage9RoundQueue.shift();
+
+  if (!selectedStage) {
+    throw new Error("Stage 9 source stages are not configured.");
+  }
+
+  return selectedStage;
+};
 
 export const STAGES: StageDefinition[] = [
   {
@@ -597,17 +620,11 @@ export const STAGES: StageDefinition[] = [
       maxElapsedMs: 90_000,
       maxMistakes: 0,
     },
+    initializeRound: () => {
+      initializeStage9RoundQueue();
+    },
     createExpression: () => {
-      const selectedStage =
-        stage9SourceStages[
-          Math.floor(Math.random() * stage9SourceStages.length)
-        ];
-
-      if (!selectedStage) {
-        throw new Error("Stage 9 source stages are not configured.");
-      }
-
-      return selectedStage.createExpression();
+      return shiftStage9SourceStage().createExpression();
     },
     createOptions: (expression, locale) => {
       if (expression.operator === "÷" && expression.remainder !== undefined) {

@@ -117,7 +117,7 @@ See [package.json](../package.json) for exact scripts and versions.
   - Zero-valued quotients, zero remainders, and one-valued quotients remain possible, but generation retries probabilistically to reduce over-frequency.
 - `stage9`
   - Theme: mixed arithmetic
-  - Expression range: random mix of question patterns from `stage1`, `stage3`, `stage4`, and `stage8`
+  - Expression range: per-round balanced shuffled mix of question patterns from `stage1`, `stage3`, `stage4`, and `stage8`
   - Answer range: depends on the generated source pattern
   - Uses numeric options for standard arithmetic and quotient/remainder options for division-with-remainder questions.
 

@@ -15,6 +15,7 @@ export type StageDefinition = {
   id: string;
   baseQuestionCount: number;
   defaultClearCondition: StageClearCondition;
+  initializeRound?: () => void;
   createExpression: () => StageExpression;
   formatQuestion?: (expression: StageExpression) => string;
   formatOptionLabel?: (value: number, expression: StageExpression) => string;

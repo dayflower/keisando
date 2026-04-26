@@ -324,6 +324,26 @@ describe("useGameSession", () => {
     runtime.dispose();
   });
 
+  it("calls initializeRound when starting a stage", async () => {
+    const nowSpy = vi.spyOn(Date, "now");
+    nowSpy.mockReturnValue(1_000);
+    const { window } = createWindowMock();
+    Object.assign(globalThis, { window });
+
+    const initializeRound = vi.fn();
+    const stage = {
+      ...createTestStage(),
+      initializeRound,
+    };
+    const { runtime, render } = await renderHook();
+
+    const game = render();
+    expect(game.startStage(stage)).toBe(true);
+    expect(initializeRound).toHaveBeenCalledTimes(1);
+
+    runtime.dispose();
+  });
+
   it("resetStage regenerates the round state and keeps bestTimeMs after a clear", async () => {
     const nowSpy = vi.spyOn(Date, "now");
     const { window, tickAll } = createWindowMock();
@@ -386,6 +406,30 @@ describe("useGameSession", () => {
     expect(game.isRoundActive).toBe(false);
     expect(game.isCleared).toBe(false);
     expect(game.bestTimeMs).toBe(2400);
+
+    runtime.dispose();
+  });
+
+  it("calls initializeRound again when resetting a stage", async () => {
+    const nowSpy = vi.spyOn(Date, "now");
+    nowSpy.mockReturnValue(1_000);
+    const { window } = createWindowMock();
+    Object.assign(globalThis, { window });
+
+    const initializeRound = vi.fn();
+    const stage = {
+      ...createTestStage(),
+      initializeRound,
+    };
+    const { runtime, render } = await renderHook();
+
+    let game = render();
+    game.startStage(stage);
+    game = render();
+    game.resetStage();
+    game = render();
+
+    expect(initializeRound).toHaveBeenCalledTimes(2);
 
     runtime.dispose();
   });

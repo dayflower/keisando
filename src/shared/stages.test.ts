@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STAGES } from "./stages";
+import type { StageExpression } from "./types";
 
 describe("STAGES", () => {
   afterEach(() => {
@@ -748,23 +749,113 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage9 can delegate to stage1 expressions", () => {
+  it("stage9 balances stage1, stage3, stage4, and stage8 across a round", () => {
     const stage9 = STAGES[8];
-    const randomSpy = vi.spyOn(Math, "random");
-
-    randomSpy
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(0.4)
-      .mockReturnValueOnce(0.5);
-
-    const expression = stage9.createExpression();
-
-    expect(expression).toEqual({
-      left: 4,
-      right: 5,
-      operator: "+",
-      answer: 9,
+    const stage1 = STAGES[0];
+    const stage3 = STAGES[2];
+    const stage4 = STAGES[3];
+    const stage8 = STAGES[7];
+    let nextLeft = 1;
+    const buildExpression = (
+      operator: StageExpression["operator"],
+      remainder?: number,
+    ): StageExpression => ({
+      left: nextLeft++,
+      right: 1,
+      operator,
+      answer: 1,
+      ...(remainder === undefined ? {} : { remainder }),
     });
+
+    vi.spyOn(stage1, "createExpression").mockImplementation(() =>
+      buildExpression("+"),
+    );
+    vi.spyOn(stage3, "createExpression").mockImplementation(() =>
+      buildExpression("-"),
+    );
+    vi.spyOn(stage4, "createExpression").mockImplementation(() =>
+      buildExpression("×"),
+    );
+    vi.spyOn(stage8, "createExpression").mockImplementation(() =>
+      buildExpression("÷", 1),
+    );
+
+    stage9.initializeRound?.();
+
+    const expressions = Array.from({ length: 20 }, () =>
+      stage9.createExpression(),
+    );
+    const operators = expressions.map((expression) => expression.operator);
+
+    expect(operators.filter((operator) => operator === "+")).toHaveLength(5);
+    expect(operators.filter((operator) => operator === "-")).toHaveLength(5);
+    expect(operators.filter((operator) => operator === "×")).toHaveLength(5);
+    expect(operators.filter((operator) => operator === "÷")).toHaveLength(5);
+
+    for (let index = 0; index < operators.length; index += 4) {
+      expect(new Set(operators.slice(index, index + 4))).toEqual(
+        new Set(["+", "-", "×", "÷"]),
+      );
+    }
+  });
+
+  it("stage9 reinitializes its balanced order when a new round starts", () => {
+    const stage9 = STAGES[8];
+    const stage1 = STAGES[0];
+    const stage3 = STAGES[2];
+    const stage4 = STAGES[3];
+    const stage8 = STAGES[7];
+    const randomSpy = vi.spyOn(Math, "random");
+    let sequenceId = 0;
+
+    vi.spyOn(stage1, "createExpression").mockImplementation(() => ({
+      left: ++sequenceId,
+      right: 1,
+      operator: "+",
+      answer: 1,
+    }));
+    vi.spyOn(stage3, "createExpression").mockImplementation(() => ({
+      left: ++sequenceId,
+      right: 1,
+      operator: "-",
+      answer: 1,
+    }));
+    vi.spyOn(stage4, "createExpression").mockImplementation(() => ({
+      left: ++sequenceId,
+      right: 1,
+      operator: "×",
+      answer: 1,
+    }));
+    vi.spyOn(stage8, "createExpression").mockImplementation(() => ({
+      left: ++sequenceId,
+      right: 1,
+      operator: "÷",
+      answer: 1,
+      remainder: 1,
+    }));
+
+    for (let index = 0; index < 15; index += 1) {
+      randomSpy.mockReturnValueOnce(0);
+    }
+
+    for (let index = 0; index < 15; index += 1) {
+      randomSpy.mockReturnValueOnce(0.99);
+    }
+
+    stage9.initializeRound?.();
+    const firstRoundOperators = Array.from(
+      { length: 4 },
+      () => stage9.createExpression().operator,
+    );
+
+    stage9.initializeRound?.();
+    const secondRoundOperators = Array.from(
+      { length: 4 },
+      () => stage9.createExpression().operator,
+    );
+
+    expect(firstRoundOperators).toEqual(["-", "×", "÷", "+"]);
+    expect(secondRoundOperators).toEqual(["+", "-", "×", "÷"]);
   });
 
   it("stage9 uses remainder-aware division options for stage8-style questions", () => {

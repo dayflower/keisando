@@ -88,6 +88,7 @@ const createRoundSessionState = (
   locale: Locale,
 ): RoundSessionState => {
   usedExpressionsRef.current = new Set<string>();
+  stage.initializeRound?.();
 
   return {
     question: createQuestion(stage, usedExpressionsRef.current, locale),
