@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { I18nProvider, type Locale } from "../../shared/i18n";
+import { createTextOnlyQuestionOption } from "../../shared/questionOptions";
 import type { RankingScreenProps } from "./RankingScreen";
 import { RankingScreen } from "./RankingScreen";
 
@@ -16,10 +17,10 @@ const buildProps = (
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
     createOptions: () => [
-      { label: "2", isCorrect: true },
-      { label: "3", isCorrect: false },
-      { label: "4", isCorrect: false },
-      { label: "5", isCorrect: false },
+      createTextOnlyQuestionOption("2", true),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("4", false),
+      createTextOnlyQuestionOption("5", false),
     ],
   },
   rankingTab: "global",

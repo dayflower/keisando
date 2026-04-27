@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createTextOnlyQuestionOption } from "../../shared/questionOptions";
 import type { StageDefinition } from "../../shared/types";
 import { unlockAllStagesForPlayer } from "./logic";
 
@@ -16,10 +17,10 @@ const createStage = (id: string): StageDefinition => ({
     answer: 2,
   }),
   createOptions: () => [
-    { label: "2", isCorrect: true },
-    { label: "1", isCorrect: false },
-    { label: "3", isCorrect: false },
-    { label: "4", isCorrect: false },
+    createTextOnlyQuestionOption("2", true),
+    createTextOnlyQuestionOption("1", false),
+    createTextOnlyQuestionOption("3", false),
+    createTextOnlyQuestionOption("4", false),
   ],
 });
 

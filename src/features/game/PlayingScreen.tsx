@@ -60,6 +60,23 @@ export type PlayingScreenProps = {
 const RESULT_FEEDBACK_DURATION_MS = 720;
 const KEYBOARD_CHOICE_FEEDBACK_DURATION_MS = 140;
 
+const renderQuestionOptionLabel = (option: QuestionOption) => {
+  return (
+    <span className="choice-label">
+      {option.segments.map((segment) => (
+        <span
+          key={`${segment.size ?? "normal"}:${segment.text}`}
+          className={
+            segment.size === "small" ? "choice-label-segment-small" : undefined
+          }
+        >
+          {segment.text}
+        </span>
+      ))}
+    </span>
+  );
+};
+
 export const PlayingScreen = ({
   selectedStage,
   playingPlayer,
@@ -343,7 +360,7 @@ export const PlayingScreen = ({
                         )
                       }
                     >
-                      {question.options[0].label}
+                      {renderQuestionOptionLabel(question.options[0])}
                     </button>
                     <button
                       className={[
@@ -366,7 +383,7 @@ export const PlayingScreen = ({
                         )
                       }
                     >
-                      {question.options[1].label}
+                      {renderQuestionOptionLabel(question.options[1])}
                     </button>
                     <button
                       className={[
@@ -389,7 +406,7 @@ export const PlayingScreen = ({
                         )
                       }
                     >
-                      {question.options[2].label}
+                      {renderQuestionOptionLabel(question.options[2])}
                     </button>
                     <button
                       className={[
@@ -412,7 +429,7 @@ export const PlayingScreen = ({
                         )
                       }
                     >
-                      {question.options[3].label}
+                      {renderQuestionOptionLabel(question.options[3])}
                     </button>
                     <p
                       key={resultDisplayKey}

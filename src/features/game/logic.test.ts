@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+  createTextOnlyQuestionOption,
+  getQuestionOptionText,
+} from "../../shared/questionOptions";
 import type { StageDefinition } from "../../shared/types";
 import { createQuestion } from "./logic";
 
@@ -19,13 +23,11 @@ describe("createQuestion", () => {
       }),
       formatQuestion: (expression) =>
         `${expression.left} = ${expression.right} × ?`,
-      formatOptionLabel: (value, expression) =>
-        `${expression.right} × ${value}`,
       createOptions: (expression) => [
-        { label: `${expression.right} × 6`, isCorrect: false },
-        { label: `${expression.right} × 7`, isCorrect: true },
-        { label: `${expression.right} × 8`, isCorrect: false },
-        { label: `${expression.right} × 9`, isCorrect: false },
+        createTextOnlyQuestionOption(`${expression.right} × 6`, false),
+        createTextOnlyQuestionOption(`${expression.right} × 7`, true),
+        createTextOnlyQuestionOption(`${expression.right} × 8`, false),
+        createTextOnlyQuestionOption(`${expression.right} × 9`, false),
       ],
     };
 
@@ -37,7 +39,9 @@ describe("createQuestion", () => {
       1,
     );
     expect(
-      question.options.every((option) => option.label.includes("8 ×")),
+      question.options.every((option) =>
+        getQuestionOptionText(option).includes("8 ×"),
+      ),
     ).toBe(true);
   });
 
@@ -58,22 +62,22 @@ describe("createQuestion", () => {
       }),
       formatQuestion: (expression) =>
         `${expression.left} = ${expression.right} × ? + ${expression.remainder ?? 0}`,
-      formatOptionLabel: (value, expression) =>
-        `${value} (${expression.right * value})`,
       createOptions: (expression) => [
-        { label: `7 (${expression.right * 7})`, isCorrect: false },
-        { label: `8 (${expression.right * 8})`, isCorrect: true },
-        { label: `9 (${expression.right * 9})`, isCorrect: false },
-        { label: `6 (${expression.right * 6})`, isCorrect: false },
+        createTextOnlyQuestionOption(`7 (${expression.right * 7})`, false),
+        createTextOnlyQuestionOption(`8 (${expression.right * 8})`, true),
+        createTextOnlyQuestionOption(`9 (${expression.right * 9})`, false),
+        createTextOnlyQuestionOption(`6 (${expression.right * 6})`, false),
       ],
     };
 
     const question = createQuestion(stage, new Set());
 
     expect(question.prompt).toBe("58 = 7 × ? + 2");
-    expect(question.options.some((option) => option.label === "8 (56)")).toBe(
-      true,
-    );
+    expect(
+      question.options.some(
+        (option) => getQuestionOptionText(option) === "8 (56)",
+      ),
+    ).toBe(true);
   });
 
   it("supports remainder-aware division option labels", () => {
@@ -92,31 +96,30 @@ describe("createQuestion", () => {
         remainder: 1,
       }),
       createOptions: (_expression, locale) => [
-        {
-          label: locale === "ja" ? "8 … 1" : "8 R 1",
-          isCorrect: true,
-        },
-        {
-          label: locale === "ja" ? "7 … 2" : "7 R 2",
-          isCorrect: false,
-        },
-        {
-          label: locale === "ja" ? "6 … 3" : "6 R 3",
-          isCorrect: false,
-        },
-        {
-          label: locale === "ja" ? "5 … 4" : "5 R 4",
-          isCorrect: false,
-        },
+        createTextOnlyQuestionOption(locale === "ja" ? "8 … 1" : "8 R 1", true),
+        createTextOnlyQuestionOption(
+          locale === "ja" ? "7 … 2" : "7 R 2",
+          false,
+        ),
+        createTextOnlyQuestionOption(
+          locale === "ja" ? "6 … 3" : "6 R 3",
+          false,
+        ),
+        createTextOnlyQuestionOption(
+          locale === "ja" ? "5 … 4" : "5 R 4",
+          false,
+        ),
       ],
     };
 
     const question = createQuestion(stage, new Set(), "en");
 
     expect(question.prompt).toBe("73 ÷ 9 = ?");
-    expect(question.options.some((option) => option.label === "8 R 1")).toBe(
-      true,
-    );
+    expect(
+      question.options.some(
+        (option) => getQuestionOptionText(option) === "8 R 1",
+      ),
+    ).toBe(true);
   });
 
   it("supports locale-specific remainder division option labels", () => {
@@ -135,29 +138,28 @@ describe("createQuestion", () => {
         remainder: 1,
       }),
       createOptions: (_expression, locale) => [
-        {
-          label: locale === "ja" ? "8 … 1" : "8 R 1",
-          isCorrect: true,
-        },
-        {
-          label: locale === "ja" ? "7 … 2" : "7 R 2",
-          isCorrect: false,
-        },
-        {
-          label: locale === "ja" ? "6 … 3" : "6 R 3",
-          isCorrect: false,
-        },
-        {
-          label: locale === "ja" ? "5 … 4" : "5 R 4",
-          isCorrect: false,
-        },
+        createTextOnlyQuestionOption(locale === "ja" ? "8 … 1" : "8 R 1", true),
+        createTextOnlyQuestionOption(
+          locale === "ja" ? "7 … 2" : "7 R 2",
+          false,
+        ),
+        createTextOnlyQuestionOption(
+          locale === "ja" ? "6 … 3" : "6 R 3",
+          false,
+        ),
+        createTextOnlyQuestionOption(
+          locale === "ja" ? "5 … 4" : "5 R 4",
+          false,
+        ),
       ],
     };
 
     const question = createQuestion(stage, new Set(), "ja");
 
-    expect(question.options.some((option) => option.label === "8 … 1")).toBe(
-      true,
-    );
+    expect(
+      question.options.some(
+        (option) => getQuestionOptionText(option) === "8 … 1",
+      ),
+    ).toBe(true);
   });
 });

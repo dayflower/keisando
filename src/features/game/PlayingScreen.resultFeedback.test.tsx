@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createTextOnlyQuestionOption } from "../../shared/questionOptions";
 import type { PlayingScreenProps } from "./PlayingScreen";
 
 type HookSlot =
@@ -164,10 +165,10 @@ const buildProps = (
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
     createOptions: () => [
-      { label: "2", isCorrect: true },
-      { label: "3", isCorrect: false },
-      { label: "4", isCorrect: false },
-      { label: "5", isCorrect: false },
+      createTextOnlyQuestionOption("2", true),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("4", false),
+      createTextOnlyQuestionOption("5", false),
     ],
   },
   playingPlayer: {
@@ -181,10 +182,10 @@ const buildProps = (
     operator: "+",
     prompt: "1 + 1 = ?",
     options: [
-      { label: "2", isCorrect: true },
-      { label: "3", isCorrect: false },
-      { label: "4", isCorrect: false },
-      { label: "5", isCorrect: false },
+      createTextOnlyQuestionOption("2", true),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("4", false),
+      createTextOnlyQuestionOption("5", false),
     ],
   },
   answeredCount: 1,

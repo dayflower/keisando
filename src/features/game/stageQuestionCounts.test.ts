@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createTextOnlyQuestionOption } from "../../shared/questionOptions";
 import type { StageDefinition } from "../../shared/types";
 import {
   applyStageQuestionCountOverride,
@@ -19,10 +20,10 @@ const stage: StageDefinition = {
     answer: 3,
   }),
   createOptions: () => [
-    { label: "3", isCorrect: true },
-    { label: "2", isCorrect: false },
-    { label: "4", isCorrect: false },
-    { label: "5", isCorrect: false },
+    createTextOnlyQuestionOption("3", true),
+    createTextOnlyQuestionOption("2", false),
+    createTextOnlyQuestionOption("4", false),
+    createTextOnlyQuestionOption("5", false),
   ],
 };
 

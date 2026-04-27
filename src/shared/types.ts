@@ -1,3 +1,8 @@
+export type QuestionOptionLabelSegment = {
+  text: string;
+  size?: "normal" | "small";
+};
+
 export type StageExpression = {
   left: number;
   right: number;
@@ -7,7 +12,7 @@ export type StageExpression = {
 };
 
 export type QuestionOption = {
-  label: string;
+  segments: QuestionOptionLabelSegment[];
   isCorrect: boolean;
 };
 
@@ -18,7 +23,6 @@ export type StageDefinition = {
   initializeRound?: () => void;
   createExpression: () => StageExpression;
   formatQuestion?: (expression: StageExpression) => string;
-  formatOptionLabel?: (value: number, expression: StageExpression) => string;
   createOptions: (
     expression: StageExpression,
     locale: "ja" | "en",

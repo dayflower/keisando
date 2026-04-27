@@ -1,5 +1,13 @@
 import { type Locale, translate } from "./i18n";
-import type { QuestionOption, StageDefinition } from "./types";
+import {
+  createQuestionOption,
+  createTextOnlyQuestionOption,
+} from "./questionOptions";
+import type {
+  QuestionOption,
+  QuestionOptionLabelSegment,
+  StageDefinition,
+} from "./types";
 
 const STAGE1_ZERO_RETRY_RATE = 0.7;
 const STAGE2_ZERO_RETRY_RATE = 0.7;
@@ -22,6 +30,22 @@ type Stage8OptionCandidate = {
   quotient: number;
   remainder: number;
 };
+
+const buildStage5OptionSegments = (
+  value: number,
+  multiplier: number,
+): QuestionOptionLabelSegment[] => [
+  { text: `${multiplier} ×`, size: "small" },
+  { text: String(value) },
+];
+
+const buildStage7OptionSegments = (
+  value: number,
+  product: number,
+): QuestionOptionLabelSegment[] => [
+  { text: String(value) },
+  { text: `(${product})`, size: "small" },
+];
 
 const retryZeroWeightedExpression = <T>(
   createExpression: () => T,
@@ -276,7 +300,7 @@ const buildStage8Options = (
   correct: Stage8OptionCandidate,
   divisor: number,
   locale: Locale,
-): Array<{ label: string; isCorrect: boolean }> => {
+): QuestionOption[] => {
   const pool = buildStage8CandidatePool(correct, divisor);
   let bestDistractors = buildStage8Distractors(correct, pool);
   let bestScore = scoreStage8Distractors(correct, bestDistractors);
@@ -292,18 +316,16 @@ const buildStage8Options = (
   }
 
   return shuffleItems([
-    {
-      label: buildStage8OptionLabel(
-        correct.quotient,
-        correct.remainder,
-        locale,
+    createTextOnlyQuestionOption(
+      buildStage8OptionLabel(correct.quotient, correct.remainder, locale),
+      true,
+    ),
+    ...bestDistractors.map((item) =>
+      createTextOnlyQuestionOption(
+        buildStage8OptionLabel(item.quotient, item.remainder, locale),
+        false,
       ),
-      isCorrect: true,
-    },
-    ...bestDistractors.map((item) => ({
-      label: buildStage8OptionLabel(item.quotient, item.remainder, locale),
-      isCorrect: false,
-    })),
+    ),
   ]);
 };
 
@@ -311,7 +333,7 @@ const buildNumericOptions = (
   answer: number,
   answerMin: number,
   answerMax: number,
-  formatOptionLabel?: (value: number) => string,
+  formatSegments?: (value: number) => QuestionOptionLabelSegment[],
 ): QuestionOption[] => {
   const candidates = new Set<number>([answer]);
   let guard = 0;
@@ -335,10 +357,12 @@ const buildNumericOptions = (
     }
   }
 
-  return shuffleItems([...candidates]).map((value) => ({
-    label: formatOptionLabel?.(value) ?? String(value),
-    isCorrect: value === answer,
-  }));
+  return shuffleItems([...candidates]).map((value) =>
+    createQuestionOption(
+      formatSegments?.(value) ?? [{ text: String(value) }],
+      value === answer,
+    ),
+  );
 };
 
 const stage9SourceStages: StageDefinition[] = [];
@@ -493,13 +517,9 @@ export const STAGES: StageDefinition[] = [
     },
     formatQuestion: (expression) =>
       `${expression.left} = ${expression.right} × ?`,
-    formatOptionLabel: (value, expression) => `${expression.right} × ${value}`,
     createOptions: (expression) =>
-      buildNumericOptions(
-        expression.answer,
-        0,
-        9,
-        (value) => `${expression.right} × ${value}`,
+      buildNumericOptions(expression.answer, 0, 9, (value) =>
+        buildStage5OptionSegments(value, expression.right),
       ),
   },
   {
@@ -554,14 +574,9 @@ export const STAGES: StageDefinition[] = [
     },
     formatQuestion: (expression) =>
       `${expression.left} = ${expression.right} × ? + ${expression.remainder ?? 0}`,
-    formatOptionLabel: (value, expression) =>
-      `${value} (${expression.right * value})`,
     createOptions: (expression) =>
-      buildNumericOptions(
-        expression.answer,
-        0,
-        9,
-        (value) => `${value} (${expression.right * value})`,
+      buildNumericOptions(expression.answer, 0, 9, (value) =>
+        buildStage7OptionSegments(value, expression.right * value),
       ),
   },
   {

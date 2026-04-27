@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { I18nProvider, type Locale } from "../../shared/i18n";
+import { createTextOnlyQuestionOption } from "../../shared/questionOptions";
 import type { PlayingScreenProps } from "./PlayingScreen";
 import { PlayingScreen } from "./PlayingScreen";
 
@@ -16,10 +17,10 @@ const buildProps = (
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
     createOptions: () => [
-      { label: "2", isCorrect: true },
-      { label: "3", isCorrect: false },
-      { label: "4", isCorrect: false },
-      { label: "5", isCorrect: false },
+      createTextOnlyQuestionOption("2", true),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("4", false),
+      createTextOnlyQuestionOption("5", false),
     ],
   },
   playingPlayer: {
@@ -33,10 +34,10 @@ const buildProps = (
     operator: "+",
     prompt: "1 + 1 = ?",
     options: [
-      { label: "2", isCorrect: true },
-      { label: "3", isCorrect: false },
-      { label: "4", isCorrect: false },
-      { label: "5", isCorrect: false },
+      createTextOnlyQuestionOption("2", true),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("4", false),
+      createTextOnlyQuestionOption("5", false),
     ],
   },
   answeredCount: 10,
@@ -223,6 +224,32 @@ describe("PlayingScreen clear celebration", () => {
 
     expect(html).toContain("result-text result-text-active result-correct");
     expect(html).toContain("正解!");
+  });
+
+  it("renders smaller choice segments for structured option labels", () => {
+    const html = renderScreen({
+      isCleared: false,
+      isRoundActive: true,
+      question: {
+        left: 56,
+        right: 8,
+        operator: "×",
+        prompt: "56 = 8 × ?",
+        options: [
+          {
+            segments: [{ text: "8 ×", size: "small" }, { text: "7" }],
+            isCorrect: true,
+          },
+          createTextOnlyQuestionOption("8 × 6", false),
+          createTextOnlyQuestionOption("8 × 8", false),
+          createTextOnlyQuestionOption("8 × 9", false),
+        ],
+      },
+    });
+
+    expect(html).toContain('class="choice-label"');
+    expect(html).toContain('class="choice-label-segment-small">8 ×</span>');
+    expect(html).toContain(">7</span>");
   });
 
   it("renders the wrong result feedback during an active round", () => {

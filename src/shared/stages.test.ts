@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { getQuestionOptionText } from "./questionOptions";
 import { STAGES } from "./stages";
 import type { StageExpression } from "./types";
 
@@ -39,13 +40,37 @@ describe("STAGES", () => {
     );
 
     expect(stage1Options).toHaveLength(4);
-    expect(stage1Options.some((option) => option.label === "18")).toBe(true);
+    expect(
+      stage1Options.some((option) => getQuestionOptionText(option) === "18"),
+    ).toBe(true);
     expect(stage5Options).toHaveLength(4);
-    expect(stage5Options.some((option) => option.label === "8 × 7")).toBe(true);
+    expect(
+      stage5Options.some((option) => getQuestionOptionText(option) === "8 × 7"),
+    ).toBe(true);
+    expect(
+      stage5Options.some(
+        (option) =>
+          getQuestionOptionText(option) === "8 × 7" &&
+          option.segments[0]?.text === "8 ×" &&
+          option.segments[0]?.size === "small" &&
+          option.segments[1]?.text === "7",
+      ),
+    ).toBe(true);
     expect(stage7Options).toHaveLength(4);
-    expect(stage7Options.some((option) => option.label === "8 (56)")).toBe(
-      true,
-    );
+    expect(
+      stage7Options.some(
+        (option) => getQuestionOptionText(option) === "8 (56)",
+      ),
+    ).toBe(true);
+    expect(
+      stage7Options.some(
+        (option) =>
+          getQuestionOptionText(option) === "8 (56)" &&
+          option.segments[0]?.text === "8" &&
+          option.segments[1]?.text === "(56)" &&
+          option.segments[1]?.size === "small",
+      ),
+    ).toBe(true);
   });
 
   it("stage1 retries zero-inclusive expressions when the retry gate allows it", () => {
@@ -269,7 +294,7 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage5 formats fill-in prompts and option labels", () => {
+  it("stage5 formats fill-in prompts and option segments", () => {
     const stage5 = STAGES[4];
 
     const prompt = stage5.formatQuestion?.({
@@ -278,15 +303,24 @@ describe("STAGES", () => {
       operator: "×",
       answer: 7,
     });
-    const optionLabel = stage5.formatOptionLabel?.(7, {
-      left: 56,
-      right: 8,
-      operator: "×",
-      answer: 7,
-    });
+    const option = stage5
+      .createOptions(
+        {
+          left: 56,
+          right: 8,
+          operator: "×",
+          answer: 7,
+        },
+        "en",
+      )
+      .find((item) => item.isCorrect);
 
     expect(prompt).toBe("56 = 8 × ?");
-    expect(optionLabel).toBe("8 × 7");
+    expect(option?.segments).toEqual([
+      { text: "8 ×", size: "small" },
+      { text: "7" },
+    ]);
+    expect(option ? getQuestionOptionText(option) : "").toBe("8 × 7");
   });
 
   it("stage6 retries zero dividends when the retry gate allows it", () => {
@@ -428,7 +462,7 @@ describe("STAGES", () => {
     expect(expression.remainder).toBe(1);
   });
 
-  it("stage7 formats remainder prompts and option labels", () => {
+  it("stage7 formats remainder prompts and option segments", () => {
     const stage7 = STAGES[6];
 
     const prompt = stage7.formatQuestion?.({
@@ -438,16 +472,25 @@ describe("STAGES", () => {
       answer: 8,
       remainder: 2,
     });
-    const optionLabel = stage7.formatOptionLabel?.(8, {
-      left: 58,
-      right: 7,
-      operator: "×",
-      answer: 8,
-      remainder: 2,
-    });
+    const option = stage7
+      .createOptions(
+        {
+          left: 58,
+          right: 7,
+          operator: "×",
+          answer: 8,
+          remainder: 2,
+        },
+        "en",
+      )
+      .find((item) => item.isCorrect);
 
     expect(prompt).toBe("58 = 7 × ? + 2");
-    expect(optionLabel).toBe("8 (56)");
+    expect(option?.segments).toEqual([
+      { text: "8" },
+      { text: "(56)", size: "small" },
+    ]);
+    expect(option ? getQuestionOptionText(option) : "").toBe("8 (56)");
   });
 
   it("stage8 retries remainder 0 when the retry gate allows it", () => {
@@ -564,7 +607,7 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage8 formats remainder division option labels", () => {
+  it("stage8 formats remainder division option segments", () => {
     const stage8 = STAGES[7];
 
     const prompt = stage8.formatQuestion?.({
@@ -596,11 +639,16 @@ describe("STAGES", () => {
     );
 
     expect(prompt).toBeUndefined();
-    expect(optionsJa?.some((option) => option.label === "8 … 1")).toBe(true);
-    expect(optionsEn?.some((option) => option.label === "8 R 1")).toBe(true);
+    expect(
+      optionsJa?.some((option) => getQuestionOptionText(option) === "8 … 1"),
+    ).toBe(true);
+    expect(
+      optionsEn?.some((option) => getQuestionOptionText(option) === "8 R 1"),
+    ).toBe(true);
     expect(
       optionsJa?.every((option) => {
-        const [quotientText, remainderText] = option.label.split(" … ");
+        const [quotientText, remainderText] =
+          getQuestionOptionText(option).split(" … ");
         const quotient = Number(quotientText);
         const remainder = Number(remainderText);
 
@@ -631,7 +679,8 @@ describe("STAGES", () => {
     expect(options).toHaveLength(4);
     expect(
       options?.every((option) => {
-        const [quotientText, remainderText] = option.label.split(" R ");
+        const [quotientText, remainderText] =
+          getQuestionOptionText(option).split(" R ");
         const quotient = Number(quotientText);
         const remainder = Number(remainderText);
 
@@ -663,7 +712,9 @@ describe("STAGES", () => {
 
     expect(
       options?.some(
-        (option) => option.label.startsWith("8 R ") && option.label !== "8 R 1",
+        (option) =>
+          getQuestionOptionText(option).startsWith("8 R ") &&
+          getQuestionOptionText(option) !== "8 R 1",
       ),
     ).toBe(true);
   });
@@ -686,9 +737,11 @@ describe("STAGES", () => {
     randomSpy.mockRestore();
 
     expect(options).toHaveLength(4);
-    expect(options?.every((option) => option.label.startsWith("8 R "))).toBe(
-      true,
-    );
+    expect(
+      options?.every((option) =>
+        getQuestionOptionText(option).startsWith("8 R "),
+      ),
+    ).toBe(true);
   });
 
   it("stage8 falls back to mixed options when same-quotient is unavailable", () => {
@@ -709,16 +762,21 @@ describe("STAGES", () => {
     randomSpy.mockRestore();
 
     expect(options).toHaveLength(4);
-    expect(options?.some((option) => option.label === "5 R 2")).toBe(true);
+    expect(
+      options?.some((option) => getQuestionOptionText(option) === "5 R 2"),
+    ).toBe(true);
     expect(
       options?.some(
-        (option) => option.label.startsWith("5 R ") && option.label !== "5 R 2",
+        (option) =>
+          getQuestionOptionText(option).startsWith("5 R ") &&
+          getQuestionOptionText(option) !== "5 R 2",
       ),
     ).toBe(true);
     expect(
       options?.some(
         (option) =>
-          !option.label.startsWith("5 R ") && option.label.endsWith("R 2"),
+          !getQuestionOptionText(option).startsWith("5 R ") &&
+          getQuestionOptionText(option).endsWith("R 2"),
       ),
     ).toBe(true);
   });
@@ -744,7 +802,8 @@ describe("STAGES", () => {
     expect(
       options?.some(
         (option) =>
-          !option.label.startsWith("8 R ") && option.label.endsWith("R 1"),
+          !getQuestionOptionText(option).startsWith("8 R ") &&
+          getQuestionOptionText(option).endsWith("R 1"),
       ),
     ).toBe(true);
   });
@@ -873,7 +932,9 @@ describe("STAGES", () => {
     );
 
     expect(options).toHaveLength(4);
-    expect(options?.some((option) => option.label === "8 R 1")).toBe(true);
+    expect(
+      options?.some((option) => getQuestionOptionText(option) === "8 R 1"),
+    ).toBe(true);
   });
 
   it("stage9 uses numeric options for non-division questions", () => {
@@ -891,6 +952,8 @@ describe("STAGES", () => {
 
     expect(options).toHaveLength(4);
     expect(options?.filter((option) => option.isCorrect)).toHaveLength(1);
-    expect(options?.some((option) => option.label === "42")).toBe(true);
+    expect(
+      options?.some((option) => getQuestionOptionText(option) === "42"),
+    ).toBe(true);
   });
 });

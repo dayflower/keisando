@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ROUND_COUNTDOWN_SECONDS } from "../../shared/constants";
+import {
+  createQuestionOption,
+  createTextOnlyQuestionOption,
+} from "../../shared/questionOptions";
 import type {
   Player,
   StageDefinition,
@@ -207,10 +211,10 @@ const createTestStage = () => {
       };
     },
     createOptions: (expression) => [
-      { label: String(expression.answer), isCorrect: true },
-      { label: String(expression.answer - 1), isCorrect: false },
-      { label: String(expression.answer + 1), isCorrect: false },
-      { label: String(expression.answer + 2), isCorrect: false },
+      createTextOnlyQuestionOption(String(expression.answer), true),
+      createTextOnlyQuestionOption(String(expression.answer - 1), false),
+      createTextOnlyQuestionOption(String(expression.answer + 1), false),
+      createTextOnlyQuestionOption(String(expression.answer + 2), false),
     ],
   };
 
@@ -373,7 +377,7 @@ describe("useGameSession", () => {
     nowSpy.mockReturnValue(8_000);
     game.handleAnswer(
       game.question?.options.find((option) => option.isCorrect) ?? {
-        label: "",
+        segments: [{ text: "" }],
         isCorrect: false,
       },
     );
@@ -457,7 +461,7 @@ describe("useGameSession", () => {
     game = render();
     game = render();
 
-    game.handleAnswer({ label: "", isCorrect: false });
+    game.handleAnswer(createQuestionOption([{ text: "" }], false));
     game = render();
 
     expect(game.lastResult).toBe("wrong");

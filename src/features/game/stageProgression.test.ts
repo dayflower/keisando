@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createTextOnlyQuestionOption } from "../../shared/questionOptions";
 import type { StageDefinition } from "../../shared/types";
 import { getNextPlayableStage, getNextStage } from "./stageProgression";
 
@@ -12,10 +13,10 @@ const buildStages = (): StageDefinition[] => [
     },
     createExpression: () => ({ left: 1, right: 1, operator: "+", answer: 2 }),
     createOptions: () => [
-      { label: "2", isCorrect: true },
-      { label: "1", isCorrect: false },
-      { label: "3", isCorrect: false },
-      { label: "4", isCorrect: false },
+      createTextOnlyQuestionOption("2", true),
+      createTextOnlyQuestionOption("1", false),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("4", false),
     ],
   },
   {
@@ -27,10 +28,10 @@ const buildStages = (): StageDefinition[] => [
     },
     createExpression: () => ({ left: 2, right: 1, operator: "+", answer: 3 }),
     createOptions: () => [
-      { label: "3", isCorrect: true },
-      { label: "2", isCorrect: false },
-      { label: "4", isCorrect: false },
-      { label: "5", isCorrect: false },
+      createTextOnlyQuestionOption("3", true),
+      createTextOnlyQuestionOption("2", false),
+      createTextOnlyQuestionOption("4", false),
+      createTextOnlyQuestionOption("5", false),
     ],
   },
   {
@@ -42,10 +43,10 @@ const buildStages = (): StageDefinition[] => [
     },
     createExpression: () => ({ left: 3, right: 1, operator: "+", answer: 4 }),
     createOptions: () => [
-      { label: "4", isCorrect: true },
-      { label: "3", isCorrect: false },
-      { label: "5", isCorrect: false },
-      { label: "6", isCorrect: false },
+      createTextOnlyQuestionOption("4", true),
+      createTextOnlyQuestionOption("3", false),
+      createTextOnlyQuestionOption("5", false),
+      createTextOnlyQuestionOption("6", false),
     ],
   },
 ];
