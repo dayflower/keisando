@@ -368,6 +368,7 @@ function App() {
         return;
       }
 
+      clearFlow.markCurrentClearCelebrationSeen();
       openRankingScreen(game.selectedStage.id);
       setRankingOrigin("playingClear");
       setScreen("ranking");
@@ -602,8 +603,10 @@ function App() {
         clearBestBadge={clearFlow.clearCelebration.clearBestBadge}
         clearCelebrationTick={clearFlow.clearCelebrationTick}
         didUnlockNextStageOnClear={clearFlow.didUnlockNextStageOnClear}
+        shouldReplayClearCelebration={!clearFlow.hasSeenCurrentClearCelebration}
         canAdvanceToNextStage={nextPlayableStage !== null}
         onAnswer={game.handleAnswer}
+        onClearCelebrationSeen={clearFlow.markCurrentClearCelebrationSeen}
         onOpenRanking={navigation.openRankingFromClear}
         onBackToStageSelect={navigation.backToStageSelect}
         onResetStage={game.resetStage}

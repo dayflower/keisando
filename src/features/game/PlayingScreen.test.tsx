@@ -59,8 +59,10 @@ const buildProps = (
   clearBestBadge: "none",
   clearCelebrationTick: 1,
   didUnlockNextStageOnClear: true,
+  shouldReplayClearCelebration: true,
   canAdvanceToNextStage: true,
   onAnswer: () => {},
+  onClearCelebrationSeen: () => {},
   onOpenRanking: () => {},
   onBackToStageSelect: () => {},
   onResetStage: () => {},
@@ -120,6 +122,42 @@ describe("PlayingScreen clear celebration", () => {
     const burstCount =
       html.match(/class="clear-burst(?: [^"]*)?"/g)?.length ?? 0;
     expect(burstCount).toBe(1);
+  });
+
+  it("does not render clear celebration bursts after the clear effect has been seen", () => {
+    const html = renderScreen({
+      shouldReplayClearCelebration: false,
+    });
+
+    expect(html).not.toContain("clear-celebration");
+    expect(html).toContain("Stage Clear!");
+  });
+
+  it("does not render combo burst markup on the cleared screen", () => {
+    const html = renderScreen({
+      isCleared: true,
+      isRoundActive: false,
+      currentCombo: 10,
+      comboEffectTick: 2,
+      comboMilestoneTick: 3,
+      comboMilestoneValue: 10,
+      lastResult: "correct",
+    });
+
+    expect(html).not.toContain("combo-effects-active");
+  });
+
+  it("does not render combo milestone overlay on the cleared screen", () => {
+    const html = renderScreen({
+      isCleared: true,
+      isRoundActive: false,
+      comboMilestoneTick: 3,
+      comboMilestoneValue: 10,
+      lastResult: "correct",
+    });
+
+    expect(html).not.toContain("combo-progress-overlay");
+    expect(html).not.toContain("10 COMBO!");
   });
 
   it("uses my best celebration with shockwave and three bursts", () => {

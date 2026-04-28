@@ -47,8 +47,10 @@ export type PlayingScreenProps = {
   clearBestBadge: ClearBestBadge;
   clearCelebrationTick: number;
   didUnlockNextStageOnClear: boolean;
+  shouldReplayClearCelebration: boolean;
   canAdvanceToNextStage: boolean;
   onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
+  onClearCelebrationSeen: () => void;
   onOpenRanking: () => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
@@ -101,8 +103,10 @@ export const PlayingScreen = ({
   clearBestBadge,
   clearCelebrationTick,
   didUnlockNextStageOnClear,
+  shouldReplayClearCelebration,
   canAdvanceToNextStage,
   onAnswer,
+  onClearCelebrationSeen,
   onOpenRanking,
   onBackToStageSelect,
   onResetStage,
@@ -113,7 +117,10 @@ export const PlayingScreen = ({
 }: PlayingScreenProps) => {
   const [visibleResult, setVisibleResult] = useState<
     "correct" | "wrong" | null
-  >(lastResult);
+  >(() => (isCleared ? null : lastResult));
+  const [showClearCelebration, setShowClearCelebration] = useState(
+    () => isCleared && shouldReplayClearCelebration,
+  );
   const [keyboardChoiceFeedbackIndex, setKeyboardChoiceFeedbackIndex] =
     useState<number | null>(null);
   const [resultDisplayKey, setResultDisplayKey] = useState(0);
@@ -175,6 +182,25 @@ export const PlayingScreen = ({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!isCleared) {
+      setShowClearCelebration(false);
+      return;
+    }
+
+    if (shouldReplayClearCelebration && !showClearCelebration) {
+      setShowClearCelebration(true);
+    }
+  }, [isCleared, shouldReplayClearCelebration, showClearCelebration]);
+
+  useEffect(() => {
+    if (!isCleared || !shouldReplayClearCelebration) {
+      return;
+    }
+
+    onClearCelebrationSeen();
+  }, [isCleared, onClearCelebrationSeen, shouldReplayClearCelebration]);
 
   const showKeyboardChoiceFeedback = (choiceIndex: number) => {
     if (keyboardChoiceFeedbackTimeoutRef.current !== null) {
@@ -240,7 +266,7 @@ export const PlayingScreen = ({
         <span className="performance-bg-shape performance-bg-shape-b" />
         <span className="performance-bg-shape performance-bg-shape-c" />
       </div>
-      {comboEffect.showBurst && (
+      {!isCleared && comboEffect.showBurst && (
         <div
           key={comboEffectTick}
           className={`combo-effects combo-effects-active combo-tier-${comboEffect.comboTier}`}
@@ -313,7 +339,7 @@ export const PlayingScreen = ({
                 className="progress-bar-fill"
                 style={{ width: `${progressPercent}%` }}
               />
-              {comboEffect.milestoneLabel && (
+              {!isCleared && comboEffect.milestoneLabel && (
                 <span
                   key={comboMilestoneTick}
                   className="combo-progress-overlay"
@@ -326,11 +352,11 @@ export const PlayingScreen = ({
           </div>
           <div className="timer-row">
             <p className="timer-pill">
-              {t("playing.time")}: {formatElapsedTime(elapsedMs)}
-            </p>
-            <p className="timer-pill">
               {t("playing.best")}:{" "}
               {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
+            </p>
+            <p className="timer-pill">
+              {t("playing.time")}: {formatElapsedTime(elapsedMs)}
             </p>
             {isCleared && (
               <button
@@ -474,29 +500,33 @@ export const PlayingScreen = ({
               )
             ) : (
               <div className="clear-summary" role="status" aria-live="polite">
-                <div
-                  key={clearCelebrationTick}
-                  className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
-                  aria-hidden="true"
-                >
-                  {clearEffect.burstSpecs.map((burstSpec) => (
-                    <span
-                      key={burstSpec.id}
-                      className={`clear-burst ${
-                        clearEffect.withShockwave ? "clear-burst-shockwave" : ""
-                      }`}
-                      style={
-                        {
-                          "--clear-burst-x": `${burstSpec.x}%`,
-                          "--clear-burst-y": `${burstSpec.y}%`,
-                          "--clear-burst-scale": burstSpec.scale,
-                          "--clear-burst-delay": `${burstSpec.delayMs}ms`,
-                          "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
-                        } as CSSProperties
-                      }
-                    />
-                  ))}
-                </div>
+                {showClearCelebration && (
+                  <div
+                    key={clearCelebrationTick}
+                    className={`clear-celebration clear-celebration-${clearCelebrationTier}`}
+                    aria-hidden="true"
+                  >
+                    {clearEffect.burstSpecs.map((burstSpec) => (
+                      <span
+                        key={burstSpec.id}
+                        className={`clear-burst ${
+                          clearEffect.withShockwave
+                            ? "clear-burst-shockwave"
+                            : ""
+                        }`}
+                        style={
+                          {
+                            "--clear-burst-x": `${burstSpec.x}%`,
+                            "--clear-burst-y": `${burstSpec.y}%`,
+                            "--clear-burst-scale": burstSpec.scale,
+                            "--clear-burst-delay": `${burstSpec.delayMs}ms`,
+                            "--clear-burst-hue-shift": `${burstSpec.hueShiftDeg}deg`,
+                          } as CSSProperties
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
                 {clearEffect.badgeLabel && (
                   <p className="clear-best-badge">{clearEffect.badgeLabel}</p>
                 )}

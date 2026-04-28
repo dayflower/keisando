@@ -101,6 +101,8 @@ export const useStageClearFlow = ({
   const [clearCelebrationTick, setClearCelebrationTick] = useState(0);
   const [didUnlockNextStageOnClear, setDidUnlockNextStageOnClear] =
     useState(false);
+  const [hasSeenCurrentClearCelebration, setHasSeenCurrentClearCelebration] =
+    useState(false);
 
   const handleStageFinish = useCallback(
     (payload: StageFinishedPayload) => {
@@ -124,6 +126,7 @@ export const useStageClearFlow = ({
 
       clearSoundVariantRef.current = resolution.clearSoundVariant;
       setDidUnlockNextStageOnClear(resolution.didUnlockNextStageOnClear);
+      setHasSeenCurrentClearCelebration(false);
       setClearCelebrationTick((prev) => prev + 1);
 
       addRecord(payload.record);
@@ -149,6 +152,11 @@ export const useStageClearFlow = ({
     clearSoundVariantRef.current = "withMistake";
     setClearCelebrationTick(0);
     setDidUnlockNextStageOnClear(false);
+    setHasSeenCurrentClearCelebration(false);
+  }, []);
+
+  const markCurrentClearCelebrationSeen = useCallback(() => {
+    setHasSeenCurrentClearCelebration(true);
   }, []);
 
   return {
@@ -159,6 +167,8 @@ export const useStageClearFlow = ({
     ),
     clearCelebrationTick,
     didUnlockNextStageOnClear,
+    hasSeenCurrentClearCelebration,
+    markCurrentClearCelebrationSeen,
     resetClearFlow,
   };
 };

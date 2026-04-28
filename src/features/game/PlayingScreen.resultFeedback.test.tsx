@@ -208,8 +208,10 @@ const buildProps = (
   clearBestBadge: "none",
   clearCelebrationTick: 1,
   didUnlockNextStageOnClear: true,
+  shouldReplayClearCelebration: true,
   canAdvanceToNextStage: true,
   onAnswer: () => {},
+  onClearCelebrationSeen: () => {},
   onOpenRanking: () => {},
   onBackToStageSelect: () => {},
   onResetStage: () => {},
@@ -528,6 +530,23 @@ describe("PlayingScreen result feedback timing", () => {
     }
 
     expect(onOpenRanking).toHaveBeenCalledTimes(1);
+
+    runtime.dispose();
+  });
+
+  it("marks the current clear celebration as seen after the first clear render", async () => {
+    const runtime = createHookRuntime();
+    const { PlayingScreen } = await loadPlayingScreenModule();
+    const onClearCelebrationSeen = vi.fn();
+    const props = buildProps({
+      isCleared: true,
+      isRoundActive: false,
+      onClearCelebrationSeen,
+    });
+
+    runtime.render(() => PlayingScreen(props));
+
+    expect(onClearCelebrationSeen).toHaveBeenCalledTimes(1);
 
     runtime.dispose();
   });
