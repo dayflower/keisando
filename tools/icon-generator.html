@@ -176,8 +176,9 @@
     <main>
       <h1>Icon Generator</h1>
       <p class="lead">
-        Generate PNG icons from <code>../public/icon-source.svg</code>. Standard
-        icons are clipped to a circle, while the maskable icon stays square.
+        Generate PNG icons from <code>../public/icon-source.svg</code>. The
+        Apple touch icon and maskable icon stay square, while the other icons
+        are clipped to a circle.
       </p>
 
       <section class="actions">
@@ -206,7 +207,7 @@
         {
           filename: "apple-touch-icon.png",
           size: 180,
-          clip: "circle",
+          clip: "none",
           label: "Apple Touch Icon",
         },
         {
