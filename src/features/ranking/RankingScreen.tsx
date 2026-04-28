@@ -21,7 +21,8 @@ export type RankingScreenProps = {
   playerNameById: Map<string, string>;
   rows: StageRunRecord[];
   onSetRankingTab: (tab: RankingTab) => void;
-  onBackToStageSelect: () => void;
+  onBack: () => void;
+  backButtonLabel: string;
   isMuted: boolean;
   onToggleMute: () => void;
   onUiTap?: () => void;
@@ -34,7 +35,8 @@ export const RankingScreen = ({
   playerNameById,
   rows,
   onSetRankingTab,
-  onBackToStageSelect,
+  onBack,
+  backButtonLabel,
   isMuted,
   onToggleMute,
   onUiTap,
@@ -58,9 +60,9 @@ export const RankingScreen = ({
                 type="button"
                 onClick={() => {
                   onUiTap?.();
-                  onBackToStageSelect();
+                  onBack();
                 }}
-                aria-label={t("common.backToStageSelect")}
+                aria-label={backButtonLabel}
               >
                 <ArrowLeft size={16} aria-hidden="true" />
               </button>

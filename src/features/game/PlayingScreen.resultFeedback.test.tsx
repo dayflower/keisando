@@ -24,6 +24,7 @@ const messages = {
   "playing.resultCorrect": "正解!",
   "playing.resultWrong": "不正解! +1問",
   "playing.comboMilestone": "{count} COMBO!",
+  "playing.openRanking": "ランキング",
   "common.backToStageSelect": "ステージ選択へ戻る",
 };
 
@@ -209,6 +210,7 @@ const buildProps = (
   didUnlockNextStageOnClear: true,
   canAdvanceToNextStage: true,
   onAnswer: () => {},
+  onOpenRanking: () => {},
   onBackToStageSelect: () => {},
   onResetStage: () => {},
   onStartNextStage: () => {},
@@ -278,6 +280,7 @@ type ReactNodeLike =
       props?: {
         className?: string;
         children?: ReactNodeLike | ReactNodeLike[];
+        onClick?: () => void;
       };
     };
 
@@ -490,6 +493,41 @@ describe("PlayingScreen result feedback timing", () => {
     expect(
       readResultClassName(findElementByClassName(tree, "choice-right")),
     ).not.toContain("choice-keyboard-active");
+
+    runtime.dispose();
+  });
+
+  it("calls the ranking handler from the clear screen action", async () => {
+    const runtime = createHookRuntime();
+    const { PlayingScreen } = await loadPlayingScreenModule();
+    const onOpenRanking = vi.fn();
+    const props = buildProps({
+      isCleared: true,
+      isRoundActive: false,
+      onOpenRanking,
+    });
+
+    const tree = runtime.render(() => PlayingScreen(props));
+    const rankingButton = findElementByClassName(tree, "clear-ranking-button");
+
+    expect(rankingButton).not.toBeNull();
+    expect(
+      rankingButton &&
+        typeof rankingButton === "object" &&
+        "props" in rankingButton &&
+        typeof rankingButton.props?.onClick === "function",
+    ).toBe(true);
+
+    if (
+      rankingButton &&
+      typeof rankingButton === "object" &&
+      "props" in rankingButton &&
+      typeof rankingButton.props?.onClick === "function"
+    ) {
+      rankingButton.props.onClick();
+    }
+
+    expect(onOpenRanking).toHaveBeenCalledTimes(1);
 
     runtime.dispose();
   });

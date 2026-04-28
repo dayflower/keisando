@@ -20,6 +20,10 @@ import { useBackNavigationShortcut } from "./features/navigation/useBackNavigati
 import { PlayerSelectScreen } from "./features/player/PlayerSelectScreen";
 import { usePlayers } from "./features/player/usePlayers";
 import { buildBestRecordByStageId } from "./features/ranking/logic";
+import {
+  getRankingBackLabelKey,
+  getRankingBackScreen,
+} from "./features/ranking/navigation";
 import { RankingScreen } from "./features/ranking/RankingScreen";
 import { useRankings } from "./features/ranking/useRankings";
 import { useRecords } from "./features/ranking/useRecords";
@@ -34,6 +38,7 @@ import {
 import { STAGES } from "./shared/stages";
 import type {
   PlayerRegisterErrorCode,
+  RankingOrigin,
   Screen,
   StageClearCondition,
   StageRunRecord,
@@ -56,6 +61,8 @@ function App() {
   const [detectedLocale] = useState(() => detectLocale());
   const [localeOverride, setLocaleOverride] = useState<LocaleOverride>(null);
   const [screen, setScreen] = useState<Screen>("stageSelect");
+  const [rankingOrigin, setRankingOrigin] =
+    useState<RankingOrigin>("stageSelect");
   const [newPlayerName, setNewPlayerName] = useState("");
   const [registerErrorCode, setRegisterErrorCode] =
     useState<PlayerRegisterErrorCode | null>(null);
@@ -154,6 +161,10 @@ function App() {
     stageClearConditionById,
   });
   const locale = localeOverride ?? detectedLocale;
+  const closeRankingContext = () => {
+    closeRankingScreen();
+    setRankingOrigin("stageSelect");
+  };
   const game = useGameSession({
     activePlayer,
     records,
@@ -311,11 +322,17 @@ function App() {
   };
 
   const navigation = {
+    backFromRanking: () => {
+      const destination = getRankingBackScreen(rankingOrigin);
+
+      closeRankingContext();
+      setScreen(destination);
+    },
     backToStageSelect: () => {
       setScreen("stageSelect");
       game.stopSession();
       clearFlow.resetClearFlow();
-      closeRankingScreen();
+      closeRankingContext();
     },
     startStage: (stage: (typeof STAGES)[number]) => {
       if (!unlockedStageIds.has(stage.id)) {
@@ -341,8 +358,18 @@ function App() {
         setScreen("playing");
       }
     },
-    openRanking: (stageId: string) => {
+    openRanking: (stageId: string, origin: RankingOrigin = "stageSelect") => {
       openRankingScreen(stageId);
+      setRankingOrigin(origin);
+      setScreen("ranking");
+    },
+    openRankingFromClear: () => {
+      if (!game.selectedStage) {
+        return;
+      }
+
+      openRankingScreen(game.selectedStage.id);
+      setRankingOrigin("playingClear");
       setScreen("ranking");
     },
     openPlayHistory: () => {
@@ -386,6 +413,7 @@ function App() {
     setRegisterErrorCode(null);
     setNewPlayerName("");
     closeRankingScreen();
+    setRankingOrigin("stageSelect");
     setMuted(false);
     setScreen("stageSelect");
   };
@@ -410,7 +438,10 @@ function App() {
 
   useBackNavigationShortcut({
     screen,
-    onBack: navigation.backToStageSelect,
+    onBack:
+      screen === "ranking"
+        ? navigation.backFromRanking
+        : navigation.backToStageSelect,
     onUiTap: playUiTap,
   });
 
@@ -427,7 +458,9 @@ function App() {
         bestGlobalByStageId={bestGlobalByStageId}
         bestMyByStageId={bestMyByStageId}
         onStartStage={navigation.startStage}
-        onOpenRankingScreen={navigation.openRanking}
+        onOpenRankingScreen={(stageId) =>
+          navigation.openRanking(stageId, "stageSelect")
+        }
         onOpenPlayHistory={navigation.openPlayHistory}
         onOpenPlayerSelect={navigation.openPlayerSelect}
         onOpenDebug={navigation.openDebug}
@@ -503,7 +536,11 @@ function App() {
           playerNameById={playerNameById}
           rows={rankingRows}
           onSetRankingTab={setRankingTab}
-          onBackToStageSelect={navigation.backToStageSelect}
+          onBack={navigation.backFromRanking}
+          backButtonLabel={translate(
+            locale,
+            getRankingBackLabelKey(rankingOrigin),
+          )}
           isMuted={isMuted}
           onToggleMute={toggleMute}
           onUiTap={playUiTap}
@@ -567,6 +604,7 @@ function App() {
         didUnlockNextStageOnClear={clearFlow.didUnlockNextStageOnClear}
         canAdvanceToNextStage={nextPlayableStage !== null}
         onAnswer={game.handleAnswer}
+        onOpenRanking={navigation.openRankingFromClear}
         onBackToStageSelect={navigation.backToStageSelect}
         onResetStage={game.resetStage}
         onStartNextStage={navigation.startNextStage}

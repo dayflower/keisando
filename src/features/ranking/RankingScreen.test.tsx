@@ -38,7 +38,8 @@ const buildProps = (
     },
   ],
   onSetRankingTab: () => {},
-  onBackToStageSelect: () => {},
+  onBack: () => {},
+  backButtonLabel: "Back to stage select",
   isMuted: false,
   onToggleMute: () => {},
   ...overrides,
@@ -82,5 +83,27 @@ describe("RankingScreen", () => {
     expect(html).toContain(
       "個人ランキングを見るにはプレイヤーを選択してください",
     );
+  });
+
+  it("uses a generic back label when opened from the clear screen", () => {
+    const html = renderScreen(
+      {
+        backButtonLabel: "戻る",
+      },
+      "ja",
+    );
+
+    expect(html).toContain('aria-label="戻る"');
+  });
+
+  it("uses the stage-select label when opened from stage select", () => {
+    const html = renderScreen(
+      {
+        backButtonLabel: "ステージ選択に戻る",
+      },
+      "ja",
+    );
+
+    expect(html).toContain('aria-label="ステージ選択に戻る"');
   });
 });

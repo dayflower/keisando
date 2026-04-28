@@ -49,6 +49,7 @@ export type PlayingScreenProps = {
   didUnlockNextStageOnClear: boolean;
   canAdvanceToNextStage: boolean;
   onAnswer: (selected: QuestionOption, effectOrigin?: EffectOrigin) => void;
+  onOpenRanking: () => void;
   onBackToStageSelect: () => void;
   onResetStage: () => void;
   onStartNextStage: () => void;
@@ -102,6 +103,7 @@ export const PlayingScreen = ({
   didUnlockNextStageOnClear,
   canAdvanceToNextStage,
   onAnswer,
+  onOpenRanking,
   onBackToStageSelect,
   onResetStage,
   onStartNextStage,
@@ -330,6 +332,18 @@ export const PlayingScreen = ({
               {t("playing.best")}:{" "}
               {bestTimeMs !== null ? formatElapsedTime(bestTimeMs) : "--:--.--"}
             </p>
+            {isCleared && (
+              <button
+                className="clear-ranking-button clear-ranking-button-inline"
+                type="button"
+                onClick={() => {
+                  onUiTap?.();
+                  onOpenRanking();
+                }}
+              >
+                <span>{t("playing.openRanking")}</span>
+              </button>
+            )}
           </div>
 
           <div className="round-content" aria-live="polite">
@@ -494,12 +508,14 @@ export const PlayingScreen = ({
                   {formatElapsedTime(elapsedMs)}
                 </p>
                 <p className="clear-primary-label">{t("playing.clearTime")}</p>
-                <p className="clear-meta">
-                  {t("playing.finalQuestions")}: {requiredCount}
-                </p>
-                <p className="clear-meta">
-                  {t("playing.wrongAnswers")}: {wrongAnswerCount}
-                </p>
+                <div className="clear-meta-row">
+                  <p className="clear-meta">
+                    {t("playing.finalQuestions")}: {requiredCount}
+                  </p>
+                  <p className="clear-meta">
+                    {t("playing.wrongAnswers")}: {wrongAnswerCount}
+                  </p>
+                </div>
               </div>
             )}
           </div>

@@ -705,6 +705,7 @@ textarea {
   display: flex;
   gap: 0.7rem;
   flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 0.65rem;
 }
 
@@ -1192,6 +1193,7 @@ textarea {
 .clear-title,
 .clear-primary-time,
 .clear-primary-label,
+.clear-meta-row,
 .clear-meta {
   position: relative;
   z-index: 1;
@@ -1229,7 +1231,7 @@ textarea {
 }
 
 .clear-primary-label {
-  margin: 1.25rem 0 0;
+  margin: 0.82rem 0 0;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -1244,16 +1246,24 @@ textarea {
   line-height: 1.3;
 }
 
+.clear-meta-row {
+  margin-top: 2.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.28rem 1rem;
+}
+
 .clear-title + .clear-meta {
   margin-top: 0.48rem;
 }
 
-.clear-primary-label + .clear-meta {
-  margin-top: 2.4rem;
-}
-
 .clear-meta + .clear-meta {
   margin-top: 0.28rem;
+}
+
+.clear-meta-row .clear-meta + .clear-meta {
+  margin-top: 0;
 }
 
 .back-icon-button {
@@ -1556,6 +1566,7 @@ textarea {
 
 .primary-back-button,
 .clear-back-button,
+.clear-ranking-button,
 .primary-action-button,
 .clear-retry-button {
   border: none;
@@ -1567,6 +1578,7 @@ textarea {
 }
 
 .clear-back-button,
+.clear-ranking-button,
 .clear-retry-button {
   padding: 0.72rem 0.82rem;
   font-size: 0.88rem;
@@ -1590,12 +1602,21 @@ textarea {
 }
 
 .clear-back-button,
+.clear-ranking-button,
 .clear-retry-button {
   background: #f3e6cf;
   color: #3d2500;
 }
 
-.clear-back-button {
+.clear-ranking-button.clear-ranking-button-inline {
+  margin-left: auto;
+  padding: 0.32rem 0.62rem;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.clear-back-button,
+.clear-ranking-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;

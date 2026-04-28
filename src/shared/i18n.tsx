@@ -13,6 +13,7 @@ export type LocaleOverride = Locale | null;
 
 const enMessages = {
   "common.appName": "Keisando",
+  "common.back": "Back",
   "common.unknownPlayer": "Unknown",
   "common.backToStageSelect": "Back to stage select",
   "common.openPlayHistory": "Open play history",
@@ -76,6 +77,7 @@ const enMessages = {
   "playing.clearTime": "Clear time",
   "playing.finalQuestions": "Final questions",
   "playing.wrongAnswers": "Mistakes",
+  "playing.openRanking": "Ranking",
   "playing.back": "Back",
   "playing.retry": "Retry",
   "playing.nextStage": "Next Stage",
@@ -161,6 +163,7 @@ export type MessageKey = keyof typeof enMessages;
 
 const jaMessages: Record<MessageKey, string> = {
   "common.appName": "Keisando",
+  "common.back": "戻る",
   "common.unknownPlayer": "不明",
   "common.backToStageSelect": "ステージ選択に戻る",
   "common.openPlayHistory": "プレイ履歴を開く",
@@ -226,6 +229,7 @@ const jaMessages: Record<MessageKey, string> = {
   "playing.clearTime": "クリアタイム",
   "playing.finalQuestions": "最終問題数",
   "playing.wrongAnswers": "ミス",
+  "playing.openRanking": "ランキング",
   "playing.back": "戻る",
   "playing.retry": "リトライ",
   "playing.nextStage": "次のステージ",

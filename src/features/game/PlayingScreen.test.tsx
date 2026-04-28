@@ -61,6 +61,7 @@ const buildProps = (
   didUnlockNextStageOnClear: true,
   canAdvanceToNextStage: true,
   onAnswer: () => {},
+  onOpenRanking: () => {},
   onBackToStageSelect: () => {},
   onResetStage: () => {},
   onStartNextStage: () => {},
@@ -282,6 +283,7 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).toContain("クリアタイム");
     expect(html).toContain("最終問題数: 11");
     expect(html).toContain("ミス: 2");
+    expect(html).toContain("ランキング");
     expect(html).toContain("次のステージ");
     expect(html).toContain("戻る");
     expect(html).toContain("リトライ");

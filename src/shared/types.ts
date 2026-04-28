@@ -88,6 +88,7 @@ export type StageLifetimeSummary = {
 };
 
 export type RankingTab = "global" | "player";
+export type RankingOrigin = "stageSelect" | "playingClear";
 
 export type Screen =
   | "stageSelect"
