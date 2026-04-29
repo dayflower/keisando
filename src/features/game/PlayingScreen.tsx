@@ -80,6 +80,29 @@ const renderQuestionOptionLabel = (option: QuestionOption) => {
   );
 };
 
+const getChoiceClassName = (
+  layout: "diamond" | "binary",
+  index: number,
+  isKeyboardActive: boolean,
+) =>
+  [
+    "choice",
+    layout === "binary"
+      ? index === 0
+        ? "choice-binary-left"
+        : "choice-binary-right"
+      : index === 0
+        ? "choice-top"
+        : index === 1
+          ? "choice-left"
+          : index === 2
+            ? "choice-right"
+            : "choice-bottom",
+    isKeyboardActive ? "choice-keyboard-active" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
 export const PlayingScreen = ({
   selectedStage,
   playingPlayer,
@@ -171,6 +194,7 @@ export const PlayingScreen = ({
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   };
   const choiceButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const choiceLayout = question.options.length === 2 ? "binary" : "diamond";
 
   useEffect(() => {
     return () => {
@@ -378,99 +402,37 @@ export const PlayingScreen = ({
                 <>
                   <p className="expression">{question.prompt}</p>
 
-                  <div className="diamond-grid">
-                    <button
-                      className={[
-                        "choice",
-                        "choice-top",
-                        keyboardChoiceFeedbackIndex === 0
-                          ? "choice-keyboard-active"
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      type="button"
-                      ref={(element) => {
-                        choiceButtonRefs.current[0] = element;
-                      }}
-                      onClick={(event) =>
-                        onAnswer(
-                          question.options[0],
-                          resolveEffectOrigin(event),
-                        )
-                      }
-                    >
-                      {renderQuestionOptionLabel(question.options[0])}
-                    </button>
-                    <button
-                      className={[
-                        "choice",
-                        "choice-left",
-                        keyboardChoiceFeedbackIndex === 1
-                          ? "choice-keyboard-active"
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      type="button"
-                      ref={(element) => {
-                        choiceButtonRefs.current[1] = element;
-                      }}
-                      onClick={(event) =>
-                        onAnswer(
-                          question.options[1],
-                          resolveEffectOrigin(event),
-                        )
-                      }
-                    >
-                      {renderQuestionOptionLabel(question.options[1])}
-                    </button>
-                    <button
-                      className={[
-                        "choice",
-                        "choice-right",
-                        keyboardChoiceFeedbackIndex === 2
-                          ? "choice-keyboard-active"
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      type="button"
-                      ref={(element) => {
-                        choiceButtonRefs.current[2] = element;
-                      }}
-                      onClick={(event) =>
-                        onAnswer(
-                          question.options[2],
-                          resolveEffectOrigin(event),
-                        )
-                      }
-                    >
-                      {renderQuestionOptionLabel(question.options[2])}
-                    </button>
-                    <button
-                      className={[
-                        "choice",
-                        "choice-bottom",
-                        keyboardChoiceFeedbackIndex === 3
-                          ? "choice-keyboard-active"
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      type="button"
-                      ref={(element) => {
-                        choiceButtonRefs.current[3] = element;
-                      }}
-                      onClick={(event) =>
-                        onAnswer(
-                          question.options[3],
-                          resolveEffectOrigin(event),
-                        )
-                      }
-                    >
-                      {renderQuestionOptionLabel(question.options[3])}
-                    </button>
+                  <div
+                    className={
+                      choiceLayout === "binary"
+                        ? "binary-choice-grid"
+                        : "diamond-grid"
+                    }
+                  >
+                    {question.options.map((option, index) => (
+                      <button
+                        key={option.segments
+                          .map(
+                            (segment) =>
+                              `${segment.size ?? "normal"}:${segment.text}`,
+                          )
+                          .join("|")}
+                        className={getChoiceClassName(
+                          choiceLayout,
+                          index,
+                          keyboardChoiceFeedbackIndex === index,
+                        )}
+                        type="button"
+                        ref={(element) => {
+                          choiceButtonRefs.current[index] = element;
+                        }}
+                        onClick={(event) =>
+                          onAnswer(option, resolveEffectOrigin(event))
+                        }
+                      >
+                        {renderQuestionOptionLabel(option)}
+                      </button>
+                    ))}
                     <p
                       key={resultDisplayKey}
                       className={[

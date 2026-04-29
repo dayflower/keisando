@@ -933,6 +933,15 @@ textarea {
   gap: 0.75rem;
 }
 
+.binary-choice-grid {
+  position: relative;
+  width: min(100%, 420px);
+  margin: 2rem auto 1.4rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
 .choice {
   border: none;
   border-radius: 16px;
@@ -1046,6 +1055,11 @@ textarea {
 .choice-bottom {
   grid-column: 2;
   grid-row: 3;
+}
+
+.choice-binary-left,
+.choice-binary-right {
+  min-height: 5.4rem;
 }
 
 .result-text {

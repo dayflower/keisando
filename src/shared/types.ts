@@ -9,6 +9,8 @@ export type StageExpression = {
   operator: "+" | "-" | "×" | "÷";
   answer: number;
   remainder?: number;
+  leftLabel?: string;
+  rightLabel?: string;
 };
 
 export type QuestionOption = {
@@ -22,7 +24,7 @@ export type StageDefinition = {
   defaultClearCondition: StageClearCondition;
   initializeRound?: () => void;
   createExpression: () => StageExpression;
-  formatQuestion?: (expression: StageExpression) => string;
+  formatQuestion?: (expression: StageExpression, locale: "ja" | "en") => string;
   createOptions: (
     expression: StageExpression,
     locale: "ja" | "en",

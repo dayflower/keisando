@@ -499,6 +499,38 @@ describe("PlayingScreen result feedback timing", () => {
     runtime.dispose();
   });
 
+  it("maps left and right keyboard feedback to two-choice questions", async () => {
+    const runtime = createHookRuntime();
+    const { PlayingScreen } = await loadPlayingScreenModule();
+    const props = buildProps({
+      lastResult: null,
+      answeredCount: 1,
+      question: {
+        left: 42,
+        right: 35,
+        operator: "×",
+        prompt: "どっちが大きい?",
+        options: [
+          createTextOnlyQuestionOption("左", true),
+          createTextOnlyQuestionOption("右", false),
+        ],
+      },
+    });
+
+    let tree = runtime.render(() => PlayingScreen(props));
+    expect(
+      readResultClassName(findElementByClassName(tree, "choice-binary-right")),
+    ).not.toContain("choice-keyboard-active");
+
+    latestKeyboardShortcutsInput?.onKeyboardChoiceTrigger?.(1);
+    tree = runtime.render(() => PlayingScreen(props));
+    expect(
+      readResultClassName(findElementByClassName(tree, "choice-binary-right")),
+    ).toContain("choice-keyboard-active");
+
+    runtime.dispose();
+  });
+
   it("calls the ranking handler from the clear screen action", async () => {
     const runtime = createHookRuntime();
     const { PlayingScreen } = await loadPlayingScreenModule();

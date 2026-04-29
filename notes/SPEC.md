@@ -106,18 +106,22 @@ See [package.json](../package.json) for exact scripts and versions.
   - Answer range: `0-9`
   - Zero-valued and one-valued answers remain possible, but generation retries probabilistically to reduce over-frequency.
 - `stage7`
+  - Theme: which is greater?
+  - Expression range: compare two choices, mixing multiplication vs multiplication and multiplication vs number
+  - Answer range: left/right choice
+- `stage8`
   - Theme: multiplication fill-in+
   - Expression range: fill-in form with remainder like `58 = 7 × ? + 2`, answer constrained to `0-9`
   - Answer range: `0-9`
   - One-valued answers remain possible, but generation retries probabilistically to reduce over-frequency.
-- `stage8`
+- `stage9`
   - Theme: division+
   - Expression range: division with remainder, divisor `2-9`, quotient `0-9`, remainder `0-(divisor-1)`
   - Answer range: quotient and remainder pairs shown as localized labels like `8 R 1`
   - Zero-valued quotients, zero remainders, and one-valued quotients remain possible, but generation retries probabilistically to reduce over-frequency.
-- `stage9`
+- `stage10`
   - Theme: mixed arithmetic
-  - Expression range: per-round balanced shuffled mix of question patterns from `stage1`, `stage3`, `stage4`, and `stage8`
+  - Expression range: per-round balanced shuffled mix of question patterns from `stage1`, `stage3`, `stage4`, and `stage9`
   - Answer range: depends on the generated source pattern
   - Uses numeric options for standard arithmetic and quotient/remainder options for division-with-remainder questions.
 
@@ -132,9 +136,10 @@ See [package.json](../package.json) for exact scripts and versions.
   - `stage4 = 50000`
   - `stage5 = 60000`
   - `stage6 = 60000`
-  - `stage7 = 75000`
-  - `stage8 = 120000`
-  - `stage9 = 90000`
+  - `stage7 = 60000`
+  - `stage8 = 75000`
+  - `stage9 = 120000`
+  - `stage10 = 90000`
 
 ### Unlock Rules
 - The first stage is always available.

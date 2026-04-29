@@ -68,9 +68,10 @@ describe("stage helpers", () => {
     expect(getStageTag("ja", "stage4")).toBe("かけ算");
     expect(getStageTag("ja", "stage5")).toBe("かけ算あなうめ");
     expect(getStageTag("ja", "stage6")).toBe("わり算");
-    expect(getStageTag("ja", "stage7")).toBe("かけ算あなうめ+");
-    expect(getStageTag("ja", "stage8")).toBe("わり算+");
-    expect(getStageTag("ja", "stage9")).toBe("四則MIX");
+    expect(getStageTag("ja", "stage7")).toBe("どっちが大きい?");
+    expect(getStageTag("ja", "stage8")).toBe("かけ算あなうめ+");
+    expect(getStageTag("ja", "stage9")).toBe("わり算+");
+    expect(getStageTag("ja", "stage10")).toBe("四則MIX");
     expect(getStageLabel("en", "stage2")).toBe("Stage 2");
     expect(getStageDescription("en", "stage3")).toBe(
       "1-2 digits minus 1 digit (result 0-9)",
@@ -85,12 +86,15 @@ describe("stage helpers", () => {
       "2-digit or less division (result 0-9, divisor 1-9)",
     );
     expect(getStageDescription("en", "stage7")).toBe(
-      "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
+      "Pick left or right to compare multiplication pairs and multiplication versus a number",
     );
     expect(getStageDescription("en", "stage8")).toBe(
-      "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
+      "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
     );
     expect(getStageDescription("en", "stage9")).toBe(
+      "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
+    );
+    expect(getStageDescription("en", "stage10")).toBe(
       "A mixed stage with random addition, subtraction, multiplication, and division questions",
     );
   });

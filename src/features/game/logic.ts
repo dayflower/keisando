@@ -8,8 +8,9 @@ import type {
 const formatQuestion = (
   stage: StageDefinition,
   expression: StageExpression,
+  locale: Locale,
 ): string =>
-  stage.formatQuestion?.(expression) ??
+  stage.formatQuestion?.(expression, locale) ??
   `${expression.left} ${expression.operator} ${expression.right} = ?`;
 
 const createQuestionOptions = (
@@ -41,7 +42,7 @@ export const createQuestion = (
     left: expression.left,
     right: expression.right,
     operator: expression.operator,
-    prompt: formatQuestion(stage, expression),
+    prompt: formatQuestion(stage, expression, locale),
     options: createQuestionOptions(stage, expression, locale),
   };
 };

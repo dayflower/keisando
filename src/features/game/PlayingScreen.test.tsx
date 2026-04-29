@@ -226,6 +226,33 @@ describe("PlayingScreen clear celebration", () => {
     expect(html).not.toContain("正しい答えを選んで");
   });
 
+  it("renders a two-choice layout for binary questions", () => {
+    const html = renderScreen(
+      {
+        isCleared: false,
+        isRoundActive: true,
+        question: {
+          left: 42,
+          right: 35,
+          operator: "×",
+          prompt: "どっちが大きい?",
+          options: [
+            createTextOnlyQuestionOption("6 × 7", true),
+            createTextOnlyQuestionOption("5 × 7", false),
+          ],
+        },
+      },
+      "ja",
+    );
+
+    expect(html).toContain('class="binary-choice-grid"');
+    expect(html).toContain("どっちが大きい?");
+    expect(html).toContain("6 × 7");
+    expect(html).toContain("5 × 7");
+    expect(html).not.toContain("choice-top");
+    expect(html).not.toContain("choice-bottom");
+  });
+
   it("shows wrong-answer count during an active round only when it is positive", () => {
     const withMistakes = renderScreen(
       {

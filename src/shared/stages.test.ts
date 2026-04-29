@@ -19,6 +19,7 @@ describe("STAGES", () => {
       "stage7",
       "stage8",
       "stage9",
+      "stage10",
     ]);
     expect(
       STAGES.every((stage) => typeof stage.createOptions === "function"),
@@ -34,7 +35,7 @@ describe("STAGES", () => {
       { left: 56, right: 8, operator: "×", answer: 7 },
       "en",
     );
-    const stage7Options = STAGES[6].createOptions(
+    const stage8Options = STAGES[7].createOptions(
       { left: 58, right: 7, operator: "×", answer: 8, remainder: 2 },
       "en",
     );
@@ -56,14 +57,14 @@ describe("STAGES", () => {
           option.segments[1]?.text === "7",
       ),
     ).toBe(true);
-    expect(stage7Options).toHaveLength(4);
+    expect(stage8Options).toHaveLength(4);
     expect(
-      stage7Options.some(
+      stage8Options.some(
         (option) => getQuestionOptionText(option) === "8 (56)",
       ),
     ).toBe(true);
     expect(
-      stage7Options.some(
+      stage8Options.some(
         (option) =>
           getQuestionOptionText(option) === "8 (56)" &&
           option.segments[0]?.text === "8" &&
@@ -297,12 +298,15 @@ describe("STAGES", () => {
   it("stage5 formats fill-in prompts and option segments", () => {
     const stage5 = STAGES[4];
 
-    const prompt = stage5.formatQuestion?.({
-      left: 56,
-      right: 8,
-      operator: "×",
-      answer: 7,
-    });
+    const prompt = stage5.formatQuestion?.(
+      {
+        left: 56,
+        right: 8,
+        operator: "×",
+        answer: 7,
+      },
+      "en",
+    );
     const option = stage5
       .createOptions(
         {
@@ -403,8 +407,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage7 keeps remainders above zero and below the multiplier", () => {
-    const stage7 = STAGES[6];
+  it("stage8 keeps remainders above zero and below the multiplier", () => {
+    const stage8 = STAGES[7];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -412,7 +416,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.75)
       .mockReturnValueOnce(0.1);
 
-    const expression = stage7.createExpression();
+    const expression = stage8.createExpression();
 
     expect(expression).toEqual({
       left: 65,
@@ -423,8 +427,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage7 retries answer 1 when the retry gate allows it", () => {
-    const stage7 = STAGES[6];
+  it("stage8 retries answer 1 when the retry gate allows it", () => {
+    const stage8 = STAGES[7];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -436,7 +440,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.5)
       .mockReturnValueOnce(0);
 
-    const expression = stage7.createExpression();
+    const expression = stage8.createExpression();
 
     expect(expression).toEqual({
       left: 13,
@@ -447,8 +451,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage7 never uses 1 as the multiplier", () => {
-    const stage7 = STAGES[6];
+  it("stage8 never uses 1 as the multiplier", () => {
+    const stage8 = STAGES[7];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -456,23 +460,26 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0)
       .mockReturnValueOnce(0);
 
-    const expression = stage7.createExpression();
+    const expression = stage8.createExpression();
 
     expect(expression.right).toBe(2);
     expect(expression.remainder).toBe(1);
   });
 
-  it("stage7 formats remainder prompts and option segments", () => {
-    const stage7 = STAGES[6];
+  it("stage8 formats remainder prompts and option segments", () => {
+    const stage8 = STAGES[7];
 
-    const prompt = stage7.formatQuestion?.({
-      left: 58,
-      right: 7,
-      operator: "×",
-      answer: 8,
-      remainder: 2,
-    });
-    const option = stage7
+    const prompt = stage8.formatQuestion?.(
+      {
+        left: 58,
+        right: 7,
+        operator: "×",
+        answer: 8,
+        remainder: 2,
+      },
+      "en",
+    );
+    const option = stage8
       .createOptions(
         {
           left: 58,
@@ -493,8 +500,8 @@ describe("STAGES", () => {
     expect(option ? getQuestionOptionText(option) : "").toBe("8 (56)");
   });
 
-  it("stage8 retries remainder 0 when the retry gate allows it", () => {
-    const stage8 = STAGES[7];
+  it("stage9 retries remainder 0 when the retry gate allows it", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -506,7 +513,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.5)
       .mockReturnValueOnce(0.9);
 
-    const expression = stage8.createExpression();
+    const expression = stage9.createExpression();
 
     expect(expression).toEqual({
       left: 23,
@@ -517,8 +524,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage8 retries answer 0 when the retry gate allows it", () => {
-    const stage8 = STAGES[7];
+  it("stage9 retries answer 0 when the retry gate allows it", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -530,7 +537,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.5)
       .mockReturnValueOnce(0.9);
 
-    const expression = stage8.createExpression();
+    const expression = stage9.createExpression();
 
     expect(expression).toEqual({
       left: 23,
@@ -541,8 +548,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage8 can still return answer 0", () => {
-    const stage8 = STAGES[7];
+  it("stage9 can still return answer 0", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -551,7 +558,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.3)
       .mockReturnValueOnce(0.95);
 
-    const expression = stage8.createExpression();
+    const expression = stage9.createExpression();
 
     expect(expression).toEqual({
       left: 1,
@@ -562,8 +569,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage8 can still return remainder 0", () => {
-    const stage8 = STAGES[7];
+  it("stage9 can still return remainder 0", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -572,7 +579,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0)
       .mockReturnValueOnce(0.95);
 
-    const expression = stage8.createExpression();
+    const expression = stage9.createExpression();
 
     expect(expression).toEqual({
       left: 72,
@@ -583,8 +590,8 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage8 retries answer 1 when the retry gate allows it", () => {
-    const stage8 = STAGES[7];
+  it("stage9 retries answer 1 when the retry gate allows it", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");
 
     randomSpy
@@ -596,7 +603,7 @@ describe("STAGES", () => {
       .mockReturnValueOnce(0.5)
       .mockReturnValueOnce(0.9);
 
-    const expression = stage8.createExpression();
+    const expression = stage9.createExpression();
 
     expect(expression).toEqual({
       left: 29,
@@ -607,17 +614,20 @@ describe("STAGES", () => {
     });
   });
 
-  it("stage8 formats remainder division option segments", () => {
-    const stage8 = STAGES[7];
+  it("stage9 formats remainder division option segments", () => {
+    const stage9 = STAGES[8];
 
-    const prompt = stage8.formatQuestion?.({
-      left: 73,
-      right: 9,
-      operator: "÷",
-      answer: 8,
-      remainder: 1,
-    });
-    const optionsJa = stage8.createOptions(
+    const prompt = stage9.formatQuestion?.(
+      {
+        left: 73,
+        right: 9,
+        operator: "÷",
+        answer: 8,
+        remainder: 1,
+      },
+      "en",
+    );
+    const optionsJa = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -627,7 +637,7 @@ describe("STAGES", () => {
       },
       "ja",
     );
-    const optionsEn = stage8.createOptions(
+    const optionsEn = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -662,10 +672,10 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage8 keeps distractor remainders within the divisor range", () => {
-    const stage8 = STAGES[7];
+  it("stage9 keeps distractor remainders within the divisor range", () => {
+    const stage9 = STAGES[8];
 
-    const options = stage8.createOptions(
+    const options = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -696,10 +706,10 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage8 includes a distractor with the correct quotient and wrong remainder", () => {
-    const stage8 = STAGES[7];
+  it("stage9 includes a distractor with the correct quotient and wrong remainder", () => {
+    const stage9 = STAGES[8];
 
-    const options = stage8.createOptions(
+    const options = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -719,11 +729,11 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage8 can build same-quotient options when the divisor allows it", () => {
-    const stage8 = STAGES[7];
+  it("stage9 can build same-quotient options when the divisor allows it", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
 
-    const options = stage8.createOptions(
+    const options = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -744,11 +754,11 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage8 falls back to mixed options when same-quotient is unavailable", () => {
-    const stage8 = STAGES[7];
+  it("stage9 falls back to mixed options when same-quotient is unavailable", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
 
-    const options = stage8.createOptions(
+    const options = stage9.createOptions(
       {
         left: 17,
         right: 3,
@@ -781,11 +791,11 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage8 mixed options still include a same-remainder distractor", () => {
-    const stage8 = STAGES[7];
+  it("stage9 mixed options still include a same-remainder distractor", () => {
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.9);
 
-    const options = stage8.createOptions(
+    const options = stage9.createOptions(
       {
         left: 73,
         right: 9,
@@ -808,12 +818,12 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage9 balances stage1, stage3, stage4, and stage8 across a round", () => {
-    const stage9 = STAGES[8];
+  it("stage10 balances stage1, stage3, stage4, and stage9 across a round", () => {
+    const stage10 = STAGES[9];
     const stage1 = STAGES[0];
     const stage3 = STAGES[2];
     const stage4 = STAGES[3];
-    const stage8 = STAGES[7];
+    const stage9 = STAGES[8];
     let nextLeft = 1;
     const buildExpression = (
       operator: StageExpression["operator"],
@@ -835,14 +845,14 @@ describe("STAGES", () => {
     vi.spyOn(stage4, "createExpression").mockImplementation(() =>
       buildExpression("×"),
     );
-    vi.spyOn(stage8, "createExpression").mockImplementation(() =>
+    vi.spyOn(stage9, "createExpression").mockImplementation(() =>
       buildExpression("÷", 1),
     );
 
-    stage9.initializeRound?.();
+    stage10.initializeRound?.();
 
     const expressions = Array.from({ length: 20 }, () =>
-      stage9.createExpression(),
+      stage10.createExpression(),
     );
     const operators = expressions.map((expression) => expression.operator);
 
@@ -858,12 +868,12 @@ describe("STAGES", () => {
     }
   });
 
-  it("stage9 reinitializes its balanced order when a new round starts", () => {
-    const stage9 = STAGES[8];
+  it("stage10 reinitializes its balanced order when a new round starts", () => {
+    const stage10 = STAGES[9];
     const stage1 = STAGES[0];
     const stage3 = STAGES[2];
     const stage4 = STAGES[3];
-    const stage8 = STAGES[7];
+    const stage9 = STAGES[8];
     const randomSpy = vi.spyOn(Math, "random");
     let sequenceId = 0;
 
@@ -885,7 +895,7 @@ describe("STAGES", () => {
       operator: "×",
       answer: 1,
     }));
-    vi.spyOn(stage8, "createExpression").mockImplementation(() => ({
+    vi.spyOn(stage9, "createExpression").mockImplementation(() => ({
       left: ++sequenceId,
       right: 1,
       operator: "÷",
@@ -901,26 +911,26 @@ describe("STAGES", () => {
       randomSpy.mockReturnValueOnce(0.99);
     }
 
-    stage9.initializeRound?.();
+    stage10.initializeRound?.();
     const firstRoundOperators = Array.from(
       { length: 4 },
-      () => stage9.createExpression().operator,
+      () => stage10.createExpression().operator,
     );
 
-    stage9.initializeRound?.();
+    stage10.initializeRound?.();
     const secondRoundOperators = Array.from(
       { length: 4 },
-      () => stage9.createExpression().operator,
+      () => stage10.createExpression().operator,
     );
 
     expect(firstRoundOperators).toEqual(["-", "×", "÷", "+"]);
     expect(secondRoundOperators).toEqual(["+", "-", "×", "÷"]);
   });
 
-  it("stage9 uses remainder-aware division options for stage8-style questions", () => {
-    const stage9 = STAGES[8];
+  it("stage10 uses remainder-aware division options for stage9-style questions", () => {
+    const stage10 = STAGES[9];
 
-    const options = stage9.createOptions(
+    const options = stage10.createOptions(
       {
         left: 73,
         right: 9,
@@ -937,10 +947,10 @@ describe("STAGES", () => {
     ).toBe(true);
   });
 
-  it("stage9 uses numeric options for non-division questions", () => {
-    const stage9 = STAGES[8];
+  it("stage10 uses numeric options for non-division questions", () => {
+    const stage10 = STAGES[9];
 
-    const options = stage9.createOptions(
+    const options = stage10.createOptions(
       {
         left: 6,
         right: 7,
@@ -955,5 +965,94 @@ describe("STAGES", () => {
     expect(
       options?.some((option) => getQuestionOptionText(option) === "42"),
     ).toBe(true);
+  });
+
+  it("stage7 creates two left-right options and a localized comparison prompt", () => {
+    const stage7 = STAGES[6];
+
+    const promptJa = stage7.formatQuestion?.(
+      {
+        left: 42,
+        right: 35,
+        operator: "×",
+        answer: 0,
+        leftLabel: "6 × 7",
+        rightLabel: "5 × 7",
+      },
+      "ja",
+    );
+    const optionsEn = stage7.createOptions(
+      {
+        left: 42,
+        right: 35,
+        operator: "×",
+        answer: 0,
+        leftLabel: "6 × 7",
+        rightLabel: "5 × 7",
+      },
+      "en",
+    );
+
+    expect(promptJa).toBe("どっちが大きい?");
+    expect(optionsEn).toHaveLength(2);
+    const [leftOption, rightOption] = optionsEn;
+
+    expect(leftOption?.isCorrect).toBe(true);
+    expect(leftOption ? getQuestionOptionText(leftOption) : "").toBe("6 × 7");
+    expect(rightOption ? getQuestionOptionText(rightOption) : "").toBe("5 × 7");
+  });
+
+  it("stage7 can generate multiplication-vs-number comparisons", () => {
+    const stage7 = STAGES[6];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.9);
+
+    const expression = stage7.createExpression();
+
+    randomSpy.mockRestore();
+
+    expect(expression.leftLabel).toBe("2 × 6");
+    expect(expression.rightLabel).toBe("17");
+    expect(expression.answer).toBe(1);
+  });
+
+  it("stage7 multiplication comparisons keep products close without shared factors", () => {
+    const stage7 = STAGES[6];
+    const randomSpy = vi.spyOn(Math, "random");
+
+    randomSpy
+      .mockReturnValueOnce(0.9)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.9);
+
+    const expression = stage7.createExpression();
+
+    randomSpy.mockRestore();
+
+    const leftMatch = expression.leftLabel?.match(/^(\d+) × (\d+)$/);
+    const rightMatch = expression.rightLabel?.match(/^(\d+) × (\d+)$/);
+
+    expect(leftMatch).not.toBeNull();
+    expect(rightMatch).not.toBeNull();
+
+    const leftFactors = [
+      Number(leftMatch?.[1] ?? 0),
+      Number(leftMatch?.[2] ?? 0),
+    ];
+    const rightFactors = [
+      Number(rightMatch?.[1] ?? 0),
+      Number(rightMatch?.[2] ?? 0),
+    ];
+
+    expect(Math.abs(expression.left - expression.right)).toBeLessThanOrEqual(8);
+    expect(leftFactors.some((factor) => rightFactors.includes(factor))).toBe(
+      false,
+    );
   });
 });

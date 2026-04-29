@@ -47,7 +47,7 @@ describe("createQuestion", () => {
 
   it("supports remainder-aware multiplication fill-in labels", () => {
     const stage: StageDefinition = {
-      id: "stage7",
+      id: "stage8",
       baseQuestionCount: 10,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
@@ -82,7 +82,7 @@ describe("createQuestion", () => {
 
   it("supports remainder-aware division option labels", () => {
     const stage: StageDefinition = {
-      id: "stage8",
+      id: "stage9",
       baseQuestionCount: 10,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
@@ -124,7 +124,7 @@ describe("createQuestion", () => {
 
   it("supports locale-specific remainder division option labels", () => {
     const stage: StageDefinition = {
-      id: "stage8",
+      id: "stage9",
       baseQuestionCount: 10,
       defaultClearCondition: {
         maxElapsedMs: 15_000,
@@ -161,5 +161,38 @@ describe("createQuestion", () => {
         (option) => getQuestionOptionText(option) === "8 … 1",
       ),
     ).toBe(true);
+  });
+
+  it("supports localized binary comparison prompts and two options", () => {
+    const stage: StageDefinition = {
+      id: "stage7",
+      baseQuestionCount: 10,
+      defaultClearCondition: {
+        maxElapsedMs: 60_000,
+        maxMistakes: 0,
+      },
+      createExpression: () => ({
+        left: 42,
+        right: 35,
+        operator: "×",
+        answer: 0,
+        leftLabel: "6 × 7",
+        rightLabel: "5 × 7",
+      }),
+      formatQuestion: (_expression, locale) =>
+        locale === "ja" ? "どっちが大きい?" : "Which is greater?",
+      createOptions: (expression) => [
+        createTextOnlyQuestionOption(expression.leftLabel ?? "", true),
+        createTextOnlyQuestionOption(expression.rightLabel ?? "", false),
+      ],
+    };
+
+    const question = createQuestion(stage, new Set(), "ja");
+
+    expect(question.prompt).toBe("どっちが大きい?");
+    expect(question.options).toHaveLength(2);
+    expect(
+      question.options.map((option) => getQuestionOptionText(option)),
+    ).toEqual(["6 × 7", "5 × 7"]);
   });
 });

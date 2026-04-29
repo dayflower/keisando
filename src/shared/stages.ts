@@ -24,11 +24,22 @@ const STAGE8_ONE_RETRY_RATE = 0.6;
 const STAGE8_OPTION_SAMPLE_COUNT = 24;
 const STAGE8_SAME_QUOTIENT_OPTION_RATE = 0.25;
 const STAGE9_BALANCED_SOURCE_REPEAT_COUNT = 5;
+const STAGE10_MIXED_COMPARISON_RATE = 0.5;
+const STAGE10_PRODUCT_DIFFERENCE_MAX = 8;
 const MAX_ZERO_RETRIES = 3;
 
 type Stage8OptionCandidate = {
   quotient: number;
   remainder: number;
+};
+
+type Stage10MultiplicationComparisonCandidate = {
+  leftFactorA: number;
+  leftFactorB: number;
+  rightFactorA: number;
+  rightFactorB: number;
+  left: number;
+  right: number;
 };
 
 const buildStage5OptionSegments = (
@@ -365,6 +376,149 @@ const buildNumericOptions = (
   );
 };
 
+const buildStage10ProductLabel = (left: number, right: number): string =>
+  `${left} × ${right}`;
+
+const hasSharedFactor = (
+  leftFactors: [number, number],
+  rightFactors: [number, number],
+): boolean => {
+  const rightSet = new Set(rightFactors);
+  return leftFactors.some((factor) => rightSet.has(factor));
+};
+
+const buildStage10ChoiceOptions = (expression: {
+  leftLabel?: string;
+  rightLabel?: string;
+  left: number;
+  right: number;
+  answer: number;
+}): QuestionOption[] => {
+  const leftLabel = expression.leftLabel ?? String(expression.left);
+  const rightLabel = expression.rightLabel ?? String(expression.right);
+
+  return [
+    createTextOnlyQuestionOption(leftLabel, expression.answer === 0),
+    createTextOnlyQuestionOption(rightLabel, expression.answer === 1),
+  ];
+};
+
+const buildStage10MultiplicationComparisonPool =
+  (): Stage10MultiplicationComparisonCandidate[] => {
+    const pool: Stage10MultiplicationComparisonCandidate[] = [];
+
+    for (let leftFactorA = 2; leftFactorA <= 9; leftFactorA += 1) {
+      for (let leftFactorB = leftFactorA; leftFactorB <= 9; leftFactorB += 1) {
+        for (let rightFactorA = 2; rightFactorA <= 9; rightFactorA += 1) {
+          for (
+            let rightFactorB = rightFactorA;
+            rightFactorB <= 9;
+            rightFactorB += 1
+          ) {
+            const left = leftFactorA * leftFactorB;
+            const right = rightFactorA * rightFactorB;
+
+            if (left === right) {
+              continue;
+            }
+
+            if (
+              Math.abs(left - right) > STAGE10_PRODUCT_DIFFERENCE_MAX ||
+              hasSharedFactor(
+                [leftFactorA, leftFactorB],
+                [rightFactorA, rightFactorB],
+              )
+            ) {
+              continue;
+            }
+
+            pool.push({
+              leftFactorA,
+              leftFactorB,
+              rightFactorA,
+              rightFactorB,
+              left,
+              right,
+            });
+          }
+        }
+      }
+    }
+
+    return pool;
+  };
+
+const stage10MultiplicationComparisonPool =
+  buildStage10MultiplicationComparisonPool();
+
+const createStage10MultiplicationComparison = () => {
+  const candidateIndex = Math.floor(
+    Math.random() * stage10MultiplicationComparisonPool.length,
+  );
+  const candidate = stage10MultiplicationComparisonPool[candidateIndex];
+
+  if (!candidate) {
+    throw new Error("Stage 10 multiplication comparison pool is empty.");
+  }
+
+  const swapSides = Math.random() < 0.5;
+  const leftFactorA = swapSides
+    ? candidate.rightFactorA
+    : candidate.leftFactorA;
+  const leftFactorB = swapSides
+    ? candidate.rightFactorB
+    : candidate.leftFactorB;
+  const rightFactorA = swapSides
+    ? candidate.leftFactorA
+    : candidate.rightFactorA;
+  const rightFactorB = swapSides
+    ? candidate.leftFactorB
+    : candidate.rightFactorB;
+  const left = swapSides ? candidate.right : candidate.left;
+  const right = swapSides ? candidate.left : candidate.right;
+
+  return {
+    left,
+    right,
+    operator: "×" as const,
+    answer: left > right ? 0 : 1,
+    leftLabel: buildStage10ProductLabel(leftFactorA, leftFactorB),
+    rightLabel: buildStage10ProductLabel(rightFactorA, rightFactorB),
+  };
+};
+
+const createStage10MixedComparison = () => {
+  const multiplicationLeft = Math.random() < 0.5;
+  const factorA = Math.floor(Math.random() * 8) + 2;
+  const factorB = Math.floor(Math.random() * 8) + 2;
+  const product = factorA * factorB;
+  const offset = Math.floor(Math.random() * 11) - 5;
+  const rawValue = Math.max(
+    1,
+    Math.min(81, product + (offset >= 0 ? offset + 1 : offset)),
+  );
+
+  if (rawValue === product) {
+    return createStage10MixedComparison();
+  }
+
+  const left = multiplicationLeft ? product : rawValue;
+  const right = multiplicationLeft ? rawValue : product;
+
+  return {
+    left,
+    right,
+    operator: "×" as const,
+    answer: left > right ? 0 : 1,
+    leftLabel: multiplicationLeft
+      ? buildStage10ProductLabel(factorA, factorB)
+      : String(rawValue),
+    rightLabel: multiplicationLeft
+      ? String(rawValue)
+      : buildStage10ProductLabel(factorA, factorB),
+  };
+};
+
 const stage9SourceStages: StageDefinition[] = [];
 let stage9RoundQueue: StageDefinition[] = [];
 
@@ -551,6 +705,21 @@ export const STAGES: StageDefinition[] = [
     id: "stage7",
     baseQuestionCount: 20,
     defaultClearCondition: {
+      maxElapsedMs: 60_000,
+      maxMistakes: 0,
+    },
+    createExpression: () =>
+      Math.random() < STAGE10_MIXED_COMPARISON_RATE
+        ? createStage10MixedComparison()
+        : createStage10MultiplicationComparison(),
+    formatQuestion: (_expression, locale) =>
+      locale === "ja" ? "どっちが大きい?" : "Which is greater?",
+    createOptions: (expression) => buildStage10ChoiceOptions(expression),
+  },
+  {
+    id: "stage8",
+    baseQuestionCount: 20,
+    defaultClearCondition: {
       maxElapsedMs: 75_000,
       maxMistakes: 0,
     },
@@ -580,7 +749,7 @@ export const STAGES: StageDefinition[] = [
       ),
   },
   {
-    id: "stage8",
+    id: "stage9",
     baseQuestionCount: 20,
     defaultClearCondition: {
       maxElapsedMs: 120_000,
@@ -629,7 +798,7 @@ export const STAGES: StageDefinition[] = [
     },
   },
   {
-    id: "stage9",
+    id: "stage10",
     baseQuestionCount: 20,
     defaultClearCondition: {
       maxElapsedMs: 90_000,
@@ -658,4 +827,4 @@ export const STAGES: StageDefinition[] = [
   },
 ];
 
-stage9SourceStages.push(STAGES[0], STAGES[2], STAGES[3], STAGES[7]);
+stage9SourceStages.push(STAGES[0], STAGES[2], STAGES[3], STAGES[8]);

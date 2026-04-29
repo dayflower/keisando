@@ -46,6 +46,27 @@ export const usePlayingKeyboardShortcuts = ({
   onStartNextStage,
   onUiTap,
 }: UsePlayingKeyboardShortcutsInput) => {
+  const resolveChoiceIndex = (key: string): number | null => {
+    const choiceIndex = getAnswerChoiceIndexByArrowKey(key);
+    if (choiceIndex === null) {
+      return null;
+    }
+
+    if (options.length !== 2) {
+      return choiceIndex;
+    }
+
+    if (key === "ArrowLeft") {
+      return 0;
+    }
+
+    if (key === "ArrowRight") {
+      return 1;
+    }
+
+    return null;
+  };
+
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (event.repeat) {
       return;
@@ -80,7 +101,7 @@ export const usePlayingKeyboardShortcuts = ({
       return;
     }
 
-    const choiceIndex = getAnswerChoiceIndexByArrowKey(event.key);
+    const choiceIndex = resolveChoiceIndex(event.key);
     if (choiceIndex === null) {
       return;
     }

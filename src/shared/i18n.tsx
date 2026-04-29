@@ -146,16 +146,20 @@ const enMessages = {
   "stage.stage6.description":
     "2-digit or less division (result 0-9, divisor 1-9)",
   "stage.stage7.name": "Stage 7",
-  "stage.stage7.tag": "Multiplication Fill-in+",
+  "stage.stage7.tag": "Which Is Greater?",
   "stage.stage7.description":
-    "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
+    "Pick left or right to compare multiplication pairs and multiplication versus a number",
   "stage.stage8.name": "Stage 8",
-  "stage.stage8.tag": "Division+",
+  "stage.stage8.tag": "Multiplication Fill-in+",
   "stage.stage8.description":
-    "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
+    "Remainder multiplication fill-in like 58 = 7 × ? + 2 (answer 0-9)",
   "stage.stage9.name": "Stage 9",
-  "stage.stage9.tag": "Mixed Arithmetic",
+  "stage.stage9.tag": "Division+",
   "stage.stage9.description":
+    "Division with remainder like 73 ÷ 9 = ? (options like 8 R 1)",
+  "stage.stage10.name": "Stage 10",
+  "stage.stage10.tag": "Mixed Arithmetic",
+  "stage.stage10.description":
     "A mixed stage with random addition, subtraction, multiplication, and division questions",
 } as const;
 
@@ -296,16 +300,20 @@ const jaMessages: Record<MessageKey, string> = {
   "stage.stage6.tag": "わり算",
   "stage.stage6.description": "2桁以下のわり算 (答えは0-9, 割る数は1-9)",
   "stage.stage7.name": "Stage 7",
-  "stage.stage7.tag": "かけ算あなうめ+",
+  "stage.stage7.tag": "どっちが大きい?",
   "stage.stage7.description":
-    "58 = 7 × ? + 2 のようなかけ算あなうめ (答えは0-9, あまりは1以上)",
+    "かけ算どうし、またはかけ算と数字を見比べて、左か右の大きい方を選ぶ2択ステージ",
   "stage.stage8.name": "Stage 8",
-  "stage.stage8.tag": "わり算+",
+  "stage.stage8.tag": "かけ算あなうめ+",
   "stage.stage8.description":
-    "73 ÷ 9 = ? のようなあまりつきわり算 (選択肢は 8 … 1 の形式)",
+    "58 = 7 × ? + 2 のようなかけ算あなうめ (答えは0-9, あまりは1以上)",
   "stage.stage9.name": "Stage 9",
-  "stage.stage9.tag": "四則MIX",
+  "stage.stage9.tag": "わり算+",
   "stage.stage9.description":
+    "73 ÷ 9 = ? のようなあまりつきわり算 (選択肢は 8 … 1 の形式)",
+  "stage.stage10.name": "Stage 10",
+  "stage.stage10.tag": "四則MIX",
+  "stage.stage10.description":
     "足し算・引き算・かけ算・わり算の問題がランダムに出るミックスステージ",
 };
 
@@ -342,7 +350,10 @@ type StageMessageKey =
   | "stage.stage8.description"
   | "stage.stage9.name"
   | "stage.stage9.tag"
-  | "stage.stage9.description";
+  | "stage.stage9.description"
+  | "stage.stage10.name"
+  | "stage.stage10.tag"
+  | "stage.stage10.description";
 
 const stageMessageKeys = {
   stage1: {
@@ -389,6 +400,11 @@ const stageMessageKeys = {
     name: "stage.stage9.name",
     tag: "stage.stage9.tag",
     description: "stage.stage9.description",
+  },
+  stage10: {
+    name: "stage.stage10.name",
+    tag: "stage.stage10.tag",
+    description: "stage.stage10.description",
   },
 } as const satisfies Record<string, Record<StageMessagePart, StageMessageKey>>;
 

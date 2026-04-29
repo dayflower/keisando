@@ -136,7 +136,7 @@ describe("buildCompleteStageLifetimeSummaries", () => {
 
     const next = buildCompleteStageLifetimeSummaries(current, "p1");
 
-    expect(next).toHaveLength(9);
+    expect(next).toHaveLength(10);
     expect(next[0]).toEqual({
       playerId: "p1",
       stageId: "stage1",
@@ -145,6 +145,12 @@ describe("buildCompleteStageLifetimeSummaries", () => {
     });
     expect(next[1]).toEqual(current[0]);
     expect(next[4]).toEqual(current[1]);
+    expect(next[9]).toEqual({
+      playerId: "p1",
+      stageId: "stage10",
+      attempts: 0,
+      bestDurationMs: null,
+    });
     expect(next[8]).toEqual({
       playerId: "p1",
       stageId: "stage9",
